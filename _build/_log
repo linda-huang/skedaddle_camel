@@ -1,0 +1,56 @@
+### Starting build.
+# Target: test.ml.depends, tags: { package(ounit2), debug, extension:ml, file:test.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules test.ml > test.ml.depends
+# Target: camel.mli.depends, tags: { package(ounit2), debug, extension:mli, file:camel.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules camel.mli > camel.mli.depends # cached
+# Target: camel.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:camel.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o camel.cmi camel.mli # cached
+# Target: coin.mli.depends, tags: { package(ounit2), debug, extension:mli, file:coin.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules coin.mli > coin.mli.depends # cached
+# Target: coin.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:coin.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o coin.cmi coin.mli # cached
+# Target: enemy.mli.depends, tags: { package(ounit2), debug, extension:mli, file:enemy.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules enemy.mli > enemy.mli.depends # cached
+# Target: enemy.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:enemy.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o enemy.cmi enemy.mli # cached
+# Target: maze.mli.depends, tags: { package(ounit2), debug, extension:mli, file:maze.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules maze.mli > maze.mli.depends # cached
+# Target: maze.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:maze.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o maze.cmi maze.mli # cached
+# Target: position.mli.depends, tags: { package(ounit2), debug, extension:mli, file:position.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules position.mli > position.mli.depends # cached
+# Target: position.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:position.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o position.cmi position.mli # cached
+# Target: projectile.mli.depends, tags: { package(ounit2), debug, extension:mli, file:projectile.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules projectile.mli > projectile.mli.depends # cached
+# Target: projectile.cmi, tags: { package(ounit2), byte, compile, debug, extension:mli, file:projectile.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o projectile.cmi projectile.mli # cached
+# Target: test.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:test.cmo, file:test.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o test.cmo test.ml
+# Target: camel.ml.depends, tags: { package(ounit2), debug, extension:ml, file:camel.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules camel.ml > camel.ml.depends # cached
+# Target: camel.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:camel.cmo, file:camel.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o camel.cmo camel.ml # cached
+# Target: coin.ml.depends, tags: { package(ounit2), debug, extension:ml, file:coin.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules coin.ml > coin.ml.depends # cached
+# Target: coin.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:coin.cmo, file:coin.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o coin.cmo coin.ml # cached
+# Target: enemy.ml.depends, tags: { package(ounit2), debug, extension:ml, file:enemy.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules enemy.ml > enemy.ml.depends # cached
+# Target: enemy.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:enemy.cmo, file:enemy.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o enemy.cmo enemy.ml # cached
+# Target: maze.ml.depends, tags: { package(ounit2), debug, extension:ml, file:maze.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules maze.ml > maze.ml.depends # cached
+# Target: maze.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:maze.cmo, file:maze.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o maze.cmo maze.ml # cached
+# Target: position.ml.depends, tags: { package(ounit2), debug, extension:ml, file:position.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules position.ml > position.ml.depends # cached
+# Target: position.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:position.cmo, file:position.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o position.cmo position.ml # cached
+# Target: projectile.ml.depends, tags: { package(ounit2), debug, extension:ml, file:projectile.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -modules projectile.ml > projectile.ml.depends # cached
+# Target: projectile.cmo, tags: { package(ounit2), byte, compile, debug, extension:cmo, extension:ml, file:projectile.cmo, file:projectile.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -g -package ounit2 -o projectile.cmo projectile.ml # cached
+# Target: test.byte, tags: { package(ounit2), byte, debug, dont_link_with, extension:byte, file:test.byte, link, ocaml, program, quiet, traverse }
+ocamlfind ocamlc -linkpkg -g -package ounit2 camel.cmo coin.cmo enemy.cmo maze.cmo position.cmo projectile.cmo test.cmo -o test.byte
+# Compilation successful.
