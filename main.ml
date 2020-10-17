@@ -9,7 +9,6 @@ let start x y =
 let input_move camel = 
   if (Graphics.key_pressed ()) then 
     let k = Graphics.read_key () in 
-    flush_kp ();
     match k with 
     | 'w' -> Camel.move_vert camel 1.
     | 'a' -> Camel.move_horiz camel -1.
@@ -20,3 +19,5 @@ let input_move camel =
     | _ -> camel 
 
 
+(* Graphics.draw_image : image -> int -> int -> unit
+   Draw the given image with lower left corner at the given point.*)
