@@ -10,9 +10,6 @@ type t = enemy
 
 let speed = 1.5
 
-(* add a function to init an enemy?
-   for State.enemy_lst *)
-
 let turn_around camel = {
   id = camel.id;
   dir = (camel.dir + 180) mod 360;
@@ -31,3 +28,9 @@ let move_horiz pos =
 
 let move_vert pos = 
   {pos with y = pos.y +. speed}
+
+let init i d p = {
+  id = i;
+  dir = d;
+  pos = p;
+}

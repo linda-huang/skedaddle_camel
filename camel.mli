@@ -3,13 +3,13 @@ type t = {
   pos : Position.t;
   dir : int; (* direction in degrees *)
   health : int;
+  coins : int;
 }
 
 val speed : float 
 val rot : int   
 
 val init : float -> float -> t 
-
 
 val turn_right : t -> t 
 
