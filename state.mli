@@ -1,9 +1,12 @@
-type t (* = {
-          camel : Camel.t;
-          maze : Maze.maze;
-          enemies : Enemy.t array;
-          coins : Coin.t array;
-          } *)
+type t = {
+  camel : Camel.t;
+  maze : Maze.maze;
+  x_size : int;
+  y_size : int;
+  enemies : Enemy.t array;
+  coins : Coin.t array;
+  projectiles : Projectile.t list;
+}
 
 val camel_widt : float
 val tile_width : float

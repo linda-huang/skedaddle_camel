@@ -10,7 +10,7 @@ let start x y =
 let try_move mz orig moved = 
   if State.hit_wall moved.pos mz then moved else orig 
 
-let input_move camel mz = 
+let input_move (camel : Camel.t) (mz : Maze.maze) = 
   if (Graphics.key_pressed ()) then 
     let k = Graphics.read_key () in 
     let try_move' = try_move mz camel in 

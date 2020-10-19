@@ -23,7 +23,7 @@ let move_vert pos =
 
 let rad_of_deg d = (float_of_int d) *. ((acos (-1.)) /. 180.)
 
-let move_proj p =
-  let newx = p.x = speed *. (sin (rad_of_deg p.dir)) in
-  let newy = p.y = speed *. (cos (rad_of_deg p.dir)) in
-  {p with pos = {newx, newy}}
+let move_proj (p : t) =
+  let newx = speed *. (sin (rad_of_deg p.dir)) in
+  let newy = speed *. (cos (rad_of_deg p.dir)) in
+  {p with pos = Position.make_pos newx newy}

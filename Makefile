@@ -1,16 +1,18 @@
 MODULES=camel coin enemy main maze position projectile state test 
 OBJECTS=$(MODULES:=.cmo)
+MLS=$(MODULES:=.ml)
+MLIS=$(MODULES:=.mli)
 TEST=test.byte
-OCAMLBUILD=ocamlbuild -use-ocamlfind
+OCAMLBUILD=ocamlbuild -use-ocamlfind -pkg graphics
 
 default:
 	utop
 	
 build:
-	ocamlbuild -use-ocamlfind main.cmo
+	$(OCAMLBUILD) $(OBJECTS)
 
 test:
-	ocamlbuild -use-ocamlfind -tag 'debug' test.byte && ./test.byte
-
+	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST)
+	
 clean:
 	ocamlbuild -clean

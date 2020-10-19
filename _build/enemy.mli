@@ -1,7 +1,13 @@
-type t
+type t = {
+  id : int;
+  dir : int;
+  pos : Position.t;
+}
 
 val turn_around : t -> t
 
-val move_left : Position.t -> Position.t
+val move : t -> t
 
-val move_right : Position.t -> Position.t
+val speed : float
+
+val init : int -> int -> Position.t -> t

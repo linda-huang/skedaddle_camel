@@ -1,12 +1,10 @@
 open Position
 
-type enemy = {
+type t = {
   id : int;
   dir : int;
   pos : Position.t;
 }
-
-type t = enemy
 
 let speed = 1.5
 
