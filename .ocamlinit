@@ -7,3 +7,4 @@
 #load "projectile.cmo";;
 #load "camel.cmo";;
 #load "state.cmo";;
+#load "maze.cmo";;

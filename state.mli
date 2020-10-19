@@ -8,20 +8,22 @@ type t = {
   projectiles : Projectile.t list;
 }
 
-val camel_widt : float
+val camel_width : float
 val tile_width : float
 val near : float
 
 val tile_to_pixel : float -> float -> float * float
 
-val enemy_lst : int -> 'a array
+val init_enemy_lst : int -> 'a array
 
-val valid_spawn_pos : int -> Position.t list (* TODO *)
+val valid_spawn_pos : int -> Maze.maze -> Position.t list (* TODO *)
 
-val curr_tile : Position.t -> float * float
+val curr_tile : Position.t -> int * int
 
-val hit_wall : Position.t -> Maze.t -> bool
+val hit_wall : Position.t -> Maze.maze -> bool
 
 val near_enemy : Camel.t -> t -> bool
 
 val on_coin : Camel.t -> t -> bool
+
+val shoot : Camel.t -> t -> t
