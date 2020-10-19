@@ -21,6 +21,7 @@ let input_move camel mz =
     | 'd' -> try_move' (Camel.move_horiz camel 1.)
     | 'q' -> try_move' (Camel.turn_left camel)
     | 'e' -> try_move' (Camel.turn_right camel) 
+    (* | '.' -> State.shoot camel *)
     | _ -> camel 
   else camel 
 
@@ -33,10 +34,11 @@ let update_state camel st =
       {camel with health = camel.health - 1} else 
     if (State.on_coin camel st) then 
       {camel with coins = camel.coins + 1} else camel in 
+  (* let newstate = 
+     if (State.on_coin camel st) then failwith "todo: remove coin from coinlist"
+         {st with coins = }*)
   if (is_dead newcamel) then failwith " game over ??? " else newcamel  
 
-let try_enemy_move mz orig moved = 
-  if State.hit_wall moved.pos mz then moved else orig 
 
 (* Graphics.draw_image : image -> int -> int -> unit
    Draw the given image with lower left corner at the given point.*)

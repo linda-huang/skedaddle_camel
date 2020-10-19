@@ -29,6 +29,10 @@ let move_horiz pos =
 let move_vert pos = 
   {pos with y = pos.y +. speed}
 
+let move enemy =
+  if enemy.dir mod 180 = 0 then {enemy with pos = (move_horiz enemy.pos)}
+  else {enemy with pos = (move_vert enemy.pos)}
+
 let init i d p = {
   id = i;
   dir = d;
