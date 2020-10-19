@@ -1,30 +1,14 @@
-(* denotes whether the position is a wall, a path, or an exit path *)
+open Graphics;; 
+
+(* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
   | Wall
   | Path 
-  | ExitPath
+  | Exit
+  | Start
 
-(* denotes the four possible directions for maze traversal *)
-type direction = 
-  | Left
-  | Right
-  | Up
-  | Down
-
-(* maze as a 2d array?*)
+(* maze as a 2d array*)
 type maze = t array array
-
-(* Some sort of way to keep the valid path?? *)
-type exit_path = {
-  value : int*int;
-  next : exit_path;
-}
-
-(* start pos is top left corner??*)
-let start_pos = (0, 0)
-
-(* exit is on lower right corner??*)
-let exit x y = (x - 1, y - 1)
 
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
                               (posy >= 0) && (posy < Array.length maze.(0))
@@ -56,13 +40,6 @@ let clear_path maze posx posy newx newy =
   else if diffy = -2 then maze.(posx).(posy - 1) <- Path
   else if diffy = 2 then maze.(posx).(posy + 1) <- Path
 
-
-(* [populate x y] populates a random maze of size [x] by [y] with
-    entry at (0, 0) and exit at (x - 1, y - 1)
-    Requires:
-    [x] >= 1
-    [y] >= 1
-*)
 let rec dfs maze posx posy =
   let direction = [|(posx - 2, posy); (posx + 2, posy); 
                     (posx, posy - 2); (posx, posy + 2)|] in 
@@ -77,13 +54,14 @@ let rec dfs maze posx posy =
   end
   done
 
-
 let populate n m start_pos = 
   let maze = Array.make_matrix n m Wall in
   let startx, starty = start_pos in
   dfs maze startx starty;
   maze.(startx).(starty) <- Path;
   maze
+
+let isWall maze x y = if maze.(y).(x) = Wall then true else false
 
 
 
