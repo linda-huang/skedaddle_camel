@@ -30,5 +30,6 @@ let adj_health camel h =
 
 let string_of_camel camel = 
   "Camel health: " ^ string_of_int camel.health ^ 
-  " Camel position: ("  ^ string_of_float camel.pos.x ^ ", " ^ 
-  string_of_float camel.pos.y ^ ")"
+  "\n" ^ "Camel position: ("  ^ string_of_float camel.pos.x ^ ", " ^ 
+  string_of_float camel.pos.y ^ ")" ^
+  "\n" ^ "Camel direction: " ^ string_of_int camel.dir

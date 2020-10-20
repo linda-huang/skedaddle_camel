@@ -19,15 +19,19 @@ let input (camel : Camel.t) =
   | 'a' -> (Camel.move_horiz camel ~-.1.)
   | 's' -> (Camel.move_vert camel ~-.1.)
   | 'd' -> (Camel.move_horiz camel 1.)
+  | 'e' -> (Camel.turn_right camel)
+  | 'q' -> (Camel.turn_left camel)
   | _ -> camel 
 
 let rec run (camel : Camel.t) = 
   Graphics.clear_graph ();
   Graphics.moveto 50 500;
   let movedcamel = input camel in 
+  Graphics.moveto 50 400;
   Graphics.draw_string ("Began as: " ^ Camel.string_of_camel camel);
-  Graphics.draw_string ("\nMoved to: " ^ Camel.string_of_camel movedcamel);
-  Unix.sleep 1;
+  Graphics.moveto 50 300;
+  Graphics.draw_string ("Moved to: " ^ Camel.string_of_camel movedcamel);
+  Unix.sleep 3;
   run movedcamel 
 
 let init k = 
