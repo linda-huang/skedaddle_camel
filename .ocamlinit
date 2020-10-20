@@ -2,9 +2,11 @@
 #require "graphics";;
 #require "ANSITerminal";;
 #directory "_build";;
-#load "main.cmo";;
-#load "enemy.cmo";;
-#load "projectile.cmo";;
 #load "camel.cmo";;
-#load "state.cmo";;
+#load "coin.cmo";;
+#load "enemy.cmo";;
+#load "main.cmo";;
 #load "maze.cmo";;
+#load "position.cmo";;
+#load "projectile.cmo";;
+#load "state.cmo";;

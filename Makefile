@@ -3,6 +3,7 @@ OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
+MAIN=maindemo.byte 
 OCAMLBUILD=ocamlbuild -use-ocamlfind -pkg graphics
 
 default:
@@ -13,6 +14,9 @@ build:
 
 test:
 	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST)
-	
+
+demo:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
+
 clean:
 	ocamlbuild -clean
