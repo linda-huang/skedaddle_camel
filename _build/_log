@@ -1,6 +1,6 @@
 ### Starting build.
 # Target: maindemo.ml.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:ml, file:maindemo.ml, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules maindemo.ml > maindemo.ml.depends # cached
+ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules maindemo.ml > maindemo.ml.depends
 # Target: camel.mli.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:mli, file:camel.mli, ocaml, ocamldep, quiet, traverse }
 ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules camel.mli > camel.mli.depends # cached
 # Target: position.mli.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:mli, file:position.mli, ocaml, ocamldep, quiet, traverse }
@@ -30,7 +30,7 @@ ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o c
 # Target: state.cmi, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:mli, file:state.mli, interf, ocaml, quiet, traverse }
 ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o state.cmi state.mli # cached
 # Target: maindemo.cmo, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:maindemo.cmo, file:maindemo.ml, implem, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o maindemo.cmo maindemo.ml # cached
+ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o maindemo.cmo maindemo.ml
 # Target: camel.ml.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:ml, file:camel.ml, ocaml, ocamldep, quiet, traverse }
 ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules camel.ml > camel.ml.depends # cached
 # Target: camel.cmo, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:camel.cmo, file:camel.ml, implem, ocaml, quiet, traverse }
@@ -60,5 +60,5 @@ ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modu
 # Target: coin.cmo, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:coin.cmo, file:coin.ml, implem, ocaml, quiet, traverse }
 ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o coin.cmo coin.ml # cached
 # Target: maindemo.byte, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, dont_link_with, extension:byte, file:maindemo.byte, link, ocaml, program, quiet, traverse }
-ocamlfind ocamlc -linkpkg -package ounit2 -package ANSITerminal -package graphics position.cmo camel.cmo enemy.cmo maze.cmo projectile.cmo coin.cmo state.cmo maindemo.cmo -o maindemo.byte # cached
+ocamlfind ocamlc -linkpkg -package ounit2 -package ANSITerminal -package graphics position.cmo camel.cmo enemy.cmo maze.cmo projectile.cmo coin.cmo state.cmo maindemo.cmo -o maindemo.byte
 # Compilation successful.
