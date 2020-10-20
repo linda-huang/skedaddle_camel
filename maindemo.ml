@@ -4,6 +4,7 @@ open Enemy
 open Maze 
 open State   
 open Projectile
+open Unix 
 
 let draw_state state = failwith "todo" 
 
@@ -17,15 +18,21 @@ let init k =
     | 's' -> (Camel.move_vert camel ~-.1.)
     | 'd' -> (Camel.move_horiz camel 1.)
     | _ -> camel 
-  in Graphics.draw_string (Camel.string_of_camel movedcamel)
+  in Graphics.draw_string ("Began as: " ^ Camel.string_of_camel camel);
+  Graphics.draw_string ("\nMoved to: " ^ Camel.string_of_camel movedcamel)
 
 (*draw_state State.init_state; run State.init_state*)
 
 let main () = 
   Graphics.open_graph " ";
   Graphics.set_window_title "Skedadle Camel";
+  Graphics.resize_window 800 800;
+  Graphics.set_text_size 300;
+  Graphics.moveto 50 500;
   Graphics.draw_string "press a key to move";
   match Graphics.read_key () with 
   | k -> init k 
-(* Execute the game engine. *)
-let () = main () 
+
+(* Execute the demo. *)
+let () = main (); 
+  Unix.sleep 5
