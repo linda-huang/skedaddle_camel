@@ -27,3 +27,5 @@ let move_proj (p : t) =
   let newx = speed *. (sin (rad_of_deg p.dir)) in
   let newy = speed *. (cos (rad_of_deg p.dir)) in
   {p with pos = Position.make_pos newx newy}
+
+let string_of_proj p = Position.string_of_pos p.pos 

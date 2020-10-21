@@ -36,6 +36,8 @@ let rec run (camel : Camel.t) =
 
 let init k = 
   let camel = Camel.init 0. 0. in 
+  (*let maze = Maze.populate 10 10 (0, 0) in 
+    let enemies = State.init_enemy_lst 5 in *)
   run camel 
 
 (*draw_state State.init_state; run State.init_state*)

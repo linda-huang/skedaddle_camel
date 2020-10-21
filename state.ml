@@ -22,41 +22,31 @@ let near = 100.
 (* [tile_to_pixel tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
 let tile_to_pixel tx ty = 
   let f p = tile_width *. (p -. 1.) +. (tile_width /. 2.) in 
-  (f tx, f ty)
+  (float_of_int tx |> f, float_of_int ty |> f)
 
-(* TODO *)
-(** [init_enemy_lst n] is an Array of [n] enemy camels with valid positions *)
-let init_enemy_lst n = 
-  (*let arr = Array.make n (Enemy.init 0 0 (make_pos 0. 0.)) in *)
-  failwith "Unimplemented"
-
-(* TODO *)
-let init_coin_lst n =
-  (*Array.make n (Coin.init 0 (valid_spawn_pos n))*)
-  failwith "todo"
-
-
-(* get a list of [n] unique valid positions to spawn an object *)
-let valid_spawn_pos n mz = (* TODO: implement *)
-  (*List.map tile_to_pixel (valid_spawn_pos_helper mz n [])*) failwith "todo"
-
-(*TODO: implement*)
-let rec valid_spawn_pos_helper mz n acc = 
-  failwith "todo"
-  (*
-  if n = 0 then acc
-  else (* currently does not prevent duplicate tiles *)
-    valid_spawn_pos_helper mz (n - 1) (random_valid_tile mz) :: acc *)
+let tile_to_pixel_2 tuple = 
+  let f p = tile_width *. (p -. 1.) +. (tile_width /. 2.) in 
+  (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)
 
 (* try to generate a valid tile, return when found *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
-  let x = Random.int (Array.length mz) in (* probably change how it's accessed later *)
+  let x = Random.int (Array.length mz) in
   let y = Random.int (Array.length mz.(0)) in 
   if Maze.isWall mz x y then random_valid_tile mz else (x, y)
 
-(*TODO: implement*)
-(* returns a list of all non-wall tiles in [maze] *)
-let valid_tile_list maze = [] 
+(* get an array of [n] unique valid positions to spawn an object
+   let valid_spawn_pos (n : int) mz = (* TODO: implement *)
+   let tile = random_valid_tile mz in
+   Array.init n (Position.make_pos tile.x tile.y) *)
+
+let random_direction = Random.int (4) * 90
+
+(** [init_enemy_lst n] is an Array of [n] enemy camels with valid positions *)
+let init_enemy_lst (n : int) (mz : Maze.maze) : Enemy.t array = 
+  Array.init n (fun i -> (Enemy.init random_direction (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2)))
+
+let init_coin_lst n mz =
+  Array.init n (fun i -> (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
 
 (* get current tile number in maze from pixel location *)
 let curr_tile pos = 
@@ -64,11 +54,12 @@ let curr_tile pos =
   let y = int_of_float (pos.y /. tile_width) in 
   (x, y)
 
-(* detect if next move is a wall *)
+(* [hit_wall pos maze] detect if the position is a valid
+   move in [maze] *)
 let hit_wall (pos : Position.t) (maze : Maze.maze) = 
   let x = fst (curr_tile pos) in 
   let y = snd (curr_tile pos) in 
-  Maze.isWall maze x y 
+  Maze.isWall maze x y || x < 0 || y < 0
 
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)
@@ -79,7 +70,7 @@ let near_enemy (camel : Camel.t) (st : t) =
 
 (* [on_coin camel maze] detects if [camel]'s position is on a coin *)
 let on_coin (camel : Camel.t) (st : t) = 
-  Array.fold_left (fun acc x -> 
+  Array.fold_left (fun acc (x : Coin.t) -> 
       (curr_tile (x.pos) = curr_tile camel.pos) || acc) false st.coins
 
 (* [rem_coin] removes the selected coin from [st] *)
@@ -107,11 +98,36 @@ let move_proj (st : t) =
 (** [move_enemy enemy st] is [enemy] with updated position or direction.
     if [enemy] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
-let move_enemy (st : t) (enemy : Enemy.t) = 
-  if hit_wall enemy.pos st.maze then (turn_around enemy)
+let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
+  if hit_wall enemy.pos st.maze then (Enemy.turn_around enemy)
   else move enemy
 
 (** [move_enemies st] is the state after updating the position of all enemy
     camels. *)
-let move_enemies (st : t) =
+let move_enemies (st : t) : t =
   {st with enemies = Array.map (move_enemy st) st.enemies}
+
+(** [init camel x y numenemy] is a fresh state with [camel] at
+    the beginning of an [x] x [y] maze with [numenemy] enemies *)
+let init camel x y numenemy = 
+  let mz = Maze.populate x y (0,0) in 
+  {camel = camel; 
+   maze = mz;
+   x_size = x;
+   y_size = y;
+   enemies = init_enemy_lst numenemy mz;
+   coins = init_coin_lst 20 mz;
+   projectiles = []}
+
+
+let pp_array arr f = 
+  Array.fold_left (fun acc x -> f x ^ ", " ^ acc) "" arr 
+
+let pp_lst lst f = 
+  List.fold_left (fun acc x -> f x ^ ", " ^ acc) "" lst 
+
+let string_of_state st = 
+  "Camel: " ^ Camel.string_of_camel st.camel ^ 
+  "\n" ^ "Enemies: " ^ pp_array st.enemies Enemy.string_of_enemy ^ 
+  "\n" ^  "Coins: " ^ pp_array st.coins Coin.string_of_coin ^ 
+  "\n" ^  "Projectiles: " ^ pp_lst st.projectiles Projectile.string_of_proj

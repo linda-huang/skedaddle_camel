@@ -4,45 +4,72 @@ open Enemy
 open Maze 
 open State      
 
-let start x y = 
-  Camel.init x y 
-
-let try_move (mz : Maze.maze) (orig : Camel.t) (moved : Camel.t) : Camel.t = 
-  if State.hit_wall moved.pos mz then moved else orig 
-
-let input_move (camel : Camel.t) (mz : Maze.maze) (st : State.t) : Camel.t = 
-  if (Graphics.key_pressed ()) then 
-    let k = Graphics.read_key () in 
-    let try_move' = try_move mz camel in 
-    match k with 
-    | 'w' -> try_move' (Camel.move_vert camel 1.)
-    | 'a' -> try_move' (Camel.move_horiz camel ~-.1.)
-    | 's' -> try_move' (Camel.move_vert camel ~-.1.)
-    | 'd' -> try_move' (Camel.move_horiz camel 1.)
-    | 'q' -> try_move' (Camel.turn_left camel)
-    | 'e' -> try_move' (Camel.turn_right camel) 
-    (*| '.' -> State.shoot camel st*)
-    | _ -> camel 
-  else camel 
-
 let is_dead camel = camel.health = 0
 
-(* updates health and coin total of camel *)
-let update_camel camel st = 
-  let newcamel = 
-    if (State.near_enemy camel st) then 
-      {camel with health = camel.health - 1} else 
-    if (State.on_coin camel st) then 
-      {camel with coins = camel.coins + 1} else camel in 
-  if (is_dead newcamel) then failwith " game over ??? " else newcamel  
+(* [update_camel st] is the state with the camel's 
+   health and coin total updated *)
+let update_camel (st : State.t) : State.t = 
+  let camel = st.camel in 
+  let camel' = if (State.near_enemy camel st) then 
+      {camel with health = camel.health - 1} else camel in 
+  let camel'' = if (State.on_coin camel st) then 
+      {camel with coins = camel.coins + 1} else camel' in 
+  if (is_dead camel'') then failwith " game over " else 
+    {st with camel = camel''}  
 
-(* [update_state camel st] is the new state with adjusted coins 
-   and enemies on the game board *)
-let update_state camel st = 
-  failwith "todo"
-(* let newstate = 
-   if (State.on_coin camel st) then failwith "todo: remove coin from coinlist"
-       {st with coins = }*)
+let draw_state state = failwith "todo" 
+
+let input (st : State.t) : State.t =  
+  Graphics.clear_graph ();
+  Graphics.moveto 50 500;
+  Graphics.draw_string "press a key to move";
+  let k = Graphics.read_key () in 
+  let camel = st.camel in 
+  let st' = 
+    match k with 
+    | '0' -> exit 0 
+    | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
+    | 'a' -> {st with camel = (Camel.move_horiz camel ~-.1.)}
+    | 's' -> {st with camel = (Camel.move_vert camel ~-.1.)}
+    | 'd' -> {st with camel = (Camel.move_horiz camel 1.)}
+    | 'e' -> {st with camel = (Camel.turn_right camel)}
+    | 'q' -> {st with camel = (Camel.turn_left camel)}
+    | ' ' -> State.shoot camel st
+    | _ -> {st with camel = camel} 
+  in 
+  let st'' = if State.hit_wall st.camel.pos st.maze then st else st' in 
+  st'' |> State.move_proj |> State.move_enemies 
+
+
+let rec run (st : State.t) = 
+  Graphics.clear_graph ();
+  Graphics.moveto 50 500;
+  let newst = input st in 
+  Graphics.moveto 50 400;
+  Graphics.draw_string ("Began as: " ^ Camel.string_of_camel st.camel);
+  Graphics.moveto 50 300;
+  Graphics.draw_string ("Moved to: " ^ Camel.string_of_camel newst.camel);
+  Unix.sleep 3;
+  run newst 
+
+(*draw_state State.init_state; run State.init_state*)
+let init k = 
+  let camel = Camel.init 0. 0. in 
+  let st = State.init camel 0 0 1 in 
+  run st 
+
+let main () = 
+  Graphics.open_graph " ";
+  Graphics.set_window_title "Skedadle Camel";
+  Graphics.resize_window 800 800;
+  Graphics.set_text_size 300;
+  Graphics.moveto 50 500;
+  Graphics.draw_string "press a key to start";
+  match Graphics.read_key () with 
+  | k -> init k 
+
+(* Execute the demo. *)
+let () = main ()
 
 (* Graphics.draw_image : image -> int -> int -> unit
    Draw the given image with lower left corner at the given point.*)

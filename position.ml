@@ -9,3 +9,9 @@ let dist p1 p2 =
 (* [make_pos x y] creates the position with coordinates (x,y) *)
 let make_pos x y = 
   {x = x; y = y}
+
+let make_pos_2 tuple = 
+  {x = fst tuple; y = snd tuple}
+
+let string_of_pos p = 
+  "("  ^ string_of_float p.x ^ ", " ^ string_of_float p.y ^ ")"

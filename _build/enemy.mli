@@ -1,5 +1,4 @@
 type t = {
-  id : int;
   dir : int;
   pos : Position.t;
 }
@@ -10,4 +9,6 @@ val move : t -> t
 
 val speed : float
 
-val init : int -> int -> Position.t -> t
+val init : int -> Position.t -> t
+
+val string_of_enemy : t -> string  

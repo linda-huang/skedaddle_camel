@@ -1,7 +1,6 @@
 open Position
 
 type t = {
-  id : int;
   dir : int;
   pos : Position.t;
 }
@@ -9,7 +8,6 @@ type t = {
 let speed = 1.5
 
 let turn_around camel = {
-  id = camel.id;
   dir = (camel.dir + 180) mod 360;
   pos = camel.pos
 }
@@ -31,8 +29,10 @@ let move enemy =
   if enemy.dir mod 180 = 0 then {enemy with pos = (move_horiz enemy.pos)}
   else {enemy with pos = (move_vert enemy.pos)}
 
-let init i d p = {
-  id = i;
+let init d p = {
   dir = d;
   pos = p;
 }
+
+let string_of_enemy e = 
+  "Enemy position: "  ^ Position.string_of_pos e.pos

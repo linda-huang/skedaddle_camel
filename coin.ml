@@ -1,13 +1,13 @@
 open Position
 
 type t = {
-  id : int;
   pos : Position.t;
   value : int;
 }
 
-let init i p v = {
+let init p v = {
   pos = p;
   value = v;
-  id = i;
 }
+
+let string_of_coin c = Position.string_of_pos c.pos 

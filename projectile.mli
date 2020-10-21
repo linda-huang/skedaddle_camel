@@ -14,3 +14,5 @@ val move_horiz : Position.t -> Position.t
 val move_vert : Position.t -> Position.t
 
 val move_proj : t -> t
+
+val string_of_proj : t -> string 
