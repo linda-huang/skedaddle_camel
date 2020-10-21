@@ -21,14 +21,15 @@ let near = 100.
 
 (* [tile_to_pixel tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
 let tile_to_pixel tx ty = 
-  let f p = tile_width *. (p -. 1.) +. (tile_width /. 2.) in 
+  let f p = tile_width *. (p +. 1.) +. (tile_width /. 2.) in 
   (float_of_int tx |> f, float_of_int ty |> f)
 
+(* [tile_to_pixel tuple] is the (center) pixel location from [tuple] tile *)
 let tile_to_pixel_2 tuple = 
-  let f p = tile_width *. (p -. 1.) +. (tile_width /. 2.) in 
+  let f p = tile_width *. (p +. 1.) +. (tile_width /. 2.) in 
   (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)
 
-(* try to generate a valid tile, return when found *)
+(* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
   let x = Random.int (Array.length mz) in
   let y = Random.int (Array.length mz.(0)) in 
@@ -39,16 +40,22 @@ let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of m
    let tile = random_valid_tile mz in
    Array.init n (Position.make_pos tile.x tile.y) *)
 
-let random_direction = Random.int (4) * 90
+(* don't think we need this, since this will only be evaluated once,
+   so not a new random number for each time it's referenced 
+   let random_direction = (Random.int 4) * 90 *)
 
-(** [init_enemy_lst n] is an Array of [n] enemy camels with valid positions *)
+(** [init_enemy_lst n mz] is an Array of [n] enemy camels with valid positions *)
 let init_enemy_lst (n : int) (mz : Maze.maze) : Enemy.t array = 
-  Array.init n (fun i -> (Enemy.init random_direction (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2)))
+  Array.init n (fun i -> 
+      (Enemy.init (90 * Random.int 4) 
+         (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2)))
 
+(** [init_coin_lst n mz] is an Array of [n] coins with valid positions in [mz]. *)
 let init_coin_lst n mz =
-  Array.init n (fun i -> (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
+  Array.init n (fun i -> 
+      (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
 
-(* get current tile number in maze from pixel location *)
+(* [curr_tile pos] is the 0-indexed tile number corresponding to [pos] *)
 let curr_tile pos = 
   let x = int_of_float (pos.x /. tile_width) in 
   let y = int_of_float (pos.y /. tile_width) in 
@@ -79,10 +86,10 @@ let rem_coin (c : Coin.t) (st : t) = failwith "todo"
 
 (* [shoot camel] shoots a projectile in the direction of [camel]
    instantiates a new projectile in the state?? do we keep a list of all
-   active projectiles as a field in the state*)
+   active projectiles as a field in the state *)
 let shoot (camel : Camel.t) (st : t) = 
-  let p = Projectile.init (List.length st.projectiles + 1) camel.dir camel.pos in 
-  {st with projectiles = p :: st.projectiles} 
+  let p = Projectile.init (List.length st.projectiles + 1) camel.dir camel.pos 
+  in {st with projectiles = p :: st.projectiles} 
 
 (* [move_proj st] is the state with all active projectiles moved one step 
    (e.g. in a straight line according to their direction). If a projectile runs
@@ -98,11 +105,11 @@ let move_proj (st : t) =
     if [enemy] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-  if hit_wall enemy.pos st.maze then (Enemy.turn_around enemy)
+  if hit_wall enemy.pos st.maze 
+  then move (Enemy.turn_around enemy)
   else move enemy
 
-(** [move_enemies st] is the state after updating the position of all enemy
-    camels. *)
+(** [move_enemies st] is [st] with all enemies moved one move *)
 let move_enemies (st : t) : t =
   {st with enemies = Array.map (move_enemy st) st.enemies}
 
@@ -118,10 +125,13 @@ let init camel x y numenemy =
    coins = init_coin_lst 20 mz;
    projectiles = []}
 
-
+(** [pp_array arr f] is a nicely formatted string of [arr] with 
+    each elementn formatted according to [f]. * *)
 let pp_array arr f = 
   Array.fold_left (fun acc x -> f x ^ ", " ^ acc) "" arr 
 
+(** [pp_lst lst f] is a nicely formatted string of [lst] with 
+    each elementn formatted according to [f]. *)
 let pp_lst lst f = 
   List.fold_left (fun acc x -> f x ^ ", " ^ acc) "" lst 
 

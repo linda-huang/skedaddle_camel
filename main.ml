@@ -19,11 +19,9 @@ let update_camel (st : State.t) : State.t =
 
 let draw_state state = failwith "todo" 
 
-let input (st : State.t) : State.t =  
+let input (st : State.t) (k : char) : State.t =  
   Graphics.clear_graph ();
   Graphics.moveto 50 500;
-  Graphics.draw_string "press a key to move";
-  let k = Graphics.read_key () in 
   let camel = st.camel in 
   let st' = 
     match k with 
@@ -37,23 +35,23 @@ let input (st : State.t) : State.t =
     | ' ' -> State.shoot camel st
     | _ -> {st with camel = camel} 
   in 
-  let st'' = if State.hit_wall st.camel.pos st.maze then st else st' in 
+  let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
   st'' |> State.move_proj |> State.move_enemies 
 
 
 let rec run (st : State.t) = 
-  let s = wait_next_event[Button_down; Button_up] in 
-  if s.button then 
+  Graphics.moveto 50 500;
+  Graphics.draw_string "press a key to move";
+  let s = wait_next_event[Key_pressed] in 
+  if s.keypressed then 
     (Graphics.clear_graph ();
-     Graphics.moveto 50 500;
-     let newst = input st in 
+     let newst = input st s.key in 
      Graphics.moveto 50 400;
      Graphics.draw_string ("Began as: " ^ State.string_of_state st);
      Graphics.moveto 50 300;
      Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
      Graphics.moveto 50 200;
-     Graphics.draw_string ("Click mouse to move to next state");
-     run newst )
+     run newst)
 
 (*draw_state State.init_state; run State.init_state*)
 let init k = 
@@ -66,7 +64,7 @@ let main () =
   Graphics.set_window_title "Skedadle Camel";
   Graphics.resize_window 1000 2000;
   Graphics.set_text_size 300;
-  Graphics.moveto 50 500;
+  Graphics.moveto 50 600;
   Graphics.draw_string "press a key to start";
   match Graphics.read_key () with 
   | k -> init k 

@@ -2,8 +2,7 @@ open Position
 
 type t = {
   pos : Position.t;
-  (* direction in degrees *)
-  dir : int;
+  dir : int;  (* direction in degrees *)
   id : int;
 }
 
@@ -28,4 +27,6 @@ let move_proj (p : t) =
   let newy = speed *. (cos (rad_of_deg p.dir)) in
   {p with pos = Position.make_pos newx newy}
 
-let string_of_proj p = Position.string_of_pos p.pos 
+let string_of_proj p = 
+  "Pos: " ^ Position.string_of_pos p.pos ^ 
+  "Dir: " ^ string_of_int p.dir

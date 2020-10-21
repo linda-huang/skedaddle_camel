@@ -6,19 +6,37 @@ type t = {
   coins : int;
 }
 
+(* [speed] is the distance camel travels on one key press *)
 val speed : float 
+
+(* [rot] is the number of degrees the camel rotates on one key press *)
 val rot : int   
 
+(** [init x y] is a new camel at position ([x],[y]) *)
 val init : float -> float -> t 
 
+(** [turn_right camel] is [camel] turned right [rot] degrees *)
 val turn_right : t -> t 
 
+(** [turn_left camel] is [camel] turned right [rot] degrees *)
 val turn_left : t -> t 
 
-(* position after moving horizontally *)
+(** [move_horix camel sign] is [camel] after moving horizontally 
+    one step. The direction of movement (left/right) is determined by [sign]
+    Requires: [sign] is either ~-1. or 1. *)
 val move_horiz : t -> float -> t 
 
-(* position after moving vertically *)
+(** [move_vert camel sign] is [camel] after moving vertically 
+    one step. The direction of movement (up/down) is determined by [sign]
+    Requires: [sign] is either ~-1. or 1. *)
 val move_vert : t -> float -> t
 
+(** [adj_health camel h] is [camel] with health 
+    incremented/decremented by [h] *)
+val adj_health : t -> int -> t
+
+(** [adj_coin camel v] is [camel] after picking up a coin of value [v] *)
+val adj_coin : t -> int -> t
+
+(** [string_of_camel camel] is the string representation of [camel] *)
 val string_of_camel : t -> string 
