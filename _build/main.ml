@@ -42,26 +42,29 @@ let input (st : State.t) : State.t =
 
 
 let rec run (st : State.t) = 
-  Graphics.clear_graph ();
-  Graphics.moveto 50 500;
-  let newst = input st in 
-  Graphics.moveto 50 400;
-  Graphics.draw_string ("Began as: " ^ Camel.string_of_camel st.camel);
-  Graphics.moveto 50 300;
-  Graphics.draw_string ("Moved to: " ^ Camel.string_of_camel newst.camel);
-  Unix.sleep 3;
-  run newst 
+  let s = wait_next_event[Button_down; Button_up] in 
+  if s.button then 
+    (Graphics.clear_graph ();
+     Graphics.moveto 50 500;
+     let newst = input st in 
+     Graphics.moveto 50 400;
+     Graphics.draw_string ("Began as: " ^ State.string_of_state st);
+     Graphics.moveto 50 300;
+     Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
+     Graphics.moveto 50 200;
+     Graphics.draw_string ("Click mouse to move to next state");
+     run newst )
 
 (*draw_state State.init_state; run State.init_state*)
 let init k = 
   let camel = Camel.init 0. 0. in 
-  let st = State.init camel 0 0 1 in 
+  let st = State.init camel 10 10 1 in 
   run st 
 
 let main () = 
   Graphics.open_graph " ";
   Graphics.set_window_title "Skedadle Camel";
-  Graphics.resize_window 800 800;
+  Graphics.resize_window 1000 2000;
   Graphics.set_text_size 300;
   Graphics.moveto 50 500;
   Graphics.draw_string "press a key to start";

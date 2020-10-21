@@ -57,9 +57,8 @@ let curr_tile pos =
 (* [hit_wall pos maze] detect if the position is a valid
    move in [maze] *)
 let hit_wall (pos : Position.t) (maze : Maze.maze) = 
-  let x = fst (curr_tile pos) in 
-  let y = snd (curr_tile pos) in 
-  Maze.isWall maze x y || x < 0 || y < 0
+  let (x, y) = curr_tile pos in 
+  pos.x < 0. || pos.y < 0. || Maze.isWall maze x y  
 
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)
