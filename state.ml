@@ -65,7 +65,8 @@ let curr_tile pos =
    move in [maze] *)
 let hit_wall (pos : Position.t) (maze : Maze.maze) = 
   let (x, y) = curr_tile pos in 
-  pos.x < 0. || pos.y < 0. || Maze.isWall maze x y  
+  pos.x < 0. || pos.y < 0. || x >= Array.length maze 
+  || y >= Array.length maze.(0) || Maze.isWall maze x y  
 
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)
@@ -78,6 +79,14 @@ let near_enemy (camel : Camel.t) (st : t) =
 let on_coin (camel : Camel.t) (st : t) = 
   Array.fold_left (fun acc (x : Coin.t) -> 
       (curr_tile (x.pos) = curr_tile camel.pos) || acc) false st.coins
+
+(** [find_coin p st] is the coin at [p] in [st].
+    Requires: there must be a coin at [p]. *)
+let find_coin (p : Position.t) (st : t) = 
+  let lst = Array.fold_left (fun acc (x : Coin.t) -> 
+      (if (curr_tile x.pos = curr_tile p) then x::acc else acc)) [] st.coins in 
+  if List.length lst = 0 then raise (Invalid_argument "No coin here") 
+  else (List.hd lst) 
 
 (* [rem_coin c st] is [st] with [c] removed *)
 let rem_coin (c : Coin.t) (st : t) = 

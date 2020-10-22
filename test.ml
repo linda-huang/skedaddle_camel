@@ -56,9 +56,13 @@ let enemy_arr pos =
   Array.map (fun (px, py) -> 
       Enemy.init (90 * Random.int 4) (Position.make_pos px py)) pos
 
-    Chan(** [string_of_tuple (x,y)] is the string representation of [(x,y)] *)
+(** [string_of_tuple (x,y)] is the string representation of [(x,y)] *)
 let string_of_tuple (x, y) = 
   "(" ^ string_of_float x ^ "," ^ string_of_float y ^ ")"
+
+(** [string_of_tuple (x,y)] is the string representation of [(x,y)] *)
+let string_of_tuple2 (x, y) = 
+  "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
 
 (** [tile_to_pixel_test name x y exp_loc] constructs an OUnit test named [name] 
     that asserts the quality of [State.tile_to_pixel x y] with [exp_val]. *)
@@ -67,8 +71,19 @@ let tile_to_pixel_test
     (x : int) 
     (y : int)
     (exp_loc : (float * float)) : test = 
-  name >:: (fun _ -> assert_equal (tile_to_pixel x y) exp_loc 
+  name >:: (fun _ -> assert_equal exp_loc (tile_to_pixel x y)  
                ~printer:string_of_tuple)
+
+(** [curr_tile_test name x y exp_loc] constructs an OUnit test named [name] 
+    that asserts the quality of [State.curr_tile] applied to the Position 
+    constructed from ([x], [y]) with [exp_val]. *)
+let curr_tile_test 
+    (name : string) 
+    (x : float) 
+    (y : float)
+    (exp_loc : (int * int)) : test = 
+  name >:: (fun _ -> assert_equal exp_loc (curr_tile (make_pos x y))  
+               ~printer:string_of_tuple2)
 
 (** [near_enemy_test name (cx, cy) (ex, ey) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
@@ -122,6 +137,11 @@ let state_tests = [
   tile_to_pixel_test "origin" 0 0 (25., 25.);
   tile_to_pixel_test "(1,1)" 1 1 (75., 75.);
   tile_to_pixel_test "(0, 100)" 0 100 (25., 5025.);
+  (* curr_tile *)
+  curr_tile_test "center origin (25, 25)" 25. 25. (0, 0);
+  curr_tile_test "corner origin (0, 0)" 0. 0. (0, 0);
+  curr_tile_test "edge origin (50, 0)" 50. 0. (1, 0);
+  curr_tile_test "corner origin (50,50)" 50. 50. (1,1);
   (* near_enemy *)
   near_enemy_test "same position, single enemy (5.,5.)" 
     (5., 5.)[|(5., 5.)|] true;

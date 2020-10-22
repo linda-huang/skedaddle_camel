@@ -17,6 +17,14 @@ let update_camel (st : State.t) : State.t =
   if (is_dead camel'') then failwith " game over " else 
     {st with camel = camel''}  
 
+let get_coin (st : State.t) : State.t = 
+  let c = find_coin st.camel.pos st in 
+  rem_coin c st 
+
+let update_state (st : State.t) : State.t = 
+  let st' = st |> update_camel |> State.move_proj |> State.move_enemies in 
+  if (State.on_coin st'.camel st') then get_coin st' else st'
+
 let draw_state state = failwith "todo" 
 
 let input (st : State.t) (k : char) : State.t =  
@@ -41,7 +49,7 @@ let input (st : State.t) (k : char) : State.t =
 
 let rec run (st : State.t) = 
   Graphics.moveto 50 500;
-  Graphics.draw_string "press a key to move";
+  Graphics.draw_string "press a key to move (press 0 to exit)";
   let s = wait_next_event[Key_pressed] in 
   if s.keypressed then 
     (Graphics.clear_graph ();

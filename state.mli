@@ -35,6 +35,13 @@ val near_enemy : Camel.t -> t -> bool
 (* [on_coin camel maze] detects if [camel]'s position is on a coin *)
 val on_coin : Camel.t -> t -> bool
 
+(** [find_coin p st] is the coin at [p] in [st].
+    Requires: there must be a coin at [p]. *)
+val find_coin : Position.t -> t -> Coin.t 
+
+(* [rem_coin c st] is [st] with [c] removed *)
+val rem_coin : Coin.t -> t -> t
+
 (* [shoot camel] shoots a projectile in the direction of [camel]
    instantiates a new projectile in the state?? do we keep a list of all
    active projectiles as a field in the state *)

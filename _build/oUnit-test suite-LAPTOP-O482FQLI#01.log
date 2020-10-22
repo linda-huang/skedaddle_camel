@@ -1,9 +1,15 @@
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:0:origin.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Test test suite:0:origin is successful.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: End test test suite:0:origin.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:6:multiple close enemies (5.,5.).
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Test test suite:6:multiple close enemies (5.,5.) is successful.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: End test test suite:6:multiple close enemies (5.,5.).
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:9:multiple enemies, single close.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: Test test suite:9:multiple enemies, single close is successful.
-2020-10-22T00:09:43+00:00 LAPTOP-O482FQLI#01 I: End test test suite:9:multiple enemies, single close.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:0:origin.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Test test suite:0:origin is successful.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: End test test suite:0:origin.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:6:corner origin (0, 0).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Test test suite:6:corner origin (0, 0) is successful.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: End test test suite:6:corner origin (0, 0).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:7:edge origin (50, 0).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Test test suite:7:edge origin (50, 0) is successful.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: End test test suite:7:edge origin (50, 0).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:10:multiple close enemies (5.,5.).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Test test suite:10:multiple close enemies (5.,5.) is successful.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: End test test suite:10:multiple close enemies (5.,5.).
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Start test test suite:13:multiple enemies, single close.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: Test test suite:13:multiple enemies, single close is successful.
+2020-10-22T12:52:15+00:00 LAPTOP-O482FQLI#01 I: End test test suite:13:multiple enemies, single close.
