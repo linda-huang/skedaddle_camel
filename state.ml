@@ -21,13 +21,17 @@ let near = 100.
 
 (* [tile_to_pixel tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
 let tile_to_pixel tx ty = 
-  let f p = tile_width *. (p +. 1.) +. (tile_width /. 2.) in 
-  (float_of_int tx |> f, float_of_int ty |> f)
+  if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
+    let f p = tile_width *. p +. (tile_width /. 2.) in 
+    (float_of_int tx |> f, float_of_int ty |> f)
 
 (* [tile_to_pixel tuple] is the (center) pixel location from [tuple] tile *)
-let tile_to_pixel_2 tuple = 
-  let f p = tile_width *. (p +. 1.) +. (tile_width /. 2.) in 
-  (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)
+let tile_to_pixel_2 (tx, ty) = 
+  if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
+    let f p = tile_width *. p +. (tile_width /. 2.) in 
+    (float_of_int tx |> f, float_of_int ty |> f)
+(*let f p = tile_width *. p +. (tile_width /. 2.) in 
+  (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)*)
 
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
@@ -39,10 +43,6 @@ let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of m
    let valid_spawn_pos (n : int) mz = (* TODO: implement *)
    let tile = random_valid_tile mz in
    Array.init n (Position.make_pos tile.x tile.y) *)
-
-(* don't think we need this, since this will only be evaluated once,
-   so not a new random number for each time it's referenced 
-   let random_direction = (Random.int 4) * 90 *)
 
 (** [init_enemy_lst n mz] is an Array of [n] enemy camels with valid positions *)
 let init_enemy_lst (n : int) (mz : Maze.maze) : Enemy.t array = 
@@ -79,10 +79,11 @@ let on_coin (camel : Camel.t) (st : t) =
   Array.fold_left (fun acc (x : Coin.t) -> 
       (curr_tile (x.pos) = curr_tile camel.pos) || acc) false st.coins
 
-(* [rem_coin] removes the selected coin from [st] *)
-let rem_coin (c : Coin.t) (st : t) = failwith "todo"
-(* {st with coins = Array.fold_left 
-               (fun acc x -> if x = c then acc else x :: acc) Array st.coins} *)
+(* [rem_coin c st] is [st] with [c] removed *)
+let rem_coin (c : Coin.t) (st : t) = 
+  let coinlst = Array.fold_left 
+      (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
+  {st with coins = Array.of_list coinlst }
 
 (* [shoot camel] shoots a projectile in the direction of [camel]
    instantiates a new projectile in the state?? do we keep a list of all
