@@ -1,5 +1,9 @@
 (** The abstract type representing the value of a tile in a maze. *)
-type t
+type t = 
+  | Wall
+  | Path 
+  | Exit
+  | Start
 
 (** The type of maze. *)
 type maze = t array array

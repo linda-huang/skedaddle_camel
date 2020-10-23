@@ -4,6 +4,18 @@ open Enemy
 open Maze 
 open State      
 
+let fightingring = 
+  [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
+     [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Exit; Wall;|];
+     [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
+  |]
 (** [is_dead camel] is if [camel] has run out of health *)
 let is_dead camel = camel.health = 0
 
@@ -75,7 +87,7 @@ let rec run (st : State.t) =
     in a maze of dimensions 10x10 and then runs the game *)
 let init k = 
   let camel = Camel.init 0. 0. in 
-  let st = State.init camel 10 10 1 in 
+  let st = State.init camel 10 10 5 in 
   run st 
 
 (** Start on key press *)

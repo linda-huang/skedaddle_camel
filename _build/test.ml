@@ -64,6 +64,39 @@ let string_of_tuple (x, y) =
 let string_of_tuple2 (x, y) = 
   "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
 
+(* stolen from a2 *)
+(** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
+    they are equivalent set-like lists.  That means checking two things.
+    First, they must both be {i set-like}, meaning that they do not
+    contain any duplicates.  Second, they must contain the same elements,
+    though not necessarily in the same order. *)
+let cmp_set_like_arrs arr1 arr2 =
+  let lst1 = Array.to_list arr1 in 
+  let lst2 = Array.to_list arr2 in 
+  let uniq1 = List.sort_uniq compare lst1 in
+  let uniq2 = List.sort_uniq compare lst2 in
+  List.length lst1 = List.length uniq1
+  &&
+  List.length lst2 = List.length uniq2
+  &&
+  uniq1 = uniq2
+
+(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt]
+    to pretty-print each element of [lst]. *)
+let pp_list pp_elt lst =
+  let pp_elts lst =
+    let rec loop n acc = function
+      | [] -> acc
+      | [h] -> acc ^ pp_elt h
+      | h1 :: (h2 :: t as t') ->
+        if n = 100 then acc ^ "..."  (* stop printing long list *)
+        else loop (n + 1) (acc ^ (pp_elt h1) ^ "; ") t'
+    in loop 0 "" lst
+  in "[" ^ pp_elts lst ^ "]"
+
+let string_of_coinarr (arr : Coin.t array) = 
+  Array.to_list arr |> pp_list (fun (x : Coin.t) -> string_of_pos x.pos)
+
 (** [tile_to_pixel_test name x y exp_loc] constructs an OUnit test named [name] 
     that asserts the quality of [State.tile_to_pixel x y] with [exp_val]. *)
 let tile_to_pixel_test 
@@ -131,6 +164,60 @@ let on_coin_test
       assert_equal exp_val (on_coin camel st) 
         ~printer:string_of_bool)
 
+(** [rem_coin_test name (cx, cy) pos exp_val] constructs an OUnit
+    test named [name] that asserts the quality of  *)
+let rem_coin_test 
+    (name : string) 
+    ((cx, cy) : float * float)
+    (pos : (float * float) array)
+    (exp_val : (float * float) array) : test = 
+  name >:: (fun _ -> 
+      let camel = Camel.init cx cy in 
+      let st = {camel = camel;
+                maze = Maze.populate 100 100 (0,0);
+                x_size = 100; y_size = 100;
+                enemies = [||];
+                coins = coin_arr pos;
+                projectiles = []} in 
+      let exp_coins = coin_arr exp_val in  
+      assert_equal ~cmp:cmp_set_like_arrs exp_coins (rem_coin (find_coin camel.pos st) st).coins 
+        ~printer:string_of_coinarr)
+
+(** [rem_coin_test name (cx, cy) pos exp_exn] constructs an OUnit test named [name] 
+    that asserts that [State.find_coin] raises [exp_exn]. *)
+let rem_coin_exn_test
+    (name : string) 
+    ((cx, cy) : float * float)
+    (pos : (float * float) array)
+    (exp_exn : exn) : test = 
+  name >:: (fun _ -> 
+      let camel = Camel.init cx cy in 
+      let st = {camel = camel;
+                maze = Maze.populate 100 100 (0,0);
+                x_size = 100; y_size = 100;
+                enemies = [||];
+                coins = coin_arr pos;
+                projectiles = []} in  
+      assert_raises exp_exn (fun _ -> ((rem_coin (find_coin camel.pos st) st).coins )))
+
+(* let maze_1 = 
+   [| [|Wall; Wall; Wall |];
+     [|Wall; Wall; Wall |];
+     [|Wall; Wall; Wall |];
+   |] *)
+
+let proj_test name cx cy pos exp_val =
+  name >:: (fun _ ->
+      let camel = Camel.init cx cy in 
+      let st = {camel = camel;
+                maze = Maze.populate 100 100 (0,0);
+                x_size = 100; y_size = 100;
+                enemies = [||];
+                coins = coin_arr pos;
+                projectiles = []} in 
+      shoot camel st |> 
+    )
+
 let state_tests = [
   (* todo *)
   (* tile_to_pixel *)
@@ -160,6 +247,15 @@ let state_tests = [
     (5., 5.)[|(250., 100.); (50., 55.); (7., 5.)|] true;
   on_coin_test "multiple coins, none on same tile"
     (5., 5.)[|(250., 100.); (50., 55.); (50., 5.)|] false;
+  (* find_coin and rem_coin *)
+  rem_coin_test "on only coin in maze" 
+    (5., 5.)[|(5., 5.)|] [||];
+  rem_coin_test "on one coin of multiple in maze" 
+    (5., 5.)[|(250., 100.); (50., 55.); (5., 5.)|] 
+    [|(250., 100.); (50., 55.);|];
+  rem_coin_exn_test "not on any coins" 
+    (25., 52.)[|(250., 100.); (150., 550.); (115., 325.)|] 
+    (Invalid_argument "No coin here");
 ]
 (*******************************************************************
    end tests from State.ml

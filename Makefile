@@ -24,3 +24,6 @@ main:
 
 clean:
 	ocamlbuild -clean
+
+zip:
+	zip camels.zip *.ml* _tags *.txt Makefile

@@ -25,6 +25,15 @@ let tile_to_pixel tx ty =
     let f p = tile_width *. p +. (tile_width /. 2.) in 
     (float_of_int tx |> f, float_of_int ty |> f)
 
+(* [tile_to_pixel tx ty mz] is the (center) pixel location from 
+   [tx]th, [ty]th tile. 
+   The tile at mz.(0).(0) is the top left pixel location *)
+let tile_to_pixel' tx ty mz = 
+  if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
+    let f p = tile_width *. p +. (tile_width /. 2.) in 
+    (float_of_int tx |> f, 
+     (float_of_int (Array.length mz.(0)) -. (f (float_of_int ty))))
+
 (* [tile_to_pixel tuple] is the (center) pixel location from [tuple] tile *)
 let tile_to_pixel_2 (tx, ty) = 
   if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
@@ -32,6 +41,12 @@ let tile_to_pixel_2 (tx, ty) =
     (float_of_int tx |> f, float_of_int ty |> f)
 (*let f p = tile_width *. p +. (tile_width /. 2.) in 
   (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)*)
+
+(* [curr_tile pos] is the 0-indexed tile number corresponding to [pos] *)
+let curr_tile pos = 
+  let x = int_of_float (pos.x /. tile_width) in 
+  let y = int_of_float (pos.y /. tile_width) in 
+  (x, y)
 
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
@@ -55,11 +70,7 @@ let init_coin_lst n mz =
   Array.init n (fun i -> 
       (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
 
-(* [curr_tile pos] is the 0-indexed tile number corresponding to [pos] *)
-let curr_tile pos = 
-  let x = int_of_float (pos.x /. tile_width) in 
-  let y = int_of_float (pos.y /. tile_width) in 
-  (x, y)
+
 
 (* [hit_wall pos maze] detect if the position is a valid
    move in [maze] *)
