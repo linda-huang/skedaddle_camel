@@ -1,4 +1,4 @@
-MODULES=camel coin enemy main maze position projectile state test 
+MODULES=camel coin enemy main maze position projectile state test graphics_playground
 OBJECTS=$(MODULES:=.cmo)
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind

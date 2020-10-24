@@ -1,32 +1,10 @@
 ### Starting build.
-# Target: main.mli.depends, tags: { package(ounit2), extension:mli, file:main.mli, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules main.mli > main.mli.depends # cached
-# Target: main.cmi, tags: { package(ounit2), byte, compile, extension:mli, file:main.mli, interf, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o main.cmi main.mli # cached
-# Target: main.ml.depends, tags: { package(ounit2), extension:ml, file:main.ml, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules main.ml > main.ml.depends # cached
-# Target: camel.mli.depends, tags: { package(ounit2), extension:mli, file:camel.mli, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules camel.mli > camel.mli.depends
-# Target: position.mli.depends, tags: { package(ounit2), extension:mli, file:position.mli, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules position.mli > position.mli.depends # cached
-# Target: position.cmi, tags: { package(ounit2), byte, compile, extension:mli, file:position.mli, interf, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o position.cmi position.mli # cached
-# Target: enemy.mli.depends, tags: { package(ounit2), extension:mli, file:enemy.mli, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules enemy.mli > enemy.mli.depends # cached
-# Target: enemy.cmi, tags: { package(ounit2), byte, compile, extension:mli, file:enemy.mli, interf, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o enemy.cmi enemy.mli # cached
-# Target: maze.mli.depends, tags: { package(ounit2), extension:mli, file:maze.mli, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -modules maze.mli > maze.mli.depends # cached
-# Target: maze.cmi, tags: { package(ounit2), byte, compile, extension:mli, file:maze.mli, interf, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o maze.cmi maze.mli # cached
-# Target: camel.cmi, tags: { package(ounit2), byte, compile, extension:mli, file:camel.mli, interf, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o camel.cmi camel.mli
-# Target: main.cmo, tags: { package(ounit2), byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -o main.cmo main.ml
-+ ocamlfind ocamlc -c -package ounit2 -o main.cmo main.ml
-File "main.ml", line 4, characters 5-13:
-4 | open Graphics     
-         ^^^^^^^^
-Error: Unbound module Graphics
-Command exited with code 2.
-# Compilation unsuccessful.
+# Target: main.mli.depends, tags: { package(graphics), package(ounit2), extension:mli, file:main.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -package graphics -modules main.mli > main.mli.depends # cached
+# Target: main.cmi, tags: { package(graphics), package(ounit2), byte, compile, extension:mli, file:main.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package ounit2 -package graphics -o main.cmi main.mli # cached
+# Target: main.ml.depends, tags: { package(graphics), package(ounit2), extension:ml, file:main.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package ounit2 -package graphics -modules main.ml > main.ml.depends # cached
+# Target: main.cmo, tags: { package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:main.cmo, file:main.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package ounit2 -package graphics -o main.cmo main.ml # cached
+# Compilation successful.

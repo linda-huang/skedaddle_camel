@@ -1,4 +1,4 @@
-open Graphics;; 
+(* open Graphics;;  *)
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
@@ -9,6 +9,8 @@ type t =
 
 (* maze as a 2d array*)
 type maze = t array array
+
+let path_width = 25
 
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
                               (posy >= 0) && (posy < Array.length maze.(0))
@@ -61,7 +63,7 @@ let populate n m start_pos =
   maze.(startx).(starty) <- Path;
   maze
 
-let isWall maze x y = if maze.(y).(x) = Wall then true else false
+let isWall maze i j = if maze.(i).(j) = Wall then true else false
 
 
 

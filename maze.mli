@@ -1,8 +1,15 @@
 (** The abstract type representing the value of a tile in a maze. *)
-type t
+type t = 
+  | Wall
+  | Path 
+  | Exit
+  | Start
 
 (** The type of maze. *)
 type maze = t array array
+
+(** The width of a single path. *)
+val path_width : int
 
 (** [populate maze m n (x, y)] is a randomly populated maze with m rows and 
     n columns. [(x, y)] is the index of the starting position.
@@ -10,7 +17,7 @@ type maze = t array array
     [m] >= 1
     [n] >= 1
 *)
-val populate : maze -> int -> int -> (int*int) -> maze
+val populate : int -> int -> (int*int) -> maze
 
 (** [isWall maze x y] is true when the maze.(y).(x) is a Wall. 
     Requires:

@@ -1,13 +1,13 @@
-open Camel
-open Enemy
-open Maze 
-open Graphics     
+(* open Camel
+   open Enemy
+   open Maze 
+   open Graphics     
 
-let start x y = 
-  Camel.init x y 
+   let start x y = 
+   Camel.init x y 
 
-let input_move camel = 
-  if (Graphics.key_pressed ()) then 
+   let input_move camel = 
+   if (Graphics.key_pressed ()) then 
     let k = Graphics.read_key () in 
     match k with 
     | 'w' -> Camel.move_vert camel 1.
@@ -19,5 +19,5 @@ let input_move camel =
     | _ -> camel 
 
 
-(* Graphics.draw_image : image -> int -> int -> unit
-   Draw the given image with lower left corner at the given point.*)
+   (* Graphics.draw_image : image -> int -> int -> unit
+   Draw the given image with lower left corner at the given point.*) *)
