@@ -15,7 +15,7 @@ type t =
 (* maze as a 2d array*)
 type maze = t array array
 
-let path_width = 25
+let path_width = 12
 
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
                               (posy >= 0) && (posy < Array.length maze.(0))
@@ -66,13 +66,15 @@ let populate n m start_pos =
   let startx, starty = start_pos in
   dfs maze startx starty;
   maze.(startx).(starty) <- Path;
+  maze.(0).(0) <- Start;
+  maze.(n-1).(m-1) <- Exit;
   maze
 
-let is_wall maze x y = if maze.(y).(x) = Wall then true else false
+(* let maze x y = if maze.(y).(x) = Wall then true else false *)
 
-let is_exit maze x y = if maze.(y).(x) = Exit then true else false
-
-
-
-
-
+let tile_type maze x y = 
+  match maze.(y).(x) with
+  | Exit -> Exit
+  | Start -> Start
+  | Wall -> Wall
+  | Path -> Path

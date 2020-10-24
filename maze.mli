@@ -19,15 +19,9 @@ val path_width : int
 *)
 val populate : int -> int -> (int*int) -> maze
 
-(** [is_wall maze x y] is true the tile ([x],[y]) is a Wall. 
+(** [is_wall maze x y] is true when the maze.(y).(x) is a Wall. 
     Requires:
     0 <= [x] < number of columns of maze
-    0 <= [y] < number of rows of maze. 
-*)
-val is_wall : maze -> int -> int -> bool
-
-(** [is_exit maze x y] is true when the tile ([x],[y]) is an exit. *)
-val is_exit : maze -> int -> int -> bool
-
-
+    0 <= [y] < number of rows of maze. *)
+val tile_type : maze -> int -> int -> t
 

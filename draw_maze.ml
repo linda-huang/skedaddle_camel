@@ -1,20 +1,19 @@
 open Graphics;;
 open Maze;;
-(*Use x y to refer to pixel posiion
-  use row col for maze indexing*)
 
 let draw_element x y color = 
   set_color color;
-  fill_poly [|(x,y); (x+25,y); (x+25, y-25); (x, y-25)|]
+  fill_poly [|(x,y); (x+path_width,y); (x+path_width, y-path_width); 
+              (x, y-path_width)|]
 
 let draw_walls gen_maze start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
   for i = 0 to maze_row - 1 do begin
     curr_pos := ((fst !curr_pos), (snd start_pos) - i*path_width);
-    for j = 0 to maze_col - 1 do begin    
+    for j = 0 to maze_col - 1 do begin  
       curr_pos := ((fst start_pos) + (j)*path_width , snd !curr_pos);
-      if isWall gen_maze i j then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Graphics.black
+      if tile_type gen_maze j i = Wall then begin
+        draw_element (fst !curr_pos) (snd !curr_pos) Graphics.black;
       end
       else
         draw_element (fst !curr_pos) (snd !curr_pos) Graphics.green;
@@ -28,20 +27,19 @@ let main m n =
   let maze_col = n in
   let window_height = maze_row * path_width + 200 in
   let window_width = maze_col * path_width + 200 in
-  Graphics.open_graph ((string_of_int window_height) ^ "x" ^ (string_of_int window_width));
+  Graphics.open_graph (" " ^ (string_of_int window_width) ^ "x" ^ 
+                       (string_of_int window_height));
   set_window_title "Camel Maze";
-  moveto (window_height - 50) (window_width / 2);
+  moveto (window_width / 2 - 55) (window_height - 50);
   Graphics.set_text_size 300; 
   Graphics.draw_string "WELCOME TO CAMEL MAZE";
-  (* Graphics.draw_string "PRESS ANY KEY TO PLAY"; *)
-  (* draw_maze_frame (); *)
-  let gen_maze = populate maze_row maze_col(0,0) in
+  let gen_maze = populate maze_row maze_col (0,0) in
   let start_y = window_height - ((window_height- maze_row * path_width) / 2) in
   let start_x = ((window_width - maze_col * path_width) / 2) in
   let start_pos = (start_x, start_y) in
   draw_walls gen_maze start_pos maze_row maze_col
 
-let () = main 25 25
+let () = main 45 47
 
 
 
