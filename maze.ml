@@ -1,6 +1,4 @@
-open Graphics;; 
-
-(* denotes whether the position is a wall, a path, or an exit, or start*)
+(** denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
   | Wall
   | Path 
@@ -61,7 +59,11 @@ let populate n m start_pos =
   maze.(startx).(starty) <- Path;
   maze
 
-let isWall maze x y = if maze.(y).(x) = Wall then true else false
+let is_wall maze x y = if maze.(y).(x) = Wall then true else false
+
+let is_exit maze x y = if maze.(y).(x) = Exit then true else false
+
+
 
 
 
