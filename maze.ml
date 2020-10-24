@@ -66,7 +66,7 @@ let populate n m start_pos =
   maze.(n-1).(m-1) <- Exit;
   maze
 
-let  maze x y = if maze.(y).(x) = Wall then true else false
+(* let maze x y = if maze.(y).(x) = Wall then true else false *)
 
 let tile_type maze x y = 
   match maze.(y).(x) with

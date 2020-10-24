@@ -39,7 +39,7 @@ let main m n =
   let start_pos = (start_x, start_y) in
   draw_walls gen_maze start_pos maze_row maze_col
 
-let () = main 25 25
+let () = main 45 47
 
 
 
