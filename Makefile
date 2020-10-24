@@ -1,16 +1,33 @@
+<<<<<<< HEAD
 MODULES=camel coin enemy main maze position projectile state test graphics_playground
+=======
+MODULES=camel coin enemy main maze position projectile state test maindemo
+>>>>>>> master
 OBJECTS=$(MODULES:=.cmo)
+MLS=$(MODULES:=.ml)
+MLIS=$(MODULES:=.mli)
 TEST=test.byte
-OCAMLBUILD=ocamlbuild -use-ocamlfind
+MAIN=main.byte 
+DEMO=maindemo.byte
+OCAMLBUILD=ocamlbuild -use-ocamlfind -pkg graphics
 
 default:
 	utop
 	
 build:
-	ocamlbuild -use-ocamlfind main.cmo
+	$(OCAMLBUILD) $(OBJECTS)
 
 test:
-	ocamlbuild -use-ocamlfind -tag 'debug' test.byte && ./test.byte
+	$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST)
+
+demo:
+	$(OCAMLBUILD) $(DEMO) && ./$(DEMO)
+
+main:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
 
 clean:
 	ocamlbuild -clean
+
+zip:
+	zip camels.zip *.ml* _tags *.txt Makefile

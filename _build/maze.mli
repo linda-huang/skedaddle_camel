@@ -8,9 +8,12 @@ type t =
 (** The type of maze. *)
 type maze = t array array
 
+<<<<<<< HEAD
 (** The width of a single path. *)
 val path_width : int
 
+=======
+>>>>>>> master
 (** [populate maze m n (x, y)] is a randomly populated maze with m rows and 
     n columns. [(x, y)] is the index of the starting position.
     Requires:
@@ -23,5 +26,9 @@ val populate : int -> int -> (int*int) -> maze
     Requires:
     0 <= [x] < number of columns of maze
     0 <= [y] < number of rows of maze. *)
+<<<<<<< HEAD
 val isWall : maze -> int -> int -> bool
 
+=======
+val isWall : maze -> int -> int -> bool
+>>>>>>> master

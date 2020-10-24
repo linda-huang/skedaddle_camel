@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 (* open Graphics;;  *)
+=======
+open Graphics
+>>>>>>> master
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
@@ -10,8 +14,11 @@ type t =
 (* maze as a 2d array*)
 type maze = t array array
 
+<<<<<<< HEAD
 let path_width = 25
 
+=======
+>>>>>>> master
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
                               (posy >= 0) && (posy < Array.length maze.(0))
 
@@ -41,6 +48,7 @@ let clear_path maze posx posy newx newy =
   else if diffx = 2 then maze.(posx+1).(posy) <- Path
   else if diffy = -2 then maze.(posx).(posy - 1) <- Path
   else if diffy = 2 then maze.(posx).(posy + 1) <- Path
+<<<<<<< HEAD
 
 let rec dfs maze posx posy =
   let direction = [|(posx - 2, posy); (posx + 2, posy); 
@@ -64,6 +72,28 @@ let populate n m start_pos =
   maze
 
 let isWall maze i j = if maze.(i).(j) = Wall then true else false
+=======
+>>>>>>> master
 
+let rec dfs maze posx posy =
+  let direction = [|(posx - 2, posy); (posx + 2, posy); 
+                    (posx, posy - 2); (posx, posy + 2)|] in 
+  shuffle direction;
+  for i = 0 to Array.length direction - 1 do begin
+    let newx, newy = direction.(i) in
+    if in_limit maze newx newy && not (visited maze newx newy) then begin
+      clear_path maze posx posy newx newy;
+      dfs maze newx newy
+    end
+    else ()
+  end
+  done
 
+let populate n m start_pos = 
+  let maze = Array.make_matrix n m Wall in
+  let startx, starty = start_pos in
+  dfs maze startx starty;
+  maze.(startx).(starty) <- Path;
+  maze
 
+let isWall maze x y = if maze.(y).(x) = Wall then true else false
