@@ -4,8 +4,25 @@ open Enemy
 open Maze 
 open State      
 
+let fightingring = 
+  [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
+     [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
+     [|Wall; Path; Path; Path; Path; Path; Path; Path; Exit; Wall;|];
+     [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
+  |]
 (** [is_dead camel] is if [camel] has run out of health *)
 let is_dead camel = camel.health = 0
+
+let at_exit (st : State.t) = 
+  let camel = st.camel in 
+  let (x, y) = State.curr_tile camel.pos in 
+  st.maze.(y).(x) = Exit 
 
 (* [update_camel st] is the state with the camel's 
    health and coin total updated *)
@@ -15,7 +32,7 @@ let update_camel (st : State.t) : State.t =
       {camel with health = camel.health - 1} else camel in 
   let camel'' = if (State.on_coin camel st) then 
       {camel with coins = camel.coins + 1} else camel' in 
-  if (is_dead camel'') then failwith " game over " else 
+  if (is_dead camel'') then failwith " game over " else
     {st with camel = camel''}  
 
 (** [get_coin st] is [st] with the coin the camel is currently on removed *)
@@ -67,7 +84,14 @@ let rec run (st : State.t) =
      Graphics.moveto 50 300;
      Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
      Graphics.moveto 50 200;
-     run newst)
+     if at_exit newst then 
+       (Graphics.clear_graph ();
+        Graphics.moveto 50 550;
+        Graphics.draw_string "welcome to a new maze!"; 
+        let camel = Camel.init 0. 0. in 
+        let st = State.init camel 10 10 5 in 
+        run st)
+     else run newst)
 
 (*draw_state State.init_state; run State.init_state*)
 
@@ -75,7 +99,7 @@ let rec run (st : State.t) =
     in a maze of dimensions 10x10 and then runs the game *)
 let init k = 
   let camel = Camel.init 0. 0. in 
-  let st = State.init camel 10 10 5 in 
+  let st = State.init camel 11 11 5 in 
   run st 
 
 (** Start on key press *)

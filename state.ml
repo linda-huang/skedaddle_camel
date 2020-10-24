@@ -70,8 +70,6 @@ let init_coin_lst n mz =
   Array.init n (fun i -> 
       (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
 
-
-
 (* [hit_wall pos maze] detect if the position is a valid
    move in [maze] *)
 let hit_wall (pos : Position.t) (maze : Maze.maze) = 
