@@ -1,2 +1,4 @@
 B _build
 PKG oUnit
+PKG ANSITerminal 
+PKG graphics 

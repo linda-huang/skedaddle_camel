@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 (** denotes whether the position is a wall, a path, or an exit, or start*)
+=======
+(* open Graphics;;  *)
+open Graphics
+
+  (* denotes whether the position is a wall, a path, or an exit, or start*)
+  >>>>>>> a55d7e57fcd33dda8a987ff3a9086c3209b42cd6
 type t = 
   | Wall
   | Path 
@@ -7,6 +14,8 @@ type t =
 
 (* maze as a 2d array*)
 type maze = t array array
+
+let path_width = 25
 
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
                               (posy >= 0) && (posy < Array.length maze.(0))

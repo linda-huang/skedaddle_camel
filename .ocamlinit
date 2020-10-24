@@ -1,2 +1,13 @@
 #directory "_build";;
+#require "ounit2";;
 #require "graphics";;
+#require "ANSITerminal";;
+#directory "_build";;
+#load "camel.cmo";;
+#load "coin.cmo";;
+#load "enemy.cmo";;
+#load "main.cmo";;
+#load "maze.cmo";;
+#load "position.cmo";;
+#load "projectile.cmo";;
+#load "state.cmo";;

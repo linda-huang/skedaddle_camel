@@ -1,0 +1,8 @@
+To install: 
+
+opam install Graphics
+
+make build 
+make demo 
+
+control movements with `w` `a` `s` `d` `q` `e`, quit with `0`
