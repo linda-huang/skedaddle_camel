@@ -1,4 +1,4 @@
-MODULES=camel coin enemy main maze position projectile state test maindemo
+MODULES=camel coin enemy main maze position projectile state test maindemo draw_maze
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
