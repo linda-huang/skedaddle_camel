@@ -11,3 +11,4 @@
 #load "position.cmo";;
 #load "projectile.cmo";;
 #load "state.cmo";;
+#load "draw_maze.cmo";;
