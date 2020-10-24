@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-true: package(ounit2),package(graphics)
-=======
 true: package(ounit2),package(ANSITerminal),package(graphics)
->>>>>>> master

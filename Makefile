@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-MODULES=camel coin enemy main maze position projectile state test graphics_playground
-=======
 MODULES=camel coin enemy main maze position projectile state test maindemo
->>>>>>> master
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

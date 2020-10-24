@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 #directory "_build";;
-#require "graphics";;
-=======
 #require "ounit2";;
 #require "graphics";;
 #require "ANSITerminal";;
@@ -14,4 +11,3 @@
 #load "position.cmo";;
 #load "projectile.cmo";;
 #load "state.cmo";;
->>>>>>> master

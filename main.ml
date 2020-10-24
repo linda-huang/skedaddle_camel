@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-(* open Camel
-   open Enemy
-   open Maze 
-   open Graphics     
-
-   let start x y = 
-   Camel.init x y 
-
-   let input_move camel = 
-   if (Graphics.key_pressed ()) then 
-    let k = Graphics.read_key () in 
-=======
 open Graphics
 open Camel
 open Enemy
@@ -65,7 +52,6 @@ let input (st : State.t) (k : char) : State.t =
   Graphics.moveto 50 500;
   let camel = st.camel in 
   let st' = 
->>>>>>> master
     match k with 
     | '0' -> exit 0 
     | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
@@ -118,5 +104,5 @@ let main () =
 (** Execute the demo. *)
 let () = main ()
 
-   (* Graphics.draw_image : image -> int -> int -> unit
-   Draw the given image with lower left corner at the given point.*) *)
+         (* Graphics.draw_image : image -> int -> int -> unit
+            Draw the given image with lower left corner at the given point.*) *)
