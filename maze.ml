@@ -1,11 +1,11 @@
-<<<<<<< HEAD
+
 (** denotes whether the position is a wall, a path, or an exit, or start*)
-=======
+
 (* open Graphics;;  *)
 open Graphics
 
-  (* denotes whether the position is a wall, a path, or an exit, or start*)
-  >>>>>>> a55d7e57fcd33dda8a987ff3a9086c3209b42cd6
+(* denotes whether the position is a wall, a path, or an exit, or start*)
+
 type t = 
   | Wall
   | Path 
