@@ -22,7 +22,7 @@ let is_dead camel = camel.health = 0
 let at_exit (st : State.t) = 
   let camel = st.camel in 
   let (x, y) = State.curr_tile camel.pos in 
-  st.maze.(y).(x) = Exit 
+  Maze.tile_type st.maze x y = Exit 
 
 (* [update_camel st] is the state with the camel's 
    health and coin total updated *)
