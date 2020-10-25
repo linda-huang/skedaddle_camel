@@ -4,17 +4,17 @@ ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modu
 # Target: draw_maze.cmi, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:mli, file:draw_maze.mli, interf, ocaml, quiet, traverse }
 ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o draw_maze.cmi draw_maze.mli # cached
 # Target: draw_maze.ml.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:ml, file:draw_maze.ml, ocaml, ocamldep, quiet, traverse }
-ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules draw_maze.ml > draw_maze.ml.depends
+ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules draw_maze.ml > draw_maze.ml.depends # cached
 # Target: maze.mli.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:mli, file:maze.mli, ocaml, ocamldep, quiet, traverse }
 ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules maze.mli > maze.mli.depends # cached
 # Target: maze.cmi, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:mli, file:maze.mli, interf, ocaml, quiet, traverse }
 ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o maze.cmi maze.mli # cached
 # Target: draw_maze.cmo, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:draw_maze.cmo, file:draw_maze.ml, implem, ocaml, quiet, traverse }
-ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o draw_maze.cmo draw_maze.ml
+ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o draw_maze.cmo draw_maze.ml # cached
 # Target: maze.ml.depends, tags: { package(ANSITerminal), package(graphics), package(ounit2), extension:ml, file:maze.ml, ocaml, ocamldep, quiet, traverse }
 ocamlfind ocamldep -package ounit2 -package ANSITerminal -package graphics -modules maze.ml > maze.ml.depends # cached
 # Target: maze.cmo, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, compile, extension:cmo, extension:ml, file:maze.cmo, file:maze.ml, implem, ocaml, quiet, traverse }
 ocamlfind ocamlc -c -package ounit2 -package ANSITerminal -package graphics -o maze.cmo maze.ml # cached
 # Target: draw_maze.byte, tags: { package(ANSITerminal), package(graphics), package(ounit2), byte, dont_link_with, extension:byte, file:draw_maze.byte, link, ocaml, program, quiet, traverse }
-ocamlfind ocamlc -linkpkg -package ounit2 -package ANSITerminal -package graphics maze.cmo draw_maze.cmo -o draw_maze.byte
+ocamlfind ocamlc -linkpkg -package ounit2 -package ANSITerminal -package graphics maze.cmo draw_maze.cmo -o draw_maze.byte # cached
 # Compilation successful.

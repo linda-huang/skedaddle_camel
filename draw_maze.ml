@@ -1,6 +1,5 @@
 open Graphics
 open Maze
-open Unix 
 
 let draw_element x y color = 
   set_color color;
@@ -23,6 +22,8 @@ let draw_walls gen_maze start_pos maze_row maze_col =
   end
   done 
 
+(** [main m n] generates a new maze dimensions [m] x [n]. 
+    Requires: [m] and [n] to be positive and odd. *)
 let main m n = 
   let maze_row = m in
   let maze_col = n in
@@ -39,7 +40,7 @@ let main m n =
   let start_x = ((window_width - maze_col * path_width) / 2) in
   let start_pos = (start_x, start_y) in
   draw_walls gen_maze start_pos maze_row maze_col;
-  Unix.sleep 100
+  let s = wait_next_event[Key_pressed] in
+  if s.keypressed then Graphics.close_graph ()
 
-let () = main 45 61
-
+let () = main 45 45

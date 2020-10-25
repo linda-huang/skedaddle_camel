@@ -50,8 +50,8 @@ let curr_tile pos =
 
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
-  let x = Random.int (Array.length mz) in
-  let y = Random.int (Array.length mz.(0)) in 
+  let x = Random.int (Array.length mz - 1) in
+  let y = Random.int (Array.length mz.(0) - 1) in 
   if Wall = Maze.tile_type mz x y then random_valid_tile mz else (x, y)
 
 (* get an array of [n] unique valid positions to spawn an object

@@ -93,8 +93,6 @@ let rec run (st : State.t) =
         run st)
      else run newst)
 
-(*draw_state State.init_state; run State.init_state*)
-
 (** [init k] creates a new game State with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
 let init k = 
@@ -102,7 +100,7 @@ let init k =
   let st = State.init camel 11 11 5 in 
   run st 
 
-(** Start on key press *)
+(* Start on key press *)
 let main () = 
   Graphics.open_graph " ";
   Graphics.set_window_title "Skedadle Camel";
@@ -113,8 +111,5 @@ let main () =
   match Graphics.read_key () with 
   | k -> init k 
 
-(** Execute the demo. *)
+(* Execute the demo. *)
 let () = main ()
-
-(* Graphics.draw_image : image -> int -> int -> unit
-   Draw the given image with lower left corner at the given point.*)
