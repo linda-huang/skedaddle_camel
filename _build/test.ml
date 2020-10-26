@@ -200,14 +200,14 @@ let rem_coin_exn_test
                 projectiles = []} in  
       assert_raises exp_exn (fun _ -> ((rem_coin (find_coin camel.pos st) st).coins )))
 
-(* let maze_1 = 
-   [| [|Wall; Wall; Wall |];
+let maze_1 = 
+  [| [|Wall; Wall; Wall |];
+     [|Wall; Start; Wall |];
      [|Wall; Wall; Wall |];
-     [|Wall; Wall; Wall |];
-   |] *)
+  |]
 
-let proj_test name cx cy pos exp_val =
-  name >:: (fun _ ->
+(* let proj_test name cx cy pos exp_val =
+   name >:: (fun _ ->
       let camel = Camel.init cx cy in 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
@@ -216,7 +216,7 @@ let proj_test name cx cy pos exp_val =
                 coins = coin_arr pos;
                 projectiles = []} in 
       shoot camel st |> 
-    )
+    ) *)
 
 let state_tests = [
   (* todo *)

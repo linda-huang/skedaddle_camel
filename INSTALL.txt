@@ -1,8 +1,17 @@
 To install: 
 
-opam install Graphics
+`opam install Graphics`
+`make build` 
 
-make build 
-make demo 
+To see the Camel and Enemy respond to keyboard movement, run: 
+    `make demo` 
+In this, you control movements with `w` `a` `s` `d` `q` `e` and quit with `0`.
+After each movement, the window prints the new game state, with the updated
+location and orientations of Camel and Enemies.   
 
-control movements with `w` `a` `s` `d` `q` `e`, quit with `0`
+To see a graphical representation of a randomly generated maze, run:
+    `make maze`  
+The Graphics window stays open until you press any key.
+To change the size of the maze generated, change the arguments to the 
+call to Draw_maze.main in the last line of Draw_Maze.ml (line 46).
+Note precondition to Draw_maze.main. 
