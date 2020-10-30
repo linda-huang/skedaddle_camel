@@ -15,9 +15,10 @@ type t = {
   projectiles : Projectile.t list;
 }
 
-let camel_width = 20.
-let tile_width = 50.
-let near = 100.
+let camel_width_int = 10
+let camel_width = 10.
+let tile_width = 12.
+let near = 20.
 
 (* [tile_to_pixel tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
 let tile_to_pixel tx ty = 
