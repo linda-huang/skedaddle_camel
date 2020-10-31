@@ -22,6 +22,8 @@ let draw_walls gen_maze start_pos maze_row maze_col =
   end
   done 
 
+(** [main m n] generates a new maze dimensions [m] x [n]. 
+    Requires: [m] and [n] to be positive and odd. *)
 let main m n = 
   let maze_row = m in
   let maze_col = n in
@@ -37,10 +39,8 @@ let main m n =
   let start_y = window_height - ((window_height- maze_row * path_width) / 2) in
   let start_x = ((window_width - maze_col * path_width) / 2) in
   let start_pos = (start_x, start_y) in
-  draw_walls gen_maze start_pos maze_row maze_col
+  draw_walls gen_maze start_pos maze_row maze_col;
+  let s = wait_next_event[Key_pressed] in
+  if s.keypressed then Graphics.close_graph ()
 
-let () = main 45 47
-
-
-
-
+let () = main 45 45
