@@ -50,15 +50,9 @@ let curr_tile pos =
 
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
-<<<<<<< HEAD
-  let x = Random.int (Array.length mz) in
-  let y = Random.int (Array.length mz.(0)) in 
-  if Maze.tile_type mz x y = Wall then random_valid_tile mz else (x, y)
-=======
   let x = Random.int (Array.length mz - 1) in
   let y = Random.int (Array.length mz.(0) - 1) in 
   if Wall = Maze.tile_type mz x y then random_valid_tile mz else (x, y)
->>>>>>> 5fab9b24899beafec6d6b757379e48088a903d02
 
 (* get an array of [n] unique valid positions to spawn an object
    let valid_spawn_pos (n : int) mz = (* TODO: implement *)
@@ -81,11 +75,9 @@ let init_coin_lst n mz =
 let hit_wall (pos : Position.t) (maze : Maze.maze) = 
   let (x, y) = curr_tile pos in 
   pos.x < 0. || pos.y < 0. || x >= Array.length maze 
-<<<<<<< HEAD
+
   || y >= Array.length maze.(0) || (Maze.tile_type maze x y = Wall)
-=======
   || y >= Array.length maze.(0) || Wall = Maze.tile_type maze x y  
->>>>>>> 5fab9b24899beafec6d6b757379e48088a903d02
 
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)

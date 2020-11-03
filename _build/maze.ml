@@ -1,7 +1,11 @@
+
+(** denotes whether the position is a wall, a path, or an exit, or start*)
+
 (* open Graphics;;  *)
 open Graphics
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
+
 type t = 
   | Wall
   | Path 
