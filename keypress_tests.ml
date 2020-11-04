@@ -135,63 +135,52 @@ let update_state (st : State.t) : State.t =
   let st' = st |> update_camel |> State.move_proj |> State.move_enemies in 
   if (State.on_coin st'.camel st') then get_coin st' else st'
 
-
 (** [flush_kp ()] flushes the queue of keypresses *)
 let flush_kp () = 
   while Graphics.key_pressed () do 
-    ignore(Graphics.read_key ())
+    ignore (read_key ())
   done 
 
 (** [input st k] updates [st] in response to [k].
     It ends the game when [k] = '0' *)
-let input (st : State.t) : State.t = 
-  (* while not key pressed
-     if Unix.time mod 1000 (some small time increment?) then move all proj and enemies *)
-  let rec wait_kp st = 
-    if not (Graphics.key_pressed ()) then  
-      let st' = st |> State.move_proj |> State.move_enemies in 
-      draw_state st'; 
-      wait_kp st' 
-    else st in 
-  let st = wait_kp st in  
-  let camel = st.camel in 
-  let k = Graphics.read_key () in 
-  (* (flush_kp ();  *)
-  let st' = 
-    match k with 
-    | '0' -> exit 0  
-    | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
-    | 'a' -> {st with camel = (Camel.move_horiz camel ~-.1.)}
-    | 's' -> {st with camel = (Camel.move_vert camel ~-.1.)}
-    | 'd' -> {st with camel = (Camel.move_horiz camel 1.)}
-    | 'e' -> {st with camel = (Camel.turn_right camel)}
-    | 'q' -> {st with camel = (Camel.turn_left camel)}
-    | ' ' -> State.shoot camel st
-    | _ -> {st with camel = camel} 
-  in 
-  let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
-  st'' |> State.move_proj |> State.move_enemies 
+let input (st : State.t) : State.t =  
+  if not (Graphics.key_pressed ()) then 
+    st |> State.move_proj |> State.move_enemies 
+  else 
+    let camel = st.camel in 
+    let k = Graphics.read_key () in flush_kp (); 
+    let st' = 
+      match k with 
+      | '0' -> exit 0  
+      | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
+      | 'a' -> {st with camel = (Camel.move_horiz camel ~-.1.)}
+      | 's' -> {st with camel = (Camel.move_vert camel ~-.1.)}
+      | 'd' -> {st with camel = (Camel.move_horiz camel 1.)}
+      | 'e' -> {st with camel = (Camel.turn_right camel)}
+      | 'q' -> {st with camel = (Camel.turn_left camel)}
+      | ' ' -> State.shoot camel st
+      | _ -> {st with camel = camel} 
+    in 
+    let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
+    st'' |> State.move_proj |> State.move_enemies 
 
 (** [run st] runs the game responding to key presses *)
 let rec run (st : State.t) (scr : Scorer.t)= 
-  (* Graphics.open_graph " "; *)
+  Graphics.open_graph " ";
   Graphics.moveto 50 800; 
   Graphics.draw_string (string_of_float (Sys.time ()));
   Graphics.moveto 50 700;
   Graphics.draw_string "press a key to move (press 0 to exit)";
-
   let newst = input st in 
   ( Graphics.auto_synchronize false;
     Graphics.clear_graph ();
     draw_state newst;
     Graphics.auto_synchronize true;
-
     Graphics.set_color Graphics.black; 
     Graphics.moveto 50 750;
     Graphics.draw_string ("Began as: " ^ State.string_of_state st);
     Graphics.moveto 50 725;
     Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
-
     if at_exit newst then 
       (Graphics.clear_graph ();
        Graphics.moveto 50 550;
@@ -204,13 +193,13 @@ let rec run (st : State.t) (scr : Scorer.t)=
 
 (** [init k] creates a new game State with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
-let init () = 
+let init k = 
   let camel = Camel.init 0. 0. in 
   let st = State.init camel 45 45 5 in 
   let scr = Scorer.init () in 
   draw_state st; 
   Graphics.moveto 20 700;
-  (* Graphics.draw_string "check init"; *)
+  Graphics.draw_string "check init";
   run st scr
 
 (* Start on key press *)
@@ -220,9 +209,9 @@ let main () =
   Graphics.resize_window window_width window_height;
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;
-  Graphics.draw_string "press any key to start";
-  let s = wait_next_event[Key_pressed] in 
-  if s.keypressed then init ()
+  Graphics.draw_string "press a key to start";
+  match Graphics.read_key () with 
+  | k -> init k 
 
 (* Execute the demo. *)
 let () = main ()
