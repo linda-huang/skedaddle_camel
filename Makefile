@@ -28,6 +28,7 @@ maze:
 
 clean:
 	ocamlbuild -clean
+	rm -rf *.byte
 
 zip:
 	zip camels.zip *.ml* _tags *.txt Makefile
