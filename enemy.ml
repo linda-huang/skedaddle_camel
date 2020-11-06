@@ -5,7 +5,7 @@ type t = {
   pos : Position.t;
 }
 
-let speed = 15.
+let speed = 2.
 
 let turn_around camel = 
   {camel with dir = (camel.dir + 180) mod 360;}

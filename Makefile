@@ -6,6 +6,7 @@ TEST=test.byte
 MAIN=main.byte 
 DEMO=maindemo.byte
 MAZE=draw_maze.byte
+GRAPH=graphicsdemo.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -pkg graphics
 
 default:
@@ -25,6 +26,9 @@ main:
 
 maze:
 	$(OCAMLBUILD) $(MAZE) && ./$(MAZE)
+
+graph:
+	$(OCAMLBUILD) $(GRAPH) && ./$(GRAPH)
 
 clean:
 	ocamlbuild -clean

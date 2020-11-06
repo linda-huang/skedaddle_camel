@@ -5,8 +5,8 @@ open Maze
 open State
 open Scorer      
 
-let window_width = 1000
-let window_height = 2000
+let window_width = 1600
+let window_height = 900
 
 let fightingring = 
   [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
@@ -57,7 +57,7 @@ let draw_walls gen_maze start_pos maze_row maze_col =
         draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.black;
       end
       else
-        draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.green;
+        draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.white;
     end
     done
   end
@@ -68,8 +68,8 @@ let draw_walls gen_maze start_pos maze_row maze_col =
 let draw_maze mz = 
   let maze_row = Array.length mz in
   let maze_col = Array.length mz.(0) in
-  let window_height = maze_row * path_width + 200 in
-  let window_width = maze_col * path_width + 200 in
+  let window_height = maze_row * path_width  in
+  let window_width = maze_col * path_width in
   moveto (window_width / 2 - 55) (window_height - 50);
   Graphics.set_text_size 300; 
   let start_y = window_height (*- ((window_height- maze_row * path_width) / 2) *)in
@@ -81,9 +81,10 @@ let draw_maze mz =
 let draw_state st = 
   draw_maze st.maze; 
   draw_camel st.camel; 
-  Array.iter draw_enemy st.enemies;
-  let s = wait_next_event[Key_pressed] in
-  if s.keypressed then Graphics.clear_graph ()
+  Array.iter draw_enemy st.enemies; 
+  ()
+(* let s = wait_next_event[Key_pressed] in
+   if s.keypressed then Graphics.clear_graph () *)
 
 let game_over st scr = 
   let health = st.camel.health in 
@@ -103,6 +104,7 @@ let game_over st scr =
                         string_of_int (Scorer.score scr st.camel));
   let s = wait_next_event[Key_pressed] in
   if s.keypressed then exit 0 (*Graphics.close_graph ()*)
+  else st 
 
 (** [is_dead camel] is if [camel] has run out of health *)
 let is_dead camel = camel.health = 0
@@ -114,13 +116,13 @@ let at_exit (st : State.t) =
 
 (* [update_camel st] is the state with the camel's 
    health and coin total updated *)
-let update_camel (st : State.t) : State.t = 
+let update_camel (st : State.t) (scr : Scorer.t) : State.t = 
   let camel = st.camel in 
   let camel' = if (State.near_enemy camel st) then 
       {camel with health = camel.health - 1} else camel in 
   let camel'' = if (State.on_coin camel st) then 
       {camel with coins = camel.coins + 1} else camel' in 
-  if (is_dead camel'') then failwith " game over " else
+  if (is_dead camel'') then game_over st scr else
     {st with camel = camel''}  
 
 (** [get_coin st] is [st] with the coin the camel is currently on removed *)
@@ -131,10 +133,9 @@ let get_coin (st : State.t) : State.t =
 (** [update_state st] is [st] with all agents updated one move
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
-let update_state (st : State.t) : State.t = 
-  let st' = st |> update_camel |> State.move_proj |> State.move_enemies in 
+let update_state (st : State.t) (scr : Scorer.t): State.t = 
+  let st' = update_camel st scr |> State.move_proj |> State.move_enemies in 
   if (State.on_coin st'.camel st') then get_coin st' else st'
-
 
 (** [flush_kp ()] flushes the queue of keypresses *)
 let flush_kp () = 
@@ -144,13 +145,21 @@ let flush_kp () =
 
 (** [input st k] updates [st] in response to [k].
     It ends the game when [k] = '0' *)
-let input (st : State.t) : State.t = 
+let input (st : State.t) (scr : Scorer.t): State.t = 
   (* while not key pressed
      if Unix.time mod 1000 (some small time increment?) then move all proj and enemies *)
   let rec wait_kp st = 
     if not (Graphics.key_pressed ()) then  
-      let st' = st |> State.move_proj |> State.move_enemies in 
-      draw_state st'; 
+      (* let st' = st |> State.move_proj |> State.move_enemies in  *)
+      let st' = update_state st scr in 
+      Graphics.auto_synchronize false;
+      Graphics.clear_graph ();
+      draw_state st';
+      Graphics.auto_synchronize true;
+      (* sleep the function for 1ms *)
+      (* let minisleep (sec: float) =
+         ignore (Unix.select [] [] [] sec) in 
+         minisleep 0.001;  *)
       wait_kp st' 
     else st in 
   let st = wait_kp st in  
@@ -172,35 +181,45 @@ let input (st : State.t) : State.t =
   let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
   st'' |> State.move_proj |> State.move_enemies 
 
+
+
+
+
 (** [run st] runs the game responding to key presses *)
-let rec run (st : State.t) (scr : Scorer.t)= 
+let rec run (st : State.t) (scr : Scorer.t) = 
   (* Graphics.open_graph " "; *)
+  Graphics.auto_synchronize false;
   Graphics.moveto 50 800; 
   Graphics.draw_string (string_of_float (Sys.time ()));
   Graphics.moveto 50 700;
   Graphics.draw_string "press a key to move (press 0 to exit)";
 
-  let newst = input st in 
-  ( Graphics.auto_synchronize false;
+  (* let new_level st scr =
+     (Graphics.clear_graph ();
+     Graphics.moveto 50 550;
+     Graphics.draw_string "welcome to a new maze!"; 
+     let camel = Camel.init 0. 0. in 
+     let st = State.init camel 10 10 5 in 
+     let scr' = Scorer.update_time scr (Sys.time ()) in 
+     run st scr') in *)
+
+  let newst = input st scr in 
+  (* let newst = st in  *)
+  ( 
     Graphics.clear_graph ();
     draw_state newst;
-    Graphics.auto_synchronize true;
 
     Graphics.set_color Graphics.black; 
     Graphics.moveto 50 750;
-    Graphics.draw_string ("Began as: " ^ State.string_of_state st);
+    (* Graphics.draw_string ("Began as: " ^ State.string_of_state st); *)
     Graphics.moveto 50 725;
-    Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
+    (* Graphics.draw_string ("Moved to: " ^ State.string_of_state newst); *)
 
-    if at_exit newst then 
-      (Graphics.clear_graph ();
-       Graphics.moveto 50 550;
-       Graphics.draw_string "welcome to a new maze!"; 
-       let camel = Camel.init 0. 0. in 
-       let st = State.init camel 10 10 5 in 
-       let scr' = Scorer.update_time scr (Sys.time ()) in 
-       run st scr')
-    else run newst scr)
+    Graphics.auto_synchronize true;
+    (* if at_exit newst then new_level st scr
+
+       else  *)
+    run newst scr)
 
 (** [init k] creates a new game State with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
