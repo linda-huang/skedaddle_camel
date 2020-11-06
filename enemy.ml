@@ -10,16 +10,18 @@ let speed = 2.
 let turn_around camel = 
   {camel with dir = (camel.dir + 180) mod 360;}
 
-let move_horiz pos = 
-  {pos with x = pos.x +. speed}
+let move_horiz pos sign = 
+  {pos with x = pos.x +. sign *. speed}
 
-let move_vert pos = 
-  {pos with y = pos.y +. speed}
+let move_vert pos sign = 
+  {pos with y = pos.y +. sign *. speed}
 
 let move enemy =
-  if enemy.dir mod 180 = 0 
-  then {enemy with pos = (move_horiz enemy.pos)}
-  else {enemy with pos = (move_vert enemy.pos)}
+  let dir = enemy.dir mod 360 in 
+  if dir = 0 then {enemy with pos = (move_horiz enemy.pos 1.)}
+  else if dir = 180 then {enemy with pos = (move_horiz enemy.pos ~-.1.)}
+  else if dir = 90 then {enemy with pos = (move_vert enemy.pos 1.)}
+  else {enemy with pos = (move_vert enemy.pos ~-.1.)}
 
 let init d p = {
   dir = d;

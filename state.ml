@@ -145,6 +145,16 @@ let init camel x y numenemy =
    coins = init_coin_lst 20 mz;
    projectiles = []}
 
+let init_test camel x y numenemy maze = 
+  let mz = maze in 
+  {camel = camel; 
+   maze = mz;
+   x_size = x;
+   y_size = y;
+   enemies = init_enemy_lst numenemy mz;
+   coins = init_coin_lst 20 mz;
+   projectiles = []}
+
 (** [pp_array arr f] is a nicely formatted string of [arr] with 
     each elementn formatted according to [f]. * *)
 let pp_array arr f = 

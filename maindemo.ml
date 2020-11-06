@@ -8,7 +8,7 @@ open Scorer
 let window_width = 1600
 let window_height = 900
 
-let fightingring = 
+let fightingring : maze = 
   [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
      [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
      [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
@@ -191,6 +191,8 @@ let rec run (st : State.t) (scr : Scorer.t) =
   Graphics.auto_synchronize false;
   Graphics.moveto 50 800; 
   Graphics.draw_string (string_of_float (Sys.time ()));
+  Graphics.moveto 50 750; 
+  Graphics.draw_string (Scorer.string_of_score scr st.camel); 
   Graphics.moveto 50 700;
   Graphics.draw_string "press a key to move (press 0 to exit)";
 
@@ -244,4 +246,4 @@ let main () =
   if s.keypressed then init ()
 
 (* Execute the demo. *)
-let () = main ()
+(* let () = main () *)

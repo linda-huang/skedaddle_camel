@@ -22,5 +22,10 @@ let score scr camel =
         acc +. x') 0. scr.time in 
   scr.mazes * health * int_of_float timecalc 
 
+let string_of_score scr camel = 
+  let num = score scr camel in 
+  "Score: " ^ string_of_int num ^ 
+  "       Lives Remaining: " ^ string_of_int camel.health 
+
 let init () = 
   {mazes = 0; time = []}

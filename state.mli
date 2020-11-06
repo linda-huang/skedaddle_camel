@@ -61,5 +61,7 @@ val move_enemies : t -> t
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
 val init : Camel.t -> int -> int -> int -> t
 
+val init_test : Camel.t -> int -> int -> int -> Maze.t array array -> t
+
 (** [string_of_state st] is [st], nicely formatted. *)
 val string_of_state : t -> string 
