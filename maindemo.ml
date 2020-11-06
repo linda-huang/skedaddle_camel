@@ -84,9 +84,9 @@ let draw_state st =
   draw_maze st;
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
-  ();
-  let s = wait_next_event[Key_pressed] in
-  if s.keypressed then Graphics.clear_graph ()
+  ()
+(* let s = wait_next_event[Key_pressed] in
+   if s.keypressed  *)
 
 let game_over st scr = 
   let health = st.camel.health in 
@@ -154,9 +154,8 @@ let input (st : State.t) (scr : Scorer.t): State.t =
     if not (Graphics.key_pressed ()) then  
       (* let st' = st |> State.move_proj |> State.move_enemies in  *)
       let st' = update_state st scr in 
-
-      Graphics.clear_graph ();
       draw_state st';
+      Graphics.synchronize ();
       (* sleep the function for 1ms *)
       (* let minisleep (sec: float) =
          ignore (Unix.select [] [] [] sec) in 
@@ -181,7 +180,8 @@ let input (st : State.t) (scr : Scorer.t): State.t =
   in 
   let st'' = if State.hit_wall st'.camel.pos st'.maze st.top_left_corner 
     then st else st' in 
-  st'' |> State.move_proj |> State.move_enemies 
+  st'' |> State.move_proj |> State.move_enemies
+
 
 
 
@@ -207,13 +207,13 @@ let rec run (st : State.t) (scr : Scorer.t) =
   let newst = input st scr in 
   (* let newst = st in  *)
   ( 
-    Graphics.clear_graph ();
     draw_state newst;
 
     Graphics.set_color Graphics.black; 
     Graphics.moveto 50 750;
     (* Graphics.draw_string ("Began as: " ^ State.string_of_state st); *)
     Graphics.moveto 50 725;
+
     (* Graphics.draw_string ("Moved to: " ^ State.string_of_state newst); *)
 
     (* if at_exit newst then new_level st scr
@@ -224,22 +224,26 @@ let rec run (st : State.t) (scr : Scorer.t) =
 (** [init k] creates a new game State with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
 let init () = 
-  let st = State.init 50 50 5 in 
+  let st = State.init 30 30 5 in 
   let scr = Scorer.init () in 
   draw_state st; 
   Graphics.moveto 20 700;
+  Graphics.synchronize ();
   (* Graphics.draw_string "check init"; *)
   run st scr
+
 
 (* Start on key press *)
 let main () = 
   Graphics.open_graph " ";
+  Graphics.auto_synchronize false;
   Graphics.set_window_title "Skedadle Camel";
   (* Graphics.resize_window window_width window_height; *)
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;
   Graphics.draw_string "press any key to start";
-  Graphics.auto_synchronize false;
+  Graphics.synchronize ();
+
   let s = wait_next_event[Key_pressed] in 
   if s.keypressed then init ()
 
