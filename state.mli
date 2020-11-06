@@ -9,6 +9,7 @@ type t = {
   projectiles : Projectile.t list;
 }
 
+val camel_width_int : int 
 (** [camel_width] is the width of the Camel character, in pixels *)
 val camel_width : float
 
