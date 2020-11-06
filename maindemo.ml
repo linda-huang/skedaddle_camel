@@ -8,19 +8,6 @@ open Scorer
 let window_width = 1600
 let window_height = 900
 
-let fightingring : maze = 
-  [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
-     [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Exit; Wall;|];
-     [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
-  |]
-
 (** [draw_maze_elt x y color] draws a maze tile at [x] [y] and
     fills it with [color] *)
 let draw_maze_elt x y color = 
@@ -45,6 +32,14 @@ let draw_enemy enemy =
   fill_poly [|(x,y); (x+camel_width_int,y); 
               (x+camel_width_int, y-camel_width_int); 
               (x, y-camel_width_int)|]
+
+let draw_coin (coin : Coin.t) =
+  let color = Graphics.rgb 171 149 7 in 
+  set_color color;
+  let (x, y) = (int_of_float coin.pos.x, int_of_float coin.pos.y) in 
+  fill_poly [|(x,y); (x + coin_width_int,y); 
+              (x + coin_width_int, y - coin_width_int); 
+              (x, y - coin_width_int)|]
 
 (** [draw_walls gen_maze start_pos maze_row maze_col] draws [gen_maze] *)
 let draw_walls gen_maze start_pos maze_row maze_col = 
@@ -81,6 +76,7 @@ let draw_maze mz =
 let draw_state st = 
   draw_maze st.maze; 
   draw_camel st.camel; 
+  Array.iter draw_coin st.coins;
   Array.iter draw_enemy st.enemies; 
   ()
 (* let s = wait_next_event[Key_pressed] in
@@ -180,10 +176,6 @@ let input (st : State.t) (scr : Scorer.t): State.t =
   in 
   let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
   st'' |> State.move_proj |> State.move_enemies 
-
-
-
-
 
 (** [run st] runs the game responding to key presses *)
 let rec run (st : State.t) (scr : Scorer.t) = 

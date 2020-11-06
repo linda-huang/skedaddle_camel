@@ -11,6 +11,13 @@ type t =
 (* maze as a 2d array*)
 type maze = t array array
 
+let fightingring : maze = 
+  let arr = Array.init 30 (fun i -> Array.init 30 (fun i -> Path)) in 
+  (arr.(0)).(0) <- Start;
+  (arr.(29)).(29) <- Exit;
+  arr
+
+
 let path_width = 12
 
 let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 

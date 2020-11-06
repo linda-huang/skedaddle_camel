@@ -17,6 +17,8 @@ type t = {
 
 let camel_width_int = 10
 let camel_width = 10.
+let coin_width_int = 5
+let coin_width = 5.
 let tile_width = 12.
 let near = 20.
 
@@ -145,14 +147,14 @@ let init camel x y numenemy =
    coins = init_coin_lst 20 mz;
    projectiles = []}
 
-let init_test camel x y numenemy maze = 
-  let mz = maze in 
+let init_test camel x y numenemy = 
+  let mz = Maze.fightingring in 
   {camel = camel; 
    maze = mz;
    x_size = x;
    y_size = y;
    enemies = init_enemy_lst numenemy mz;
-   coins = init_coin_lst 20 mz;
+   coins = init_coin_lst 5 mz;
    projectiles = []}
 
 (** [pp_array arr f] is a nicely formatted string of [arr] with 

@@ -13,6 +13,9 @@ val camel_width_int : int
 (** [camel_width] is the width of the Camel character, in pixels *)
 val camel_width : float
 
+val coin_width_int : int
+val coin_width : float
+
 (** [tile_width] is the width of a single tile, in pixels *)
 val tile_width : float
 
@@ -61,7 +64,7 @@ val move_enemies : t -> t
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
 val init : Camel.t -> int -> int -> int -> t
 
-val init_test : Camel.t -> int -> int -> int -> Maze.t array array -> t
+val init_test : Camel.t -> int -> int -> int -> t
 
 (** [string_of_state st] is [st], nicely formatted. *)
 val string_of_state : t -> string 

@@ -11,6 +11,8 @@ type maze = t array array
 (** The width of a single path. *)
 val path_width : int
 
+val fightingring : maze
+
 (** [populate maze m n (x, y)] is a randomly populated maze with m rows and 
     n columns. [(x, y)] is the index of the starting position.
     Requires:
