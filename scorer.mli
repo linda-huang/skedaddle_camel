@@ -6,7 +6,7 @@ type t = {
 
 (**  [time_mult] is the multiplier applied to the 
      time taken to complete a maze *)
-val time_mult : int 
+val time_mult : float 
 
 (** [update_time scorer] is [scorer] updated with the 
     completion time of a new maze *)

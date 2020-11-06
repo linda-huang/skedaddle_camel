@@ -1,4 +1,4 @@
-MODULES=camel coin enemy main maze position projectile state test maindemo draw_maze scorer
+MODULES=camel coin enemy main maze position projectile state test maindemo draw_maze scorer keypress_tests
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
@@ -6,6 +6,7 @@ TEST=test.byte
 MAIN=main.byte 
 DEMO=maindemo.byte
 MAZE=draw_maze.byte
+GRAPH=graphicsdemo.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -pkg graphics
 
 default:
@@ -25,6 +26,9 @@ main:
 
 maze:
 	$(OCAMLBUILD) $(MAZE) && ./$(MAZE)
+
+graph:
+	$(OCAMLBUILD) $(GRAPH) && ./$(GRAPH)
 
 clean:
 	ocamlbuild -clean
