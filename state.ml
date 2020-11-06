@@ -8,46 +8,52 @@ open Random
 type t = {
   camel : Camel.t;
   maze : Maze.maze;
-  x_size : int;
-  y_size : int;
+  cols : int;
+  rows : int;
   enemies : Enemy.t array;
   coins : Coin.t array;
   projectiles : Projectile.t list;
+  top_left_corner: int * int;
 }
 
-let camel_width_int = 10
-let camel_width = 10.
-let tile_width = 12.
-let near = 20.
+let camel_width_int = 8
+let camel_width = 8
+let tile_width = 12
+let near = 20
 
-(* [tile_to_pixel tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
-let tile_to_pixel tx ty = 
+(* [tile_to_pixel start_pos tx ty] is the (center) pixel location from [tx]th, [ty]th tile *)
+let tile_to_pixel start_pos (tx, ty)  = 
   if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
-    let f p = tile_width *. p +. (tile_width /. 2.) in 
-    (float_of_int tx |> f, float_of_int ty |> f)
+    let f p = tile_width * p + tile_width / 2 in 
+    (fst start_pos + f tx, snd start_pos - f ty)
 
-(* [tile_to_pixel tx ty mz] is the (center) pixel location from 
+(*[pixel_to_tile px py] is the index of maze tile at pixel ([px],[py])*)
+let pixel_to_tile (pos : Position.t) (start_pos)=
+  ((pos.x - fst start_pos ) / tile_width, 
+   (snd start_pos - pos.y) / tile_width) 
+
+(* (* [tile_to_pixel tx ty mz] is the (center) pixel location from 
    [tx]th, [ty]th tile. 
    The tile at mz.(0).(0) is the top left pixel location *)
-let tile_to_pixel' tx ty mz = 
-  if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
-    let f p = tile_width *. p +. (tile_width /. 2.) in 
-    (float_of_int tx |> f, 
-     (float_of_int (Array.length mz.(0)) -. (f (float_of_int ty))))
+   let tile_to_pixel' tx ty mz = 
+   if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
+    let f p = tile_width * p + (tile_width / 2) in 
+    (tx |> f, Array.length mz.(0) - f ty) *)
 
 (* [tile_to_pixel tuple] is the (center) pixel location from [tuple] tile *)
-let tile_to_pixel_2 (tx, ty) = 
-  if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
-    let f p = tile_width *. p +. (tile_width /. 2.) in 
-    (float_of_int tx |> f, float_of_int ty |> f)
+(* let tile_to_pixel_2 (tx, ty) = 
+   if tx < 0 || ty < 0 then raise (Invalid_argument "negative") else 
+    let f p = tile_width * p + tile_width / 2 in 
+    (f tx, f ty) *)
+
 (*let f p = tile_width *. p +. (tile_width /. 2.) in 
   (fst tuple|> float_of_int |> f, snd tuple |> float_of_int |> f)*)
 
 (* [curr_tile pos] is the 0-indexed tile number corresponding to [pos] *)
-let curr_tile pos = 
-  let x = int_of_float (pos.x /. tile_width) in 
-  let y = int_of_float (pos.y /. tile_width) in 
-  (x, y)
+(* let curr_tile pos = 
+   let x = pos.x / tile_width in 
+   let y = pos.y / tile_width in 
+   (x, y) *)
 
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze *)
@@ -56,26 +62,27 @@ let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of m
   if Wall = Maze.tile_type mz x y then random_valid_tile mz else (x, y)
 
 (* get an array of [n] unique valid positions to spawn an object
-   let valid_spawn_pos (n : int) mz = (* TODO: implement *)
+   let valid_spawn_pos (n : int) mz = 
    let tile = random_valid_tile mz in
-   Array.init n (Position.make_pos tile.x tile.y) *)
+   Array. n (Position.make_pos tile.x tile.y)*)
 
 (** [init_enemy_lst n mz] is an Array of [n] enemy camels with valid positions *)
-let init_enemy_lst (n : int) (mz : Maze.maze) : Enemy.t array = 
+let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
   Array.init n (fun i -> 
       (Enemy.init (90 * Random.int 4) 
-         (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2)))
+         (random_valid_tile mz |> tile_to_pixel start_pos |> make_pos_2)))
 
 (** [init_coin_lst n mz] is an Array of [n] coins with valid positions in [mz]. *)
-let init_coin_lst n mz =
+let init_coin_lst n mz start_pos=
   Array.init n (fun i -> 
-      (Coin.init (random_valid_tile mz |> tile_to_pixel_2 |> make_pos_2) 100))
+      (Coin.init 
+         (random_valid_tile mz |> tile_to_pixel start_pos|> make_pos_2) 100))
 
 (* [hit_wall pos maze] detect if the position is a valid
    move in [maze] *)
-let hit_wall (pos : Position.t) (maze : Maze.maze) = 
-  let (x, y) = curr_tile pos in 
-  pos.x < 0. || pos.y < 0. || x >= Array.length maze 
+let hit_wall (pos : Position.t) (maze : Maze.maze) (start_pos)= 
+  let (x, y) = pixel_to_tile pos start_pos in 
+  pos.x < 0 || pos.y < 0 || x >= Array.length maze 
 
   || y >= Array.length maze.(0) || (Maze.tile_type maze x y = Wall)
   || y >= Array.length maze.(0) || Wall = Maze.tile_type maze x y  
@@ -88,15 +95,19 @@ let near_enemy (camel : Camel.t) (st : t) =
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
 (* [on_coin camel maze] detects if [camel]'s position is on a coin *)
-let on_coin (camel : Camel.t) (st : t) = 
-  Array.fold_left (fun acc (x : Coin.t) -> 
-      (curr_tile (x.pos) = curr_tile camel.pos) || acc) false st.coins
+let on_coin (camel : Camel.t) (st : t)  = 
+  Array.fold_left (fun acc (coin : Coin.t) -> 
+      (pixel_to_tile coin.pos st.top_left_corner = 
+       pixel_to_tile camel.pos st.top_left_corner) || acc) 
+    false st.coins
 
 (** [find_coin p st] is the coin at [p] in [st].
     Requires: there must be a coin at [p]. *)
 let find_coin (p : Position.t) (st : t) = 
-  let lst = Array.fold_left (fun acc (x : Coin.t) -> 
-      (if (curr_tile x.pos = curr_tile p) then x::acc else acc)) [] st.coins in 
+  let lst = Array.fold_left (fun acc (coin : Coin.t) -> 
+      if (pixel_to_tile coin.pos st.top_left_corner 
+          = pixel_to_tile p st.top_left_corner) 
+      then coin ::acc else acc) [] st.coins in 
   if List.length lst = 0 then raise (Invalid_argument "No coin here") 
   else (List.hd lst) 
 
@@ -121,13 +132,14 @@ let move_proj (st : t) =
                        List.map Projectile.move_proj st.projectiles} in 
   {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall p.pos st.maze)) st.projectiles}
+                  not (hit_wall p.pos st.maze st.top_left_corner))
+                st.projectiles}
 
 (** [move_enemy enemy st] is [enemy] with updated position or direction.
     if [enemy] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-  if hit_wall enemy.pos st.maze 
+  if hit_wall enemy.pos st.maze st.top_left_corner
   then move (Enemy.turn_around enemy)
   else move enemy
 
@@ -137,15 +149,25 @@ let move_enemies (st : t) : t =
 
 (** [init camel x y numenemy] is a fresh state with [camel] at
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
-let init camel x y numenemy = 
-  let mz = Maze.populate x y (0,0) in 
+let init rows cols numenemy = 
+  let mz = Maze.populate rows cols (0,0) in 
+  let maze_row = rows in
+  let maze_col = cols in
+  let window_height = maze_row * path_width + 200 in 
+  let window_width = maze_col * path_width + 200 in
+  let start_y = window_height - ((window_height- maze_row * path_width) / 2) in
+  let start_x = ((window_width - maze_col * path_width) / 2) in
+  let start_pos = (start_x, start_y) in
+  let camel = Camel.init (fst start_pos) (snd start_pos) in
+  Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;
-   x_size = x;
-   y_size = y;
-   enemies = init_enemy_lst numenemy mz;
-   coins = init_coin_lst 20 mz;
-   projectiles = []}
+   cols = cols;
+   rows = rows;
+   enemies = init_enemy_lst numenemy mz start_pos;
+   coins = init_coin_lst 20 mz start_pos;
+   projectiles = [];
+   top_left_corner = start_pos}
 
 (** [pp_array arr f] is a nicely formatted string of [arr] with 
     each elementn formatted according to [f]. * *)

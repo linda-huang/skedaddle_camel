@@ -7,7 +7,7 @@ type t = {
   coins : int;
 }
 
-let speed = 5. 
+let speed = 5
 let rot = 90 
 
 let init x y = 
@@ -20,10 +20,10 @@ let turn_left camel =
   {camel with dir = (camel.dir + rot) mod 360}
 
 let move_horiz camel sign = 
-  {camel with pos = {x = camel.pos.x +. (sign *. speed); y = camel.pos.y}}
+  {camel with pos = {x = camel.pos.x + (sign * speed); y = camel.pos.y}}
 
 let move_vert camel sign = 
-  {camel with pos = {x = camel.pos.x; y = camel.pos.y +. (sign *. speed)}}
+  {camel with pos = {x = camel.pos.x; y = camel.pos.y + (sign * speed)}}
 
 let adj_health camel h = 
   {camel with health = camel.health + h}

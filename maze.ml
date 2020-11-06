@@ -61,13 +61,13 @@ let rec dfs maze posx posy =
   end
   done
 
-let populate n m start_pos = 
-  let maze = Array.make_matrix n m Wall in
+let populate rows cols start_pos = 
+  let maze = Array.make_matrix rows cols Wall in
   let startx, starty = start_pos in
   dfs maze startx starty;
   maze.(startx).(starty) <- Path;
   maze.(0).(0) <- Start;
-  maze.(n-1).(m-1) <- Exit;
+  maze.(rows-1).(cols-1) <- Exit;
   maze
 
 (* let maze x y = if maze.(y).(x) = Wall then true else false *)

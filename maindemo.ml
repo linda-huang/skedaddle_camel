@@ -3,13 +3,15 @@ open Camel
 open Enemy
 open Maze 
 open State
-open Scorer      
+open Scorer
+open Draw_maze
+
 
 let window_width = 1600
 let window_height = 900
 
-let fightingring = 
-  [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
+(* let fightingring = 
+   [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
      [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
      [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
      [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
@@ -19,20 +21,20 @@ let fightingring =
      [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
      [|Wall; Path; Path; Path; Path; Path; Path; Path; Exit; Wall;|];
      [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
-  |]
+   |] *)
 
 (** [draw_maze_elt x y color] draws a maze tile at [x] [y] and
     fills it with [color] *)
-let draw_maze_elt x y color = 
-  set_color color;
-  fill_poly [|(x,y); (x+path_width,y); (x+path_width, y-path_width); 
-              (x, y-path_width)|]
+(* let draw_maze_elt x y color = 
+   set_color color;
+   fill_poly [|(x,y); (x+path_width,y); (x+ path_width, y-path_width); 
+              (x, y-path_width)|] *)
 
 (** [draw_camel camel] draws a rectangle representing the player camel *)
 let draw_camel (camel : Camel.t) = 
   let color = Graphics.rgb 220 206 192 in 
   set_color color; 
-  let (x, y) = (int_of_float camel.pos.x, int_of_float camel.pos.y) in 
+  let (x, y) = (camel.pos.x, camel.pos.y) in 
   fill_poly [|(x,y); (x+camel_width_int,y); 
               (x+camel_width_int, y-camel_width_int); 
               (x, y-camel_width_int)|]
@@ -41,15 +43,15 @@ let draw_camel (camel : Camel.t) =
 let draw_enemy enemy = 
   let color = Graphics.rgb 179 27 27 in 
   set_color color; 
-  let (x, y) = (int_of_float enemy.pos.x, int_of_float enemy.pos.y) in 
-  fill_poly [|(x,y); (x+camel_width_int,y); 
-              (x+camel_width_int, y-camel_width_int); 
-              (x, y-camel_width_int)|]
+  let (x, y) = (enemy.pos.x, enemy.pos.y) in 
+  fill_poly [|(x,y); (x+camel_width,y); 
+              (x+camel_width, y-camel_width); 
+              (x, y-camel_width)|]
 
 (** [draw_walls gen_maze start_pos maze_row maze_col] draws [gen_maze] *)
-let draw_walls gen_maze start_pos maze_row maze_col = 
-  let curr_pos = ref start_pos in
-  for i = 0 to maze_row - 1 do begin
+(* let draw_walls gen_maze start_pos maze_row maze_col = 
+   let curr_pos = ref start_pos in
+   for i = 0 to maze_row - 1 do begin
     curr_pos := ((fst !curr_pos), (snd start_pos) - i*path_width);
     for j = 0 to maze_col - 1 do begin  
       curr_pos := ((fst start_pos) + (j)*path_width , snd !curr_pos);
@@ -57,34 +59,34 @@ let draw_walls gen_maze start_pos maze_row maze_col =
         draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.black;
       end
       else
-        draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.white;
+        draw_maze_elt (fst !curr_pos) (snd !curr_pos) Graphics.green;
     end
     done
-  end
-  done 
+   end
+   done  *)
 
 (** [draw_maze m n] generates a new maze dimensions [m] x [n]. 
     Requires: [m] and [n] to be positive and odd. *)
-let draw_maze mz = 
-  let maze_row = Array.length mz in
-  let maze_col = Array.length mz.(0) in
-  let window_height = maze_row * path_width  in
-  let window_width = maze_col * path_width in
-  moveto (window_width / 2 - 55) (window_height - 50);
-  Graphics.set_text_size 300; 
-  let start_y = window_height (*- ((window_height- maze_row * path_width) / 2) *)in
-  let start_x = 0 (* window_width - maze_col * path_width) / 2) *)in
-  let start_pos = (start_x, start_y) in
-  draw_walls mz start_pos maze_row maze_col
+(* let draw_maze mz = 
+   let maze_row = Array.length mz in
+   let maze_col = Array.length mz.(0) in
+   let window_height = maze_row * path_width  in
+   let window_width = maze_col * path_width in
+   moveto (window_width / 2 - 55) (window_height - 50);
+   Graphics.set_text_size 300; 
+   let start_y = window_height (*- ((window_height- maze_row * path_width) / 2) *)in
+   let start_x = 0 (* window_width - maze_col * path_width) / 2) *)in
+   let start_pos = (start_x, start_y) in
+   draw_walls mz start_pos maze_row maze_col *)
 
 (** [draw_state st] is the Graphics representation of [st] *)
 let draw_state st = 
-  draw_maze st.maze; 
+  draw_maze st;
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
-  ()
-(* let s = wait_next_event[Key_pressed] in
-   if s.keypressed then Graphics.clear_graph () *)
+  ();
+  let s = wait_next_event[Key_pressed] in
+  if s.keypressed then Graphics.clear_graph ()
 
 let game_over st scr = 
   let health = st.camel.health in 
@@ -111,8 +113,8 @@ let is_dead camel = camel.health = 0
 
 let at_exit (st : State.t) = 
   let camel = st.camel in 
-  let (x, y) = State.curr_tile camel.pos in 
-  Maze.tile_type st.maze x y = Exit 
+  let (col, row) = State.pixel_to_tile camel.pos st.top_left_corner in 
+  Maze.tile_type st.maze col row = Exit 
 
 (* [update_camel st] is the state with the camel's 
    health and coin total updated *)
@@ -152,10 +154,9 @@ let input (st : State.t) (scr : Scorer.t): State.t =
     if not (Graphics.key_pressed ()) then  
       (* let st' = st |> State.move_proj |> State.move_enemies in  *)
       let st' = update_state st scr in 
-      Graphics.auto_synchronize false;
+
       Graphics.clear_graph ();
       draw_state st';
-      Graphics.auto_synchronize true;
       (* sleep the function for 1ms *)
       (* let minisleep (sec: float) =
          ignore (Unix.select [] [] [] sec) in 
@@ -169,16 +170,17 @@ let input (st : State.t) (scr : Scorer.t): State.t =
   let st' = 
     match k with 
     | '0' -> exit 0  
-    | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
-    | 'a' -> {st with camel = (Camel.move_horiz camel ~-.1.)}
-    | 's' -> {st with camel = (Camel.move_vert camel ~-.1.)}
-    | 'd' -> {st with camel = (Camel.move_horiz camel 1.)}
+    | 'w' -> {st with camel = (Camel.move_vert camel 1)}
+    | 'a' -> {st with camel = (Camel.move_horiz camel ~-1)}
+    | 's' -> {st with camel = (Camel.move_vert camel ~-1)}
+    | 'd' -> {st with camel = (Camel.move_horiz camel 1)}
     | 'e' -> {st with camel = (Camel.turn_right camel)}
     | 'q' -> {st with camel = (Camel.turn_left camel)}
     | ' ' -> State.shoot camel st
     | _ -> {st with camel = camel} 
   in 
-  let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
+  let st'' = if State.hit_wall st'.camel.pos st'.maze st.top_left_corner 
+    then st else st' in 
   st'' |> State.move_proj |> State.move_enemies 
 
 
@@ -188,7 +190,6 @@ let input (st : State.t) (scr : Scorer.t): State.t =
 (** [run st] runs the game responding to key presses *)
 let rec run (st : State.t) (scr : Scorer.t) = 
   (* Graphics.open_graph " "; *)
-  Graphics.auto_synchronize false;
   Graphics.moveto 50 800; 
   Graphics.draw_string (string_of_float (Sys.time ()));
   Graphics.moveto 50 700;
@@ -215,7 +216,6 @@ let rec run (st : State.t) (scr : Scorer.t) =
     Graphics.moveto 50 725;
     (* Graphics.draw_string ("Moved to: " ^ State.string_of_state newst); *)
 
-    Graphics.auto_synchronize true;
     (* if at_exit newst then new_level st scr
 
        else  *)
@@ -224,8 +224,7 @@ let rec run (st : State.t) (scr : Scorer.t) =
 (** [init k] creates a new game State with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
 let init () = 
-  let camel = Camel.init 0. 0. in 
-  let st = State.init camel 45 45 5 in 
+  let st = State.init 50 50 5 in 
   let scr = Scorer.init () in 
   draw_state st; 
   Graphics.moveto 20 700;
@@ -236,10 +235,11 @@ let init () =
 let main () = 
   Graphics.open_graph " ";
   Graphics.set_window_title "Skedadle Camel";
-  Graphics.resize_window window_width window_height;
+  (* Graphics.resize_window window_width window_height; *)
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;
   Graphics.draw_string "press any key to start";
+  Graphics.auto_synchronize false;
   let s = wait_next_event[Key_pressed] in 
   if s.keypressed then init ()
 

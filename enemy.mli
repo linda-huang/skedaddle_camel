@@ -4,7 +4,7 @@ type t = {
 }
 
 (** [speed] is the number of pixels an Enemy moves per turn *)
-val speed : float
+val speed : int
 
 (** [turn_around camel] is [camel] turned 180 degrees *)
 val turn_around : t -> t

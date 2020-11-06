@@ -5,16 +5,16 @@ type t = {
   pos : Position.t;
 }
 
-let speed = 2.
+let speed = 2
 
 let turn_around camel = 
   {camel with dir = (camel.dir + 180) mod 360;}
 
 let move_horiz pos = 
-  {pos with x = pos.x +. speed}
+  {pos with x = pos.x + speed}
 
 let move_vert pos = 
-  {pos with y = pos.y +. speed}
+  {pos with y = pos.y + speed}
 
 let move enemy =
   if enemy.dir mod 180 = 0 

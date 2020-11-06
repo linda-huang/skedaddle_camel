@@ -9,7 +9,9 @@
 #load "maze.cmo";;
 #load "projectile.cmo";;
 #load "state.cmo";;
+#load "scorer.cmo";;
 #load "draw_maze.cmo";;
+#load "maindemo.cmo";;
 
 
 
