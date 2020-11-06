@@ -70,7 +70,7 @@ let main () =
   | k -> init k 
 
 (* Execute the demo. *)
-let () = main ()
+(* let () = main () *)
 
 (* Graphics.draw_image : image -> int -> int -> unit
    Draw the given image with lower left corner at the given point.*)
