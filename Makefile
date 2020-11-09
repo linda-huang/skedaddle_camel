@@ -1,4 +1,4 @@
-MODULES=camel coin enemy main maze position projectile state test maindemo draw_maze scorer keypress_tests
+MODULES=camel coin enemy main maze position projectile round_state test maindemo scorer keypress_tests constant draw game_state
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

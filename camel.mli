@@ -6,11 +6,6 @@ type t = {
   coins : int;
 }
 
-(* [speed] is the distance camel travels on one key press *)
-val speed : int 
-
-(* [rot] is the number of degrees the camel rotates on one key press *)
-val rot : int   
 
 (** [init x y] is a new camel at position ([x],[y]) *)
 val init : int -> int -> t 
@@ -37,6 +32,9 @@ val adj_health : t -> int -> t
 
 (** [adj_coin camel v] is [camel] after picking up a coin of value [v] *)
 val adj_coin : t -> int -> t
+
+(** [is_dead camel] is if [camel] has run out of health *)
+val is_dead : t -> bool
 
 (** [string_of_camel camel] is the string representation of [camel] *)
 val string_of_camel : t -> string 

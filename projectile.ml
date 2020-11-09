@@ -25,7 +25,7 @@ let rad_of_deg d = (float_of_int d) *. ((acos (-1.)) /. 180.)
 let move_proj (p : t) =
   let newx = speed * int_of_float (sin (rad_of_deg p.dir)) in
   let newy =  speed * int_of_float (cos (rad_of_deg p.dir)) in
-  {p with pos = Position.make_pos newx newy}
+  {p with pos = Position.init_pos (newx, newy)}
 
 let string_of_proj p = 
   "Pos: " ^ Position.string_of_pos p.pos ^ 

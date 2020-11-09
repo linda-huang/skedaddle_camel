@@ -2,16 +2,19 @@
 #require "ounit2";;
 #require "graphics";;
 #require "ANSITerminal";;
+#load "constant.cmo";;
 #load "position.cmo";;
 #load "camel.cmo";;
 #load "coin.cmo";;
 #load "enemy.cmo";;
 #load "maze.cmo";;
 #load "projectile.cmo";;
-#load "state.cmo";;
+#load "round_state.cmo";;
 #load "scorer.cmo";;
-#load "draw_maze.cmo";;
+#load "draw.cmo";;
+#load "game_state.cmo";;
 #load "maindemo.cmo";;
+
 
 
 

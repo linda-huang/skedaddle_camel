@@ -6,7 +6,7 @@ To install:
 To see the Camel and Enemy respond to keyboard movement, run: 
     `make demo` 
 In this, you control movements with `w` `a` `s` `d` `q` `e` and quit with `0`.
-After each movement, the window prints the new game state, with the updated
+After each movement, the window prints the new game round_state, with the updated
 location and orientations of Camel and Enemies.   
 
 To see a graphical representation of a randomly generated maze, run:

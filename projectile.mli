@@ -6,6 +6,7 @@ type t = {
 
 (** [speed] is how many pixels a projectile will move each turn *)
 val speed : int
+
 (** [init i d pos] is a projectile with id [i], dir [d]; and pos [pos] *)
 val init : int -> int -> Position.t -> t
 

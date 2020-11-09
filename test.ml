@@ -145,8 +145,8 @@ open Random
 
    (** [on_coin_test name (cx, cy) (x, y) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
-    [State.on_coin] applied to a Camel at the position represented 
-    by [(cx, cy)] and a State with a coin at position indicated by [(x, y)] 
+    [Round_state.on_coin] applied to a Camel at the position represented 
+    by [(cx, cy)] and a Round_state with a coin at position indicated by [(x, y)] 
     with [exp_val]. *)
    let on_coin_test 
     (name : string) 
@@ -184,7 +184,7 @@ open Random
         ~printer:string_of_coinarr)
 
    (** [rem_coin_test name (cx, cy) pos exp_exn] constructs an OUnit test named [name] 
-    that asserts that [State.find_coin] raises [exp_exn]. *)
+    that asserts that [Round_state.find_coin] raises [exp_exn]. *)
    let rem_coin_exn_test
     (name : string) 
     ((cx, cy) : float * float)
@@ -218,7 +218,7 @@ open Random
       shoot camel st |> 
     ) *)
 
-   let state_tests = [
+   let round_state_tests = [
    (* todo *)
    (* tile_to_pixel *)
    tile_to_pixel_test "origin" 0 0 (25., 25.);
@@ -258,7 +258,7 @@ open Random
     (Invalid_argument "No coin here");
    ]
    (*******************************************************************
-   end tests from State.ml
+   end tests from Round_state.ml
  *********************************************************************)
 
    let suite = "test suite" >::: List.flatten [
@@ -267,7 +267,7 @@ open Random
     maze_tests;
     coin_tests;
     enemy_tests;
-    state_tests;
+    round_state_tests;
    ]
 
    let _ = run_test_tt_main suite  *)

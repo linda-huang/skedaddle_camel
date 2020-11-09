@@ -192,13 +192,13 @@ open Scorer
        run st scr')
     else run newst scr)
 
-   (** [init k] creates a new game State with camel initialized at the origin
+   (** [init k] creates a new game Round_state with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
    let init k = 
    let camel = Camel.init 0 0 in 
-   let st = State.init camel 45 45 5 in 
+   let st = round_state.init camel 45 45 5 in 
    let scr = Scorer.init () in 
-   draw_state st; 
+   draw_round_state st; 
    Graphics.moveto 20 700;
    Graphics.draw_string "check init";
    run st scr
