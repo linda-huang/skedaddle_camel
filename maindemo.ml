@@ -67,6 +67,8 @@ let rec run (st : Round_state.t) (scr : Scorer.t) =
   (* Graphics.open_graph " "; *)
   Graphics.moveto 50 800; 
   Graphics.draw_string (string_of_float (Sys.time ()));
+  Graphics.moveto 50 750; 
+  Graphics.draw_string (Scorer.string_of_score scr st.camel); 
   Graphics.moveto 50 700;
   Graphics.draw_string "press a key to move (press 0 to exit)";
   (* let new_level st scr =
@@ -116,4 +118,4 @@ let main () =
   if s.keypressed then init ()
 
 (* Execute the demo. *)
-let () = main ()
+(* let () = main () *)

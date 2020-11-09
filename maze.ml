@@ -17,6 +17,11 @@ type maze = t array array
 
 let in_limit maze row col = (row >= 0) && (row < Array.length maze) && 
                             (col >= 0) && (col < Array.length maze.(0))
+let fightingring : maze = 
+  let arr = Array.init 30 (fun i -> Array.init 30 (fun i -> Path)) in 
+  (arr.(0)).(0) <- Start;
+  (arr.(29)).(29) <- Exit;
+  arr
 
 let visited maze row col = 
   if maze.(row).(col) = Wall then false else true

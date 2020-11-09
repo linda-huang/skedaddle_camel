@@ -8,6 +8,8 @@ type t =
 (** The type of maze. *)
 type maze = t array array
 
+val fightingring : maze
+
 (** [populate maze m n (x, y)] is a randomly populated maze with m rows and 
     n columns. [(x, y)] is the index of the starting position.
     Requires:
