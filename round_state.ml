@@ -31,25 +31,11 @@ let at_exit (st : t) =
   let (col, row) = Position.pixel_to_tile camel.pos st.top_left_corner in 
   Maze.tile_type st.maze col row = Exit 
 
-let hit_corner (st : t) (pos : Position.t) = 
+let hit_wall (st : t) (pos : Position.t) = 
   let (col, row) = Position.pixel_to_tile pos st.top_left_corner in 
   col < 0 || row < 0 || row >= Array.length st.maze 
-  || col >= Array.length st.maze.(0) || (Maze.tile_type st.maze col row = Wall)
+  || col >= Array.length st.maze.(0) || (Maze.tile_type st.maze row col = Wall)
 
-let hit_wall (st : t) (pos : Position.t) (dir : int) = 
-  let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let tr = (pos.x + Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let bl = (pos.x - Constant.camel_radius, pos.y - Constant.camel_radius) in
-  let br = (pos.x + Constant.camel_radius, pos.y - Constant.camel_radius) in
-  let two_corners =
-    match dir with 
-    | 0 -> (tr, br)
-    | 90 -> (tl, tr)
-    | 180 -> (tl, bl)
-    | 270 -> (bl, br)
-    | _ -> failwith "impossible"
-  in hit_corner st (Position.init_pos (fst two_corners)) && hit_corner st 
-       (Position.init_pos (snd two_corners))
 (**********************************************************
    helpers for updating round_state
  ***********************************************************)
@@ -81,13 +67,13 @@ let move_proj (st : t) =
                        List.map Projectile.move_proj st.projectiles} in 
   {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall st p.pos p.dir)) st.projectiles}
+                  not (hit_wall st p.pos)) st.projectiles}
 
 (** [move_enemy enemy st] is [enemy] with updated position or direction.
     if [enemy] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-  if hit_wall st enemy.pos enemy.dir then move (Enemy.turn_around enemy)
+  if hit_wall st enemy.pos then move (Enemy.turn_around enemy)
   else move enemy
 
 (** [move_enemies st] is [st] with all enemies moved one move *)
@@ -100,9 +86,8 @@ let update_camel (st : t) (scr : Scorer.t) : t =
   let camel = st.camel in 
   let camel' = if (near_enemy camel st) then 
       {camel with health = camel.health - 1} else camel in 
-  let camel'' = camel' in
-  (* let camel'' = if (on_coin st) then 
-      {camel with coins = camel.coins + 1} else camel' in  *)
+  let camel'' = if (on_coin st) then 
+      {camel with coins = camel.coins + 1} else camel' in 
   if (Camel.is_dead camel'') then failwith "gameover" else
     {st with camel = camel''}  
 
@@ -121,8 +106,8 @@ let get_coin (st : t) : t =
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
 let update_round_state (st : t) (scr : Scorer.t): t = 
-  let st' = update_camel st scr |> move_proj |> move_enemies in st'
-(* if (on_coin st') then get_coin st' else st' *)
+  let st' = update_camel st scr |> move_proj |> move_enemies in 
+  if (on_coin st') then get_coin st' else st'
 
 (************************************************************
    initialization
@@ -152,8 +137,7 @@ let init rows cols numenemy =
   let start_y = window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
   let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
   let start_pos = (start_x, start_y) in
-  let camel = Camel.init ((fst start_pos) + camel_radius) ((snd start_pos) - camel_radius) 
-  in
+  let camel = Camel.init (fst start_pos) (snd start_pos) in
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;

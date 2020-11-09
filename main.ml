@@ -2,7 +2,7 @@ open Graphics
 open Camel
 open Enemy
 open Maze 
-(* open State       *)
+open State      
 
 (* let fightingring = 
    [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
@@ -87,11 +87,11 @@ open Maze
         Graphics.moveto 50 550;
         Graphics.draw_string "welcome to a new maze!"; 
         let camel = Camel.init 0 0 in 
-        let st = Round_state.init camel 10 10 5 in 
+        let st = Round_round_state.init camel 10 10 5 in 
         run st)
      else run newst)
 
-   (** [init k] creates a new game Round_state with camel initialized at the origin
+   (** [init k] creates a new game Round_round_state with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
    let init k = 
    let camel = Camel.init 0 0 in 

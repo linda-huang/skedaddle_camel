@@ -5,7 +5,7 @@ open Enemy
 open Maze
 open Position 
 open Projectile
-open Round_state
+open State 
 open Random 
 
 (*******************************************************************

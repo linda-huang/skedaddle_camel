@@ -19,12 +19,12 @@ val turn_left : t -> t
 (** [move_horix camel sign] is [camel] after moving horizontally 
     one step. The direction of movement (left/right) is determined by [sign]
     Requires: [sign] is either ~-1. or 1. *)
-val move_horiz : t -> int -> char -> t 
+val move_horiz : t -> int -> t 
 
 (** [move_vert camel sign] is [camel] after moving vertically 
     one step. The direction of movement (up/down) is determined by [sign]
     Requires: [sign] is either ~-1. or 1. *)
-val move_vert : t -> int -> char -> t
+val move_vert : t -> int -> t
 
 (** [adj_health camel h] is [camel] with health 
     incremented/decremented by [h] *)

@@ -2,7 +2,7 @@ open Graphics
 open Camel
 open Enemy
 open Maze 
-open Round_state
+open State
 open Scorer      
 
 (* let window_width = 1000
