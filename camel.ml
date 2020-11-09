@@ -11,17 +11,27 @@ type t = {
 let init x y = 
   {pos = {x = x; y = y}; dir = 0; health = 3; coins = 0}
 
+let rotate camel key =
+  match key with 
+  | 'w' -> {camel with dir = 90}
+  | 'a' -> {camel with dir = 180}
+  | 's' -> {camel with dir = 270}
+  | 'd' -> {camel with dir = 0}
+  | _ -> camel
+
 let turn_right camel = 
-  {camel with dir = (camel.dir - Constant.camel_rot + 360) mod 360}
+  {camel with dir = (camel.dir - Constant.camel_rot) mod 360}
 
 let turn_left camel = 
   {camel with dir = (camel.dir + Constant.camel_rot) mod 360}
 
-let move_horiz camel sign = 
-  {camel with pos = {x = camel.pos.x + (sign * Constant.camel_speed); y = camel.pos.y}}
+let move_horiz camel sign key = 
+  let camel' = rotate camel key in
+  {camel' with pos = {x = camel'.pos.x + (sign * Constant.camel_speed); y = camel'.pos.y}}
 
-let move_vert camel sign = 
-  {camel with pos = {x = camel.pos.x; y = camel.pos.y + (sign * Constant.camel_speed)}}
+let move_vert camel sign key = 
+  let camel' = rotate camel key in
+  {camel' with pos = {x = camel'.pos.x; y = camel'.pos.y + (sign * Constant.camel_speed)}}
 
 let adj_health camel h = 
   {camel with health = camel.health + h}

@@ -18,7 +18,7 @@ val at_exit : t -> bool
 
 (* [hit_wall pos maze] detect if the position [pos] is a valid
    move in [maze] *)
-val hit_wall : t -> Position.t -> bool
+val hit_wall : t -> Position.t -> int -> bool
 
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)

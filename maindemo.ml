@@ -34,7 +34,8 @@ let input (st : Round_state.t) (scr : Scorer.t) : Round_state.t =
      if Unix.time mod 1000 (some small time increment?) then move all proj and enemies *)
   let rec wait_kp st = 
     if not (Graphics.key_pressed ()) then  
-      (* let st' = st |> State.move_proj |> Round_Rove_enemies in  *)
+      (* let st' = st |> Round_state.move_proj |> Round_state.move_enemies in  *)
+      (* let st' = st in  *)
       let st' = update_round_state st scr in 
       Draw.draw_round_state st';
       Graphics.synchronize ();
@@ -47,19 +48,17 @@ let input (st : Round_state.t) (scr : Scorer.t) : Round_state.t =
   let st' = 
     match k with 
     | '0' -> exit 0  
-    | 'w' -> {st with camel = (Camel.move_vert camel 1)}
-    | 'a' -> {st with camel = (Camel.move_horiz camel ~-1)}
-    | 's' -> {st with camel = (Camel.move_vert camel ~-1)}
-    | 'd' -> {st with camel = (Camel.move_horiz camel 1)}
+    | 'w' -> {st with camel = (Camel.move_vert camel 1 'w')}
+    | 'a' -> {st with camel = (Camel.move_horiz camel ~-1 'a')}
+    | 's' -> {st with camel = (Camel.move_vert camel ~-1 's')}
+    | 'd' -> {st with camel = (Camel.move_horiz camel 1 'd')}
     | 'e' -> {st with camel = (Camel.turn_right camel)}
     | 'q' -> {st with camel = (Camel.turn_left camel)}
     | ' ' -> shoot camel st
     | _ -> {st with camel = camel} 
-  in 
-  let st'' = if hit_wall st' st'.camel.pos
+  in
+  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
     then st else st' in 
-  (* Draw.draw_round_state st'';
-     Graphics.synchronize (); *)
   st'' |> move_proj |> move_enemies 
 
 (** [run st] runs the game responding to key presses *)
@@ -81,19 +80,36 @@ let rec run (st : Round_state.t) (scr : Scorer.t) =
   (* let newst = st in  *)
   ( 
     Draw.draw_round_state newst;
+    let tile = Position.pixel_to_tile st.camel.pos st.top_left_corner in
+    Graphics.moveto 0 0;
+    Graphics.set_text_size 50;
+    Graphics.set_color Graphics.white;
+    Graphics.fill_poly [|(0,0);
+                         (0,40);
+                         (300,40);
+                         (300,0)|];
+    Graphics.set_color Graphics.red;
+    Graphics.draw_string "current tile ";
+    Graphics.draw_string (string_of_int (fst tile));
+    Graphics.draw_string " ";
+    Graphics.draw_string (string_of_int (snd tile));
+    Graphics.draw_string " ";
+    Graphics.draw_string "current direction ";
+    Graphics.draw_string (string_of_int (st.camel.dir));
+    let extract_wall_type maze col row = 
+      match Maze.tile_type maze col row with
+      | Wall -> "wall"
+      | Path -> "path"
+      | Exit -> "exit"
+      | Start -> "start" in
+    Graphics.draw_string (extract_wall_type st.maze (fst tile) (snd tile));
     Graphics.set_color Graphics.black; 
-    Graphics.moveto 50 750;
-    (* Graphics.draw_string ("Began as: " ^ Round_state.string_of_round_state st); *)
-    Graphics.moveto 50 725;
-    (* Graphics.draw_string ("Moved to: " ^ Round_state.string_of_round_state newst); *)
-    (* if at_exit newst then new_level st scr
-       else  *)
     run newst scr)
 
 (** [init k] creates a new game round_state with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)
 let init () = 
-  let st = Round_state.init 43 43 5 in 
+  let st = Round_state.init 21 21 5 in 
   let scr = Scorer.init () in 
   draw_round_state st; 
   Graphics.moveto 20 700;
