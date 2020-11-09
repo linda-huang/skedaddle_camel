@@ -2,7 +2,7 @@ open Graphics
 open Camel
 open Enemy
 open Maze 
-open State      
+open Round_state      
 
 (* let fightingring = 
    [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
