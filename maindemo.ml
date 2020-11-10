@@ -118,4 +118,4 @@ let main () =
   if s.keypressed then init ()
 
 (* Execute the demo. *)
-(* let () = main () *)
+let () = main ()
