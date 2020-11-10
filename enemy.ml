@@ -8,7 +8,7 @@ type t = {
 let speed = 1
 
 let turn_around camel = 
-  {camel with dir = (camel.dir + 180) mod 360;}
+  {camel with dir = (camel.dir + 90) mod 360;}
 
 let move_horiz pos sign = 
   {pos with x = pos.x + sign * speed}

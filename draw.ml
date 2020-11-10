@@ -69,3 +69,13 @@ let draw_round_state (st : Round_state.t) =
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
   ()
+
+let draw_message (msg : string) ((x, y) : int * int) = 
+  let msglst = String.split_on_char '\\' msg in 
+  Graphics.moveto x y; 
+  let rec writeline lst xpos ypos = 
+    match lst with 
+    | [] -> ()
+    | h :: t -> Graphics.draw_string h; writeline t (xpos - 10) (ypos - 10)
+  in 
+  writeline msglst x y

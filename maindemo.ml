@@ -88,8 +88,7 @@ let rec run (st : Round_state.t) (scr : Scorer.t) =
     (* Graphics.draw_string ("Began as: " ^ Round_state.string_of_round_state st); *)
     Graphics.moveto 50 725;
     (* Graphics.draw_string ("Moved to: " ^ Round_state.string_of_round_state newst); *)
-    (* if at_exit newst then new_level st scr
-       else  *)
+    (* if Round_state.at_exit newst then new_level st scr else  *)
     run newst scr)
 
 (** [init k] creates a new game round_state with camel initialized at the origin

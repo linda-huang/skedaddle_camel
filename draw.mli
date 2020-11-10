@@ -13,3 +13,7 @@ val draw_coin : Coin.t -> unit
 
 (** [draw_round_state st] is the Graphics representation of [st]. *)
 val draw_round_state : Round_state.t -> unit
+
+(** [draw_message msg (x, y)] draws [msg] with appropriate line breaks, 
+    starting at position [(x, y)] *)
+val draw_message : string -> (int * int) -> unit 
