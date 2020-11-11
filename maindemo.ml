@@ -38,7 +38,7 @@ let input (st : Round_state.t) (scr : Scorer.t) : Round_state.t =
       (* let st' = st in  *)
       let st' = update_round_state st scr in 
       Draw.draw_round_state st';
-      Graphics.synchronize ();
+      (* Graphics.synchronize (); *)
       wait_kp st' 
     else st 
   in 

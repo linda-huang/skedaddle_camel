@@ -5,7 +5,7 @@
 let camel_speed = 5
 (* [rot] is the number of degrees the camel rotates on one key press *)
 let camel_rot = 90 
-let camel_width = 24
+let camel_width = 18
 let camel_radius = camel_width / 2
 
 

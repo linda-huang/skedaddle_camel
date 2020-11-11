@@ -68,4 +68,5 @@ let draw_round_state (st : Round_state.t) =
   draw_maze st;
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
+  Graphics.synchronize ();
   ()
