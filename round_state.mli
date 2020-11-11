@@ -37,6 +37,11 @@ val shoot : Camel.t -> t -> t
    into a wall, it stops and is removed from the game. *)
 val move_proj : t -> t 
 
+(** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
+    If a projectile has hit an enemy, both the projectile and enemy 
+    are removed from [st] *)
+val hit_enemy : t -> t 
+
 (** [move_enemies st] is the round_state after updating the position of all enemy
     camels. *)
 val move_enemies : t -> t 

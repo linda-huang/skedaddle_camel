@@ -83,11 +83,25 @@ let move_proj (st : t) =
               List.filter (fun (p : Projectile.t) -> 
                   not (hit_wall st p.pos p.dir)) st.projectiles}
 
+(** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
+    If a projectile has hit an enemy, both the projectile and enemy 
+    are removed from [st] *)
 let hit_enemy (st : t) = 
-  let rec proj_list lst = 
-    failwith "todoo"
+  let rec check_proj (lst : Projectile.t list) 
+      ((accproj : Projectile.t list), (accenemy : Enemy.t list)) = 
+    match lst with 
+    | [] -> (accproj, accenemy)
+    | h :: t -> let remaining  = 
+                  List.fold_left (fun acc (x : Enemy.t) -> 
+                      if Position.dist x.pos h.pos < near  
+                      then acc else x :: acc) [] accenemy in 
+      if List.length remaining = List.length accenemy  
+      then check_proj t (h :: accproj, remaining) 
+      else check_proj t (accproj, remaining)
   in   
-  failwith "TOdo"
+  let (newproj, newenemy) = 
+    check_proj st.projectiles ([], Array.to_list st.enemies) in 
+  {st with enemies = Array.of_list newenemy; projectiles = newproj}
 
 (** [move_enemy enemy st] is [enemy] with updated position or direction.
     if [enemy] will hit a wall then it turns around, otherwise it

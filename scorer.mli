@@ -2,6 +2,7 @@
 type t = {
   mazes : int;
   time : float list; 
+  hit : int 
 }
 
 (**  [time_mult] is the multiplier applied to the 
@@ -14,6 +15,10 @@ val update_time : t -> float -> t
 
 (** [score scr camel] is the score earned by [camel] over the entire game *)
 val score : t -> Camel.t -> int 
+
+(** [string_of_score scr] is the nicely formatted numerical score, 
+    health, and mazes completed *)
+val string_of_score : t -> Camel.t -> string 
 
 (** [init ()] creates an empty scorer *)
 val init : unit -> t 

@@ -59,7 +59,7 @@ let input (st : Round_state.t) (scr : Scorer.t) : Round_state.t =
   in
   let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
     then st else st' in 
-  st'' |> move_proj |> move_enemies 
+  st'' |> move_proj |> move_enemies |> hit_enemy 
 
 (** [run st] runs the game responding to key presses *)
 let rec run (st : Round_state.t) (scr : Scorer.t) = 
