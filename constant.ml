@@ -21,3 +21,9 @@ let near = 5
  ***********************************************************)
 let coin_width = 4
 let coin_radius = coin_width / 2
+
+(**********************************************************
+   Projectile constants
+ ***********************************************************)
+let projectile_width = 6
+let projectile_radius = projectile_width / 2

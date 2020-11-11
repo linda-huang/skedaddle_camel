@@ -64,9 +64,21 @@ let draw_coin (coin : Coin.t) =
               (x+coin_radius, y-coin_radius); 
               (x-coin_radius, y-coin_radius)|]
 
+let draw_projectile (proj : Projectile.t) =
+  Graphics.rgb 79 212 219 |> set_color ; (* light blue *)
+  let (x, y) = (proj.pos.x, proj.pos.y) in 
+  fill_poly [|(x-projectile_radius,y+projectile_radius); 
+              (x+projectile_radius,y+projectile_radius); 
+              (x+projectile_radius, y-projectile_radius); 
+              (x-projectile_radius, y-projectile_radius)|];
+  Graphics.moveto (x - 50) (y - 50);
+  Graphics.draw_string (string_of_int proj.dir);
+  ()
+
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
+  List.iter draw_projectile st.projectiles;
   Graphics.synchronize ();
   ()

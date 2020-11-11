@@ -121,7 +121,7 @@ let init () =
 let main () = 
   Graphics.open_graph " ";
   Graphics.auto_synchronize false;
-  Graphics.set_window_title "Skedadle Camel";
+  Graphics.set_window_title "Skedaddle Camel";
   (* Graphics.resize_window window_width window_height; *)
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;

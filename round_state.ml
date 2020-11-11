@@ -70,7 +70,7 @@ let near_enemy (camel : Camel.t) (st : t) =
    instantiates a new projectile in the round_? do we keep a list of all
    active projectiles as a field in the round_*)
 let shoot (camel : Camel.t) (st : t) = 
-  let p = Projectile.init (List.length st.projectiles + 1) camel.dir camel.pos 
+  let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
 (* [move_proj st] is the round_with all active projectiles moved one step 
@@ -82,6 +82,12 @@ let move_proj (st : t) =
   {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
                   not (hit_wall st p.pos p.dir)) st.projectiles}
+
+let hit_enemy (st : t) = 
+  let rec proj_list lst = 
+    failwith "todoo"
+  in   
+  failwith "TOdo"
 
 (** [move_enemy enemy st] is [enemy] with updated position or direction.
     if [enemy] will hit a wall then it turns around, otherwise it

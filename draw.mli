@@ -13,3 +13,5 @@ val draw_coin : Coin.t -> unit
 
 (** [draw_round_state st] is the Graphics representation of [st]. *)
 val draw_round_state : Round_state.t -> unit
+
+val draw_projectile : Projectile.t -> unit
