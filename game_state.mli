@@ -6,6 +6,8 @@ type game_state =  {
   round_state : Round_state.t
 }
 
+val set_game_state : game_state -> state -> game_state 
+
 (** [new_level gs] is a new game_state with the appropriate
     next round_state level and updated score. *)
 val new_level : game_state -> game_state 

@@ -14,9 +14,9 @@ type round_info = {
   enemies : int
 }
 
-let round1 = {dimx = 15; dimy = 15; enemies = 2}
-let round2 = {dimx = 33; dimy = 33; enemies = 5}
-let round3 = {dimx = 57; dimy = 57; enemies = 10}
+let round1 = {dimx = 11; dimy = 11; enemies = 2}
+let round2 = {dimx = 15; dimy = 15; enemies = 5}
+let round3 = {dimx = 21; dimy = 21; enemies = 10}
 
 let totrounds = 3
 

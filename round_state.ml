@@ -142,8 +142,8 @@ let update_camel (st : t) (scr : Scorer.t) : t =
   let camel'' = camel' in
   (* let camel'' = if (on_coin st) then 
       {camel with coins = camel.coins + 1} else camel' in  *)
-  if (Camel.is_dead camel'') then failwith "gameover" else
-    {st with camel = camel''}  
+  (* if (Camel.is_dead camel'') then failwith "gameover" else *)
+  {st with camel = camel''}  
 
 (* [rem_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 

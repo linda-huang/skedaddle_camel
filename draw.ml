@@ -3,6 +3,7 @@ open Camel
 open Enemy
 open Maze 
 open Round_state
+open Game_state 
 open Scorer 
 open Coin
 open Constant 
@@ -88,5 +89,57 @@ let draw_round_state (st : Round_state.t) =
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
   List.iter draw_projectile st.projectiles;
+  Graphics.synchronize ()
+
+let draw_welcome () = 
+  Graphics.set_window_title "Skedaddle Camel";
+  Graphics.set_text_size 300;
+  Graphics.moveto 20 700;
+  Graphics.draw_string "Welcome to Skedaddle Camel! press any key to start";
+  Graphics.synchronize ()
+
+let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
+  let health = st.camel.health in 
+  let coins = st.camel.coins in 
+  Graphics.draw_string ("Final health: " ^ string_of_int health);
+  Graphics.moveto 50 625;
+  Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
+  Graphics.moveto 50 600;
+  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
+  Graphics.moveto 50 575;
+  Graphics.draw_string ("Final score: " ^ 
+                        string_of_int (Scorer.score scr st.camel));
+  Graphics.synchronize ()
+
+let draw_gameover (gs : Game_state.game_state) : unit = 
+  Graphics.clear_graph ();
+  Graphics.moveto 20 700;
+  Graphics.draw_string "Game ended!";
+  Graphics.moveto 50 650;
+  draw_finscore gs.round_state gs.score; 
   Graphics.synchronize ();
-  ()
+  let s = wait_next_event[Key_pressed] in
+  if s.keypressed then 
+    match Graphics.read_key () with 
+    | '0' -> exit 0
+    | _ -> ()
+
+let draw_won (gs : Game_state.game_state) : unit = 
+  Graphics.clear_graph ();
+  Graphics.moveto 50 1000;
+  Graphics.draw_string "Congratulations! You've escaped!";
+  Graphics.moveto 50 950;
+  draw_finscore gs.round_state gs.score; 
+  Graphics.synchronize ();
+  let s = wait_next_event[Key_pressed] in
+  if s.keypressed then 
+    match Graphics.read_key () with 
+    | '0' -> exit 0
+    | _ -> ()
+
+let draw_game_state (gs : Game_state.game_state) = 
+  match gs.current_state with 
+  | Welcome -> draw_welcome ()
+  | InPlay -> draw_round_state gs.round_state
+  | Won -> draw_won gs
+  | GameOver -> draw_gameover gs
