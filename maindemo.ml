@@ -68,43 +68,38 @@ let rec run (st : Round_state.t) (scr : Scorer.t) =
   Graphics.draw_string (string_of_float (Sys.time ()));
   Graphics.moveto 50 700;
   Graphics.draw_string "press a key to move (press 0 to exit)";
-  (* let new_level st scr =
-     (Graphics.clear_graph ();
-     Graphics.moveto 50 550;
-     Graphics.draw_string "welcome to a new maze!"; 
-     let camel = Camel.init 0. 0. in 
-     let st = State.init camel 10 10 5 in 
-     let scr' = Scorer.update_time scr (Sys.time ()) in 
-     run st scr') in *)
   let newst = input st scr in 
   (* let newst = st in  *)
   ( 
     Draw.draw_round_state newst;
-    let tile = Position.pixel_to_tile st.camel.pos st.top_left_corner in
-    Graphics.moveto 0 0;
-    Graphics.set_text_size 50;
-    Graphics.set_color Graphics.white;
-    Graphics.fill_poly [|(0,0);
-                         (0,40);
-                         (300,40);
-                         (300,0)|];
-    Graphics.set_color Graphics.red;
-    Graphics.draw_string "current tile ";
-    Graphics.draw_string (string_of_int (fst tile));
-    Graphics.draw_string " ";
-    Graphics.draw_string (string_of_int (snd tile));
-    Graphics.draw_string " ";
-    Graphics.draw_string "current direction ";
-    Graphics.draw_string (string_of_int (st.camel.dir));
-    let extract_wall_type maze col row = 
-      match Maze.tile_type maze col row with
-      | Wall -> "wall"
-      | Path -> "path"
-      | Exit -> "exit"
-      | Start -> "start" in
-    Graphics.draw_string (extract_wall_type st.maze (fst tile) (snd tile));
-    Graphics.set_color Graphics.black; 
-    run newst scr)
+    let coord_mapping = Position.pixel_to_tile st.camel.pos st.top_left_corner in
+    match coord_mapping with 
+    | Position.Out_of_bounds -> Graphics.draw_string "out of bounds";
+    | Valid (col, row) -> 
+      Graphics.moveto 0 0;
+      Graphics.set_text_size 50;
+      Graphics.set_color Graphics.white;
+      Graphics.fill_poly [|(0,0);
+                           (0,40);
+                           (300,40);
+                           (300,0)|];
+      Graphics.set_color Graphics.red;
+      Graphics.draw_string "current tile ";
+      Graphics.draw_string (string_of_int col);
+      Graphics.draw_string " ";
+      Graphics.draw_string (string_of_int row);
+      Graphics.draw_string " ";
+      Graphics.draw_string "current direction ";
+      Graphics.draw_string (string_of_int (st.camel.dir));
+      let extract_wall_type maze col row = 
+        match Maze.tile_type maze col row with
+        | Wall -> "wall"
+        | Path -> "path"
+        | Exit -> "exit"
+        | Start -> "start" in
+      Graphics.draw_string (extract_wall_type st.maze col row);
+      Graphics.set_color Graphics.black; 
+      run newst scr)
 
 (** [init k] creates a new game round_state with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)

@@ -28,13 +28,19 @@ let on_coin (st : t)  =
 
 let at_exit (st : t) = 
   let camel = st.camel in 
-  let (col, row) = Position.pixel_to_tile camel.pos st.top_left_corner in 
-  Maze.tile_type st.maze col row = Exit 
+  let coord_mapping = Position.pixel_to_tile camel.pos st.top_left_corner in
+  match coord_mapping with 
+  | Position.Out_of_bounds -> false
+  | Position.Valid (col, row) -> Maze.tile_type st.maze col row = Exit 
 
 let hit_corner (st : t) (pos : Position.t) = 
-  let (col, row) = Position.pixel_to_tile pos st.top_left_corner in 
-  col < 0 || row < 0 || row >= Array.length st.maze 
-  || col >= Array.length st.maze.(0) || (Maze.tile_type st.maze col row = Wall)
+  let coord_mapping = Position.pixel_to_tile pos st.top_left_corner in 
+  match coord_mapping with 
+  | Position.Out_of_bounds -> true
+  | Position.Valid (col, row) -> col < 0 || row < 0 
+                                 || row >= Array.length st.maze 
+                                 || col >= Array.length st.maze.(0) 
+                                 || (Maze.tile_type st.maze col row = Wall)
 
 let hit_wall (st : t) (pos : Position.t) (dir : int) = 
   let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
@@ -48,7 +54,7 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
     | 180 -> (tl, bl)
     | 270 -> (bl, br)
     | _ -> failwith "impossible"
-  in hit_corner st (Position.init_pos (fst two_corners)) && hit_corner st 
+  in hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
        (Position.init_pos (snd two_corners))
 (**********************************************************
    helpers for updating round_state
@@ -87,8 +93,21 @@ let move_proj (st : t) =
     if [enemy] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-  if hit_wall st enemy.pos enemy.dir then move (Enemy.turn_around enemy)
-  else move enemy
+  let future_pos = (move enemy).pos in 
+  if not (hit_wall st future_pos enemy.dir) then move enemy
+  else 
+    let next_move_l = Enemy.change_dir enemy 180 in
+    let next_move_r = Enemy.change_dir enemy 0 in
+    let next_move_up = Enemy.change_dir enemy 90 in
+    let next_move_down = Enemy.change_dir enemy 270 in 
+    let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
+    let valid_moves = List.filter (fun next_move -> not (hit_wall st 
+                                                           (move next_move).pos next_move.dir)) 
+        all_moves in 
+    let random_turn_enemy =  List.nth valid_moves (Random.int (List.length valid_moves))
+    in 
+    move (random_turn_enemy) 
+
 
 (** [move_enemies st] is [st] with all enemies moved one move *)
 let move_enemies (st : t) : t =

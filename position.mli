@@ -2,7 +2,7 @@
 type t = {x : int; y : int}
 
 (* The type representing whether a pixel is within bounds for the maze *)
-type v = Valid of int * int | Out_of_bound
+type v = Valid of int * int | Out_of_bounds
 
 (* [dist p1 p2] is the euclidian distance between [p1] and [p2] *)
 val dist : t -> t -> int
@@ -28,5 +28,5 @@ val tile_to_pixel : int * int -> int * int -> int * int
   Requires:
   [px] >= 0
   [py] >= 0*)
-val pixel_to_tile : t -> int * int -> int * int
+val pixel_to_tile : t -> int * int -> v
 
