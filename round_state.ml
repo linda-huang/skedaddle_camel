@@ -48,7 +48,7 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
     | 180 -> (tl, bl)
     | 270 -> (bl, br)
     | _ -> failwith "impossible"
-  in hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
+  in hit_corner st (Position.init_pos (fst two_corners)) && hit_corner st 
        (Position.init_pos (snd two_corners))
 (**********************************************************
    helpers for updating round_state

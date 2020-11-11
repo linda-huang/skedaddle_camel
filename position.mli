@@ -1,6 +1,9 @@
 (** The type representing a pixel location. *)
 type t = {x : int; y : int}
 
+(* The type representing whether a pixel is within bounds for the maze *)
+type v = Valid of int * int | Out_of_bound
+
 (* [dist p1 p2] is the euclidian distance between [p1] and [p2] *)
 val dist : t -> t -> int
 
