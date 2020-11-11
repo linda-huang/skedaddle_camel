@@ -65,8 +65,6 @@ let input (st : Round_state.t) (scr : Scorer.t) : Round_state.t =
 (** [run st] runs the game responding to key presses *)
 let rec run (st : Round_state.t) (scr : Scorer.t) = 
   (* Graphics.open_graph " "; *)
-  Graphics.moveto 50 800; 
-  Graphics.draw_string (string_of_float (Sys.time ()));
   Graphics.moveto 50 750; 
   Graphics.draw_string (Scorer.string_of_score scr st.camel); 
   Graphics.moveto 50 700;
@@ -106,7 +104,7 @@ let init () =
 let main () = 
   Graphics.open_graph " ";
   Graphics.auto_synchronize false;
-  Graphics.set_window_title "Skedadle Camel";
+  Graphics.set_window_title "Skedaddle Camel";
   (* Graphics.resize_window window_width window_height; *)
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;

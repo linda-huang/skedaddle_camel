@@ -6,6 +6,7 @@ open Round_state
 open Scorer 
 open Coin
 open Constant 
+open Unix
 
 let draw_element x y color size= 
   set_color color;
@@ -64,10 +65,16 @@ let draw_coin (coin : Coin.t) =
               (x+coin_radius, y-coin_radius); 
               (x-coin_radius, y-coin_radius)|]
 
-let draw_round_state (st : Round_state.t) = 
-  draw_maze st;
-  draw_camel st.camel; 
-  Array.iter draw_enemy st.enemies; 
+
+let draw_time (x, y) =
+  set_color Graphics.white;
+  fill_poly [|(x-50,y+5); 
+              (x+150,y+5); 
+              (x+150, y-5); 
+              (x-50, y-5)|];
+  Graphics.moveto x y;
+  set_color Graphics.black;
+  Graphics.draw_string (string_of_float (Unix.gettimeofday ()));
   ()
 
 let draw_message (msg : string) ((x, y) : int * int) = 
@@ -79,3 +86,11 @@ let draw_message (msg : string) ((x, y) : int * int) =
     | h :: t -> Graphics.draw_string h; writeline t (xpos - 10) (ypos - 10)
   in 
   writeline msglst x y
+
+let draw_round_state (st : Round_state.t) = 
+  draw_maze st;
+  draw_camel st.camel; 
+  Array.iter draw_enemy st.enemies; 
+  draw_time(0, 0);
+  (* draw_message (string_of_float (Unix.gettimeofday ())) (0,0); *)
+  ()
