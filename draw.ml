@@ -18,12 +18,21 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
     curr_pos := ((fst !curr_pos), (snd start_pos) - i*Constant.tile_width);
     for j = 0 to maze_col - 1 do begin  
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width , snd !curr_pos);
-      if tile_type gen_maze j i = Wall then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Graphics.black 
+      let tile = tile_type gen_maze j i in
+      if tile = Wall then begin
+        draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
+          Constant.tile_width;
+      end 
+      else if tile = Start then begin 
+        draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
+          Constant.tile_width;
+      end
+      else if tile = Exit then begin
+        draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
           Constant.tile_width;
       end
       else
-        draw_element (fst !curr_pos) (snd !curr_pos) Graphics.green 
+        draw_element (fst !curr_pos) (snd !curr_pos) Constant.path_color
           Constant.tile_width;
     end
     done
@@ -38,7 +47,7 @@ let draw_maze (st : Round_state.t) =
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
-  let color = Graphics.rgb 220 206 192 in 
+  let color = Constant.camel_color in 
   set_color color; 
   let (x, y) = (camel.pos.x, camel.pos.y) in 
   fill_poly [|(x-camel_radius,y+camel_radius); 
@@ -47,7 +56,7 @@ let draw_camel (camel : Camel.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_enemy (enemy : Enemy.t) = 
-  let color = Graphics.rgb 179 27 27 in 
+  let color = Constant.enemy_color in 
   set_color color; 
   let (x, y) = (enemy.pos.x, enemy.pos.y) in 
   fill_poly [|(x-camel_radius,y+camel_radius); 

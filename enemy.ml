@@ -7,9 +7,12 @@ type t = {
 
 let speed = 1
 
+let change_dir camel dir = 
+  {camel with dir = dir} 
+
 let turn_around camel = 
   Random.self_init ();
-  {camel with dir = (camel.dir + (Random.int 4) * 90) mod 360;}
+  {camel with dir = (camel.dir + (Random.int 4) * 90) mod 360}
 
 let move_horiz pos sign = 
   {pos with x = pos.x + sign * speed}

@@ -3,6 +3,8 @@ type t = {
   pos : Position.t;
 }
 
+val change_dir : t -> int -> t 
+
 (** [speed] is the number of pixels an Enemy moves per turn *)
 val speed : int
 
