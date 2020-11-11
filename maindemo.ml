@@ -98,8 +98,11 @@ let rec run (st : Round_state.t) (scr : Scorer.t) =
         | Exit -> "exit"
         | Start -> "start" in
       Graphics.draw_string (extract_wall_type st.maze col row);
-      Graphics.set_color Graphics.black; 
-      run newst scr)
+      Graphics.set_color Graphics.black;
+      if extract_wall_type st.maze col row = "exit" then 
+        let newlvl = Round_state.init 21 21 10 in 
+        run newlvl (Scorer.update_time scr (Sys.time ())) 
+      else run newst scr)
 
 (** [init k] creates a new game round_state with camel initialized at the origin
     in a maze of dimensions 10x10 and then runs the game *)

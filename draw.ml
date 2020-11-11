@@ -81,8 +81,7 @@ let draw_projectile (proj : Projectile.t) =
               (x+projectile_radius, y-projectile_radius); 
               (x-projectile_radius, y-projectile_radius)|];
   Graphics.moveto (x - 50) (y - 50);
-  Graphics.draw_string (string_of_int proj.dir);
-  ()
+  Graphics.draw_string (string_of_int proj.dir)
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
