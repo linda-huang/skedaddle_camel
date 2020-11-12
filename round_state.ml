@@ -145,7 +145,7 @@ let update_camel (st : t) : t =
       {camel with coins = camel.coins + 1} else camel' in  *)
   {st with camel = camel'}  
 
-(* [rem_coin c st] is [st] with [c] removed *)
+(* [remove_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
       (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
