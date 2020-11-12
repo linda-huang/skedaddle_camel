@@ -44,6 +44,7 @@ let draw_maze (st : Round_state.t) =
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
   moveto (fst start_pos) (snd start_pos);
   Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.black;
   Graphics.draw_string "WELCOME TO CAMEL MAZE";
   draw_walls st.maze start_pos st.rows st.cols
 
@@ -72,14 +73,13 @@ let draw_coin (coin : Coin.t) =
               (x-coin_radius, y-coin_radius)|]
 
 let draw_projectile (proj : Projectile.t) =
-  set_color Constant.projectile_color; (* light blue *)
+  set_color Constant.projectile_color;
   let (x, y) = (proj.pos.x, proj.pos.y) in 
   fill_poly [|(x-projectile_radius,y+projectile_radius); 
               (x+projectile_radius,y+projectile_radius); 
               (x+projectile_radius, y-projectile_radius); 
               (x-projectile_radius, y-projectile_radius)|];
-  Graphics.moveto (x - 50) (y - 50);
-  Graphics.draw_string (string_of_int proj.dir)
+  ()
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;

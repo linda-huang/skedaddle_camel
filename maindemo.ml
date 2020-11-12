@@ -6,10 +6,12 @@ open Round_state
 open Scorer
 open Draw
 open Game_state
+open Unix
 
 (** [input st] updates [st] in response to user key presses *)
 let input (gs : Game_state.game_state) : Game_state.game_state = 
   let rec wait_kp (gs : Game_state.game_state) : Game_state.game_state = 
+    Unix.sleepf 0.001;
     if not (Graphics.key_pressed ()) then  
       let st' = update_round_state gs.round_state gs.score in
       let gs' =  if Camel.is_dead st'.camel 
