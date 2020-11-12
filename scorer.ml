@@ -8,6 +8,7 @@ type t = {
 
 let time_mult = 100.
 let hit_bonus = 10
+let health_bonus = 50
 
 let update_time scr time = 
   let newtimes = 
@@ -17,11 +18,12 @@ let update_time scr time =
   in {scr with mazes = scr.mazes + 1; time = newtimes} 
 
 let score scr camel = 
-  let health = camel.health in 
+  let health = if camel.health < 0 then 0 else camel.health in 
   let timecalc = List.fold_left 
       (fun acc x -> let x' = if x > time_mult then 0. else time_mult -. x in 
         acc +. x') 0. scr.time in 
-  scr.mazes * health * int_of_float timecalc + scr.hit * hit_bonus
+  scr.mazes * int_of_float timecalc + scr.hit * hit_bonus + 
+  health * health_bonus
 
 let string_of_score scr camel = 
   let num = score scr camel in 

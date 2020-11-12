@@ -13,7 +13,7 @@ val new_level : game_state -> game_state
 (** [update_game_state gs st] is an updated game_state with 
     round_state [st] and score updated appropriately, given how 
     many enemies were shot since the last update *)
-val update_game_state : game_state -> Round_state.t -> game_state 
+val update_game_state : game_state -> game_state 
 
 (** [init st] is a fresh game_state with round_state [st], 
     empty score, and Welcome current_state. *)

@@ -96,7 +96,10 @@ let draw_welcome () =
   Graphics.moveto 20 650; 
   Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
   Graphics.moveto 20 600; 
-  Graphics.draw_string "Use WASD to move and press space to drop projectiles.";
+  Graphics.draw_string "Use WASD to move and press space to shoot projectiles.";
+  Graphics.moveto 20 575;
+  Graphics.draw_string "The projectiles will be 
+  shot in the same direction you are going.";
   Graphics.moveto 20 550; 
   Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
   Graphics.moveto 20 500; 

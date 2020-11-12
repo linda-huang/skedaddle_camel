@@ -137,7 +137,7 @@ let move_enemies (st : t) : t =
 
 (* [update_camel st] is the round_with the camel's 
    health and coin total updated *)
-let update_camel (st : t) (scr : Scorer.t) : t = 
+let update_camel (st : t) : t = 
   let camel = st.camel in 
   let camel' = if (near_enemy camel st) then 
       {camel with health = camel.health - 1} else camel in 
@@ -159,9 +159,8 @@ let get_coin (st : t) : t =
 (** [update round_st] is [st] with all agents updated one move
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
-let update_round_state (st : t) (scr : Scorer.t): t = 
-  let st' = update_camel st scr |> move_proj |> move_enemies in st'
-(* if (on_coin st') then get_coin st' else st' *)
+let update_round_state (st : t) : t = 
+  update_camel st |> move_proj |> move_enemies |> hit_enemy
 
 (************************************************************
    initialization

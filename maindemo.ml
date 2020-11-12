@@ -13,10 +13,11 @@ let input (gs : Game_state.game_state) : Game_state.game_state =
   let rec wait_kp (gs : Game_state.game_state) : Game_state.game_state = 
     Unix.sleepf 0.001;
     if not (Graphics.key_pressed ()) then  
-      let st' = update_round_state gs.round_state gs.score in
-      let gs' =  if Camel.is_dead st'.camel 
-        then {gs with current_state = GameOver; round_state = st'} 
-        else {gs with round_state = st'} in 
+      (* let st' = update_round_state gs.round_state in *)
+      let gs' = Game_state.update_game_state gs in 
+      (* if Camel.is_dead st'.camel 
+         then {gs with current_state = GameOver; round_state = st'} 
+         else Game_state.update_game_state gs st' in  *)
       Draw.draw_game_state gs';
       wait_kp gs' 
     else gs

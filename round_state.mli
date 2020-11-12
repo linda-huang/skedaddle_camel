@@ -49,7 +49,7 @@ val move_enemies : t -> t
 (** [update_round_state st] is [st] with all agents updated one move
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
-val update_round_state : t -> Scorer.t -> t 
+val update_round_state : t -> t 
 
 (** [init camel x y numenemy] is a fresh round_state with [camel] at
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
