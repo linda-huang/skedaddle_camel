@@ -145,7 +145,7 @@ let update_camel (st : t) (scr : Scorer.t) : t =
       {camel with coins = camel.coins + 1} else camel' in  *)
   {st with camel = camel'}  
 
-(* [rem_coin c st] is [st] with [c] removed *)
+(* [remove_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
       (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
@@ -160,8 +160,8 @@ let get_coin (st : t) : t =
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
 let update_round_state (st : t) (scr : Scorer.t): t = 
-  let st' = update_camel st scr |> move_proj |> move_enemies in st'
-(* if (on_coin st') then get_coin st' else st' *)
+  let st' = update_camel st scr |> move_proj |> move_enemies in
+  if (on_coin st') then get_coin st' else st'
 
 (************************************************************
    initialization

@@ -86,6 +86,7 @@ let draw_round_state (st : Round_state.t) =
   draw_camel st.camel; 
   Array.iter draw_enemy st.enemies; 
   List.iter draw_projectile st.projectiles;
+  Array.iter draw_coin st.coins;
   Graphics.synchronize ()
 
 let draw_welcome () = 
