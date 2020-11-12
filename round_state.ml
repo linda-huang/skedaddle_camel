@@ -33,6 +33,7 @@ let at_exit (st : t) =
   | Position.Out_of_bounds -> false
   | Position.Valid (col, row) -> Maze.tile_type st.maze col row = Exit 
 
+(** [hit_corner st pos] detects if [pos] is out of bounds or is a wall*)
 let hit_corner (st : t) (pos : Position.t) = 
   let coord_mapping = Position.pixel_to_tile pos st.top_left_corner in 
   match coord_mapping with 
@@ -56,6 +57,7 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
     | _ -> failwith "impossible"
   in hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
        (Position.init_pos (snd two_corners))
+
 (**********************************************************
    helpers for updating round_state
  ***********************************************************)
@@ -87,7 +89,7 @@ let move_proj (st : t) =
                        List.map Projectile.move_proj st.projectiles} in 
   {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall st p.pos p.dir)) st.projectiles}
+                  not (hit_wall st' p.pos p.dir)) st'.projectiles}
 
 (** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
     If a projectile has hit an enemy, both the projectile and enemy 
@@ -99,7 +101,7 @@ let hit_enemy (st : t) =
     | [] -> (accproj, accenemy)
     | h :: t -> let remaining  = 
                   List.fold_left (fun acc (x : Enemy.t) -> 
-                      if Position.dist x.pos h.pos < near  
+                      if Position.dist x.pos h.pos < near + camel_width  
                       then acc else x :: acc) [] accenemy in 
       if List.length remaining = List.length accenemy  
       then check_proj t (h :: accproj, remaining) 
@@ -139,11 +141,9 @@ let update_camel (st : t) (scr : Scorer.t) : t =
   let camel = st.camel in 
   let camel' = if (near_enemy camel st) then 
       {camel with health = camel.health - 1} else camel in 
-  let camel'' = camel' in
   (* let camel'' = if (on_coin st) then 
       {camel with coins = camel.coins + 1} else camel' in  *)
-  (* if (Camel.is_dead camel'') then failwith "gameover" else *)
-  {st with camel = camel''}  
+  {st with camel = camel'}  
 
 (* [rem_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 

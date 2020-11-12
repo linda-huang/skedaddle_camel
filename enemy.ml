@@ -27,7 +27,6 @@ let move enemy =
   else if dir = 90 then {enemy with pos = (move_vert enemy.pos 1)}
   else {enemy with pos = (move_vert enemy.pos ~-1)}
 
-
 let init d p = {
   dir = d;
   pos = p;

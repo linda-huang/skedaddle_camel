@@ -15,6 +15,8 @@ val near : int
 
 val coin_width : int
 val coin_radius : int
+val coin_color : Graphics.color
 
 val projectile_width : int
 val projectile_radius : int
+val projectile_color : Graphics.color 

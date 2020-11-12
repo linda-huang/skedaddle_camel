@@ -8,13 +8,15 @@ type game_state = {
   round_state : Round_state.t
 }
 
+(* [round_info] stores constants about each round
+   e.g. the size of maze and number of enemies *)
 type round_info = {
   dimx : int;
   dimy : int;
   enemies : int
 }
 
-let round1 = {dimx = 11; dimy = 11; enemies = 2}
+let round1 = {dimx = 11; dimy = 11; enemies = 1}
 let round2 = {dimx = 15; dimy = 15; enemies = 5}
 let round3 = {dimx = 21; dimy = 21; enemies = 10}
 
@@ -36,7 +38,7 @@ let new_level (gs : game_state) : game_state =
     else if Camel.is_dead gs.round_state.camel then 
       {gs with current_state = GameOver} 
     else 
-      let round = if gs.score.mazes = 1 then round2 else round3 in 
+      let round = if gs.score.mazes = 0 then round2 else round3 in 
       let newstate = Round_state.init round.dimx round.dimy round.enemies in 
       {gs with score = newscr; round_state = newstate}
 

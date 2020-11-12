@@ -27,9 +27,11 @@ let start_color = Graphics.rgb 146 168 209
  ***********************************************************)
 let coin_width = 4
 let coin_radius = coin_width / 2
+let coin_color = Graphics.rgb 171 149 7
 
 (**********************************************************
    Projectile constants
  ***********************************************************)
 let projectile_width = 6
 let projectile_radius = projectile_width / 2
+let projectile_color = Graphics.rgb 79 212 219

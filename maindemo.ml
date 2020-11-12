@@ -7,39 +7,15 @@ open Scorer
 open Draw
 open Game_state
 
-let game_over st scr = 
-  let health = st.camel.health in 
-  let coins = st.camel.coins in 
-  (* let enem = st.camel.bodycount in *)
-  Graphics.clear_graph ();
-  Graphics.moveto 50 1000;
-  Graphics.draw_string "Game ended!";
-  Graphics.moveto 50 950;
-  Graphics.draw_string ("Final health: " ^ string_of_int health);
-  Graphics.moveto 50 900;
-  (* Graphics.draw_string ("Enemies killed: " ^ string_of_int st.camel.bodycount);*)
-  Graphics.moveto 50 850;
-  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
-  Graphics.moveto 50 800;
-  Graphics.draw_string ("Final score: " ^ 
-                        string_of_int (Scorer.score scr st.camel));
-  let s = wait_next_event[Key_pressed] in
-  if s.keypressed then exit 0 (*Graphics.close_graph ()*)
-  else st 
-
-(** [input st k] updates [st] in response to [k].
-    It ends the game when [k] = '0' *)
+(** [input st] updates [st] in response to user key presses *)
 let input (gs : Game_state.game_state) : Game_state.game_state = 
-  (* while not key pressed
-     if Unix.time mod 1000 (some small time increment?) then move all proj and enemies *)
   let rec wait_kp (gs : Game_state.game_state) : Game_state.game_state = 
     if not (Graphics.key_pressed ()) then  
       let st' = update_round_state gs.round_state gs.score in
       let gs' =  if Camel.is_dead st'.camel 
-        then Game_state.set_game_state gs GameOver 
+        then {gs with current_state = GameOver; round_state = st'} 
         else {gs with round_state = st'} in 
       Draw.draw_game_state gs';
-      (* Graphics.synchronize (); *)
       wait_kp gs' 
     else gs
   in 
@@ -66,10 +42,9 @@ let input (gs : Game_state.game_state) : Game_state.game_state =
 
 (** [run st] runs game responding to key presses *)
 let rec run (gs : Game_state.game_state) = 
-  Graphics.moveto 50 800; 
+  Graphics.moveto 50 10; 
   Graphics.draw_string (string_of_float (Sys.time ()));
-  Graphics.moveto 50 700;
-  (* Graphics.draw_string "press a key to move (press 0 to exit)"; *)
+  Graphics.moveto 50 10;
   let newgs = input gs in 
   Draw.draw_game_state newgs;
   let coord_mapping = Position.pixel_to_tile gs.round_state.camel.pos 
@@ -115,7 +90,6 @@ let init () =
   let s = wait_next_event[Key_pressed] in 
   if s.keypressed then 
     let gs' = Game_state.new_level gs in 
-    (* Graphics.draw_string "check init"; *)
     run gs'
 
 (* Start on key press *)
@@ -127,9 +101,7 @@ let main () =
   Graphics.moveto 20 700;
   Graphics.draw_string "press any key to start";
   Graphics.synchronize ();
-
-  let s = wait_next_event[Key_pressed] in 
-  if s.keypressed then init ()
+  init ()
 
 (* Execute the demo. *)
 let () = main ()

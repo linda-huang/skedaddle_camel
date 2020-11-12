@@ -48,8 +48,7 @@ let draw_maze (st : Round_state.t) =
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
-  let color = Constant.camel_color in 
-  set_color color; 
+  set_color Constant.camel_color; 
   let (x, y) = (camel.pos.x, camel.pos.y) in 
   fill_poly [|(x-camel_radius,y+camel_radius); 
               (x+camel_radius,y+camel_radius); 
@@ -57,8 +56,7 @@ let draw_camel (camel : Camel.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_enemy (enemy : Enemy.t) = 
-  let color = Constant.enemy_color in 
-  set_color color; 
+  set_color Constant.enemy_color; 
   let (x, y) = (enemy.pos.x, enemy.pos.y) in 
   fill_poly [|(x-camel_radius,y+camel_radius); 
               (x+camel_radius,y+camel_radius); 
@@ -66,8 +64,7 @@ let draw_enemy (enemy : Enemy.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_coin (coin : Coin.t) =
-  let color = Graphics.rgb 171 149 7 in 
-  set_color color;
+  set_color Constant.coin_color;
   let (x, y) = (coin.pos.x, coin.pos.y) in 
   fill_poly [|(x-coin_radius,y+coin_radius); 
               (x+coin_radius,y+coin_radius); 
@@ -75,7 +72,7 @@ let draw_coin (coin : Coin.t) =
               (x-coin_radius, y-coin_radius)|]
 
 let draw_projectile (proj : Projectile.t) =
-  Graphics.rgb 79 212 219 |> set_color ; (* light blue *)
+  set_color Constant.projectile_color; (* light blue *)
   let (x, y) = (proj.pos.x, proj.pos.y) in 
   fill_poly [|(x-projectile_radius,y+projectile_radius); 
               (x+projectile_radius,y+projectile_radius); 
@@ -95,40 +92,53 @@ let draw_welcome () =
   Graphics.set_window_title "Skedaddle Camel";
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;
-  Graphics.draw_string "Welcome to Skedaddle Camel! press any key to start";
+  Graphics.draw_string "Welcome to Skedaddle Camel!";
+  Graphics.moveto 20 650; 
+  Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
+  Graphics.moveto 20 600; 
+  Graphics.draw_string "Use WASD to move and press space to drop projectiles.";
+  Graphics.moveto 20 550; 
+  Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
+  Graphics.moveto 20 500; 
+  Graphics.draw_string "Press any key to start";
   Graphics.synchronize ()
 
 let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
-  let health = st.camel.health in 
   let coins = st.camel.coins in 
-  Graphics.draw_string ("Final health: " ^ string_of_int health);
-  Graphics.moveto 50 625;
+  let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
+  let x = fst start_pos in 
+  let y = snd start_pos in 
+  Graphics.moveto x (y - 25);
   Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
-  Graphics.moveto 50 600;
+  Graphics.moveto x (y - 50);
   Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
-  Graphics.moveto 50 575;
+  Graphics.moveto x (y - 75);
   Graphics.draw_string ("Final score: " ^ 
                         string_of_int (Scorer.score scr st.camel));
   Graphics.synchronize ()
 
 let draw_gameover (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
-  Graphics.moveto 20 700;
+  let start_pos = (fst gs.round_state.top_left_corner, 
+                   snd gs.round_state.top_left_corner) in
+  let x = fst start_pos in 
+  let y = snd start_pos in 
+  Graphics.moveto x y;
   Graphics.draw_string "Game ended!";
-  Graphics.moveto 50 650;
   draw_finscore gs.round_state gs.score; 
   Graphics.synchronize ();
-  let s = wait_next_event[Key_pressed] in
-  if s.keypressed then 
-    match Graphics.read_key () with 
-    | '0' -> exit 0
-    | _ -> ()
+  match Graphics.read_key () with 
+  | '0' -> exit 0
+  | _ -> ()
 
 let draw_won (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
-  Graphics.moveto 50 1000;
+  let start_pos = (fst gs.round_state.top_left_corner, 
+                   snd gs.round_state.top_left_corner) in
+  let x = fst start_pos in 
+  let y = snd start_pos in 
+  Graphics.moveto x y;
   Graphics.draw_string "Congratulations! You've escaped!";
-  Graphics.moveto 50 950;
   draw_finscore gs.round_state gs.score; 
   Graphics.synchronize ();
   let s = wait_next_event[Key_pressed] in
