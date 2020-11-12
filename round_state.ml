@@ -160,7 +160,8 @@ let get_coin (st : t) : t =
     e.g. all enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
 let update_round_state (st : t) : t = 
-  update_camel st |> move_proj |> move_enemies |> hit_enemy
+  let st' = update_camel st |> move_proj |> move_enemies |> hit_enemy in 
+  if on_coin st' then get_coin st' else st' 
 
 (************************************************************
    initialization
