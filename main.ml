@@ -2,114 +2,112 @@ open Graphics
 open Camel
 open Enemy
 open Maze 
-open State      
+open Round_state
+open Scorer
+open Draw
+open Game_state
+open Unix
 
-let fightingring = 
-  [| [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
-     [|Wall; Start; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Path; Wall;|];
-     [|Wall; Path; Path; Path; Path; Path; Path; Path; Exit; Wall;|];
-     [|Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall; Wall;|];
-  |]
-(** [is_dead camel] is if [camel] has run out of health *)
-let is_dead camel = camel.health = 0
-
-let at_exit (st : State.t) = 
-  let camel = st.camel in 
-  let (x, y) = State.curr_tile camel.pos in 
-  Maze.tile_type st.maze x y = Exit 
-
-(* [update_camel st] is the state with the camel's 
-   health and coin total updated *)
-let update_camel (st : State.t) : State.t = 
-  let camel = st.camel in 
-  let camel' = if (State.near_enemy camel st) then 
-      {camel with health = camel.health - 1} else camel in 
-  let camel'' = if (State.on_coin camel st) then 
-      {camel with coins = camel.coins + 1} else camel' in 
-  if (is_dead camel'') then failwith " game over " else
-    {st with camel = camel''}  
-
-(** [get_coin st] is [st] with the coin the camel is currently on removed *)
-let get_coin (st : State.t) : State.t = 
-  let c = find_coin st.camel.pos st in 
-  rem_coin c st 
-
-(** [update_state st] is [st] with all agents updated one move
-    e.g. all enemies moved one step; projectiles moved one unit; 
-    any applicable coins picked up; camel score and health adjusted *)
-let update_state (st : State.t) : State.t = 
-  let st' = st |> update_camel |> State.move_proj |> State.move_enemies in 
-  if (State.on_coin st'.camel st') then get_coin st' else st'
-
-(** [draw_state st] is the Graphics representation of [st] *)
-let draw_state st = failwith "todo" 
-
-(** [input st k] updates [st] in response to [k].
-    It ends the game when [k] = '0' *)
-let input (st : State.t) (k : char) : State.t =  
-  Graphics.clear_graph ();
-  Graphics.moveto 50 500;
-  let camel = st.camel in 
+(** [input st] updates [st] in response to user key presses *)
+let input (gs : Game_state.game_state) : Game_state.game_state = 
+  let rec wait_kp (gs : Game_state.game_state) : Game_state.game_state = 
+    Unix.sleepf 0.001;
+    if not (Graphics.key_pressed ()) then  
+      (* let st' = update_round_state gs.round_state in *)
+      let gs' = Game_state.update_game_state gs in 
+      (* if Camel.is_dead st'.camel 
+         then {gs with current_state = GameOver; round_state = st'} 
+         else Game_state.update_game_state gs st' in  *)
+      Draw.draw_game_state gs';
+      wait_kp gs' 
+    else gs
+  in 
+  let gs = wait_kp gs in  
+  let camel = gs.round_state.camel in 
+  let k = Graphics.read_key () in 
+  let st = gs.round_state in 
   let st' = 
     match k with 
-    | '0' -> exit 0 
-    | 'w' -> {st with camel = (Camel.move_vert camel 1.)}
-    | 'a' -> {st with camel = (Camel.move_horiz camel ~-.1.)}
-    | 's' -> {st with camel = (Camel.move_vert camel ~-.1.)}
-    | 'd' -> {st with camel = (Camel.move_horiz camel 1.)}
+    | '0' -> exit 0  
+    | 'w' -> {st with camel = (Camel.move_vert camel 1 'w')}
+    | 'a' -> {st with camel = (Camel.move_horiz camel ~-1 'a')}
+    | 's' -> {st with camel = (Camel.move_vert camel ~-1 's')}
+    | 'd' -> {st with camel = (Camel.move_horiz camel 1 'd')}
     | 'e' -> {st with camel = (Camel.turn_right camel)}
     | 'q' -> {st with camel = (Camel.turn_left camel)}
-    | ' ' -> State.shoot camel st
+    | ' ' -> shoot camel st
     | _ -> {st with camel = camel} 
+  in
+  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
+    then st else st' in 
+  let finst = 
+    st'' |>  update_round_state 
+    (* st'' |> move_proj |> move_enemies |> hit_enemy  *)
   in 
-  let st'' = if State.hit_wall st'.camel.pos st'.maze then st else st' in 
-  st'' |> State.move_proj |> State.move_enemies 
+  {gs with round_state = finst}
 
-(** [run st] runs the game responding to key presses *)
-let rec run (st : State.t) = 
-  Graphics.moveto 50 500;
-  Graphics.draw_string "press a key to move (press 0 to exit)";
+(** [run st] runs game responding to key presses *)
+let rec run (gs : Game_state.game_state) = 
+  Graphics.moveto 50 10; 
+  Graphics.draw_string (string_of_float (Sys.time ()));
+  Graphics.moveto 50 10;
+  let newgs = input gs in 
+  Draw.draw_game_state newgs;
+  let coord_mapping = Position.pixel_to_tile gs.round_state.camel.pos 
+      gs.round_state.top_left_corner in
+  match coord_mapping with 
+  | Position.Out_of_bounds -> Graphics.draw_string "out of bounds";
+  | Valid (col, row) -> 
+    Graphics.moveto 0 0;
+    Graphics.set_text_size 50;
+    Graphics.set_color Graphics.white;
+    Graphics.fill_poly [|(0,0);
+                         (0,40);
+                         (300,40);
+                         (300,0)|];
+    Graphics.set_color Graphics.red;
+    Graphics.draw_string "current tile ";
+    Graphics.draw_string (string_of_int col);
+    Graphics.draw_string " ";
+    Graphics.draw_string (string_of_int row);
+    Graphics.draw_string " ";
+    Graphics.draw_string "current direction ";
+    Graphics.draw_string (string_of_int (newgs.round_state.camel.dir));
+    let extract_wall_type maze col row = 
+      match Maze.tile_type maze col row with
+      | Wall -> "wall"
+      | Path -> "path"
+      | Exit -> "exit"
+      | Start -> "start" in
+    Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
+    Graphics.set_color Graphics.black;
+    if extract_wall_type gs.round_state.maze col row = "exit" then 
+      run (Game_state.new_level gs)  
+    else run newgs
+
+(** [init k] creates a new game round_state with camel initialized at the origin
+    in a maze of dimensions 10x10 and then runs the game *)
+let init () = 
+  let st = Round_state.init 21 21 5 in 
+  let gs = Game_state.init st in 
+  draw_game_state gs; 
+  Graphics.moveto 20 700;
+  Graphics.synchronize ();
   let s = wait_next_event[Key_pressed] in 
   if s.keypressed then 
-    (Graphics.clear_graph ();
-     let newst = input st s.key in 
-     Graphics.moveto 50 400;
-     Graphics.draw_string ("Began as: " ^ State.string_of_state st);
-     Graphics.moveto 50 300;
-     Graphics.draw_string ("Moved to: " ^ State.string_of_state newst);
-     Graphics.moveto 50 200;
-     if at_exit newst then 
-       (Graphics.clear_graph ();
-        Graphics.moveto 50 550;
-        Graphics.draw_string "welcome to a new maze!"; 
-        let camel = Camel.init 0. 0. in 
-        let st = State.init camel 10 10 5 in 
-        run st)
-     else run newst)
-
-(** [init k] creates a new game State with camel initialized at the origin
-    in a maze of dimensions 10x10 and then runs the game *)
-let init k = 
-  let camel = Camel.init 0. 0. in 
-  let st = State.init camel 11 11 5 in 
-  run st 
+    let gs' = Game_state.new_level gs in 
+    run gs'
 
 (* Start on key press *)
 let main () = 
   Graphics.open_graph " ";
-  Graphics.set_window_title "Skedadle Camel";
-  Graphics.resize_window 1000 2000;
+  Graphics.auto_synchronize false;
+  Graphics.set_window_title "Skedaddle Camel";
   Graphics.set_text_size 300;
-  Graphics.moveto 50 600;
-  Graphics.draw_string "press a key to start";
-  match Graphics.read_key () with 
-  | k -> init k 
+  Graphics.moveto 20 700;
+  Graphics.draw_string "press any key to start";
+  Graphics.synchronize ();
+  init ()
 
 (* Execute the demo. *)
 let () = main ()

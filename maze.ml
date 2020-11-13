@@ -1,5 +1,5 @@
-(* open Graphics;;  *)
 open Graphics
+open Constant 
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
@@ -11,21 +11,25 @@ type t =
 (* maze as a 2d array*)
 type maze = t array array
 
-let path_width = 12
+(** [in_limit maze row col] checks if the position corresponding to 
+    [row] x [col] is within the bounds of [maze]. *)
+let in_limit maze row col = (row >= 0) && (row < Array.length maze) && 
+                            (col >= 0) && (col < Array.length maze.(0))
 
-let in_limit maze posx posy = (posx >= 0) && (posx < Array.length maze) && 
-                              (posy >= 0) && (posy < Array.length maze.(0))
+(** [visisted maze row col] is if the tile at [row] x [col] is a Wall *)
+let visited maze row col = 
+  if maze.(row).(col) = Wall then false else true
 
-let visited maze newx newy = 
-  if maze.(newx).(newy) = Wall then false else true
-
+(** [exchange arr i j] swaps the values at [arr.(i)] and [arr.(j)] *)
 let exchange arr i j = 
   let temp = arr.(i) in 
   arr.(i) <- arr.(j);
   arr.(j) <- temp
 
+(** [shuffle arr] shuffles values in [arr] *)
 let shuffle arr = 
   let rec helper arr counter =
+    Random.self_init ();
     if counter <> 0 then 
       let rand_i = Random.int (Array.length arr) in
       let rand_j = Random.int (Array.length arr) in
@@ -34,42 +38,42 @@ let shuffle arr =
     else ()
   in helper arr 4
 
-let clear_path maze posx posy newx newy = 
-  maze.(newx).(newy) <- Path;
-  let diffx = newx - posx in
-  let diffy = newy - posy in
-  if diffx = -2 then maze.(posx-1).(posy) <- Path
-  else if diffx = 2 then maze.(posx+1).(posy) <- Path
-  else if diffy = -2 then maze.(posx).(posy - 1) <- Path
-  else if diffy = 2 then maze.(posx).(posy + 1) <- Path
+(** [clear_path maze row col new_row new_col] creates a Path *)
+let clear_path maze row col new_row new_col = 
+  maze.(new_row).(new_col) <- Path;
+  let diffx = new_row - row in
+  let diffy = new_col - col in
+  if diffx = -2 then maze.(row-1).(col) <- Path
+  else if diffx = 2 then maze.(row+1).(col) <- Path
+  else if diffy = -2 then maze.(row).(col - 1) <- Path
+  else if diffy = 2 then maze.(row).(col + 1) <- Path
 
-let rec dfs maze posx posy =
-  let direction = [|(posx - 2, posy); (posx + 2, posy); 
-                    (posx, posy - 2); (posx, posy + 2)|] in 
+let rec dfs maze row col =
+  let direction = [|(row - 2, col); (row + 2, col); 
+                    (row, col - 2); (row, col + 2)|] in 
   shuffle direction;
   for i = 0 to Array.length direction - 1 do begin
-    let newx, newy = direction.(i) in
-    if in_limit maze newx newy && not (visited maze newx newy) then begin
-      clear_path maze posx posy newx newy;
-      dfs maze newx newy
+    let new_row, new_col = direction.(i) in
+    if in_limit maze new_row new_col && not (visited maze new_row new_col) 
+    then begin
+      clear_path maze row col new_row new_col;
+      dfs maze new_row new_col
     end
     else ()
   end
   done
 
-let populate n m start_pos = 
-  let maze = Array.make_matrix n m Wall in
-  let startx, starty = start_pos in
-  dfs maze startx starty;
-  maze.(startx).(starty) <- Path;
+let populate cols rows start_pos = 
+  let maze = Array.make_matrix rows cols Wall in
+  let start_row, start_col = start_pos in
+  dfs maze start_row start_col;
+  maze.(start_row).(start_col) <- Path;
   maze.(0).(0) <- Start;
-  maze.(n-1).(m-1) <- Exit;
+  maze.(rows-1).(cols-1) <- Exit;
   maze
 
-(* let maze x y = if maze.(y).(x) = Wall then true else false *)
-
-let tile_type maze x y = 
-  match maze.(y).(x) with
+let tile_type maze col row = 
+  match maze.(row).(col) with
   | Exit -> Exit
   | Start -> Start
   | Wall -> Wall
