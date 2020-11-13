@@ -149,13 +149,14 @@ let update_camel (st : t) : t =
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
       (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
-  {st with camel = {st.camel with coins = st.camel.coins + 1}; 
-           coins = Array.of_list coinlst}
+  {st with coins = Array.of_list coinlst}
 
 (** [get_coin st] is [st] with the coin the camel is currently on removed *)
 let get_coin (st : t) : t = 
   let c = Coin.find_coin st.camel.pos st.coins in 
-  remove_coin c st 
+  let st' = remove_coin c st in 
+  let coindiff = Array.length st.coins - Array.length st'.coins in 
+  {st' with camel = {st'.camel with coins = coindiff}} 
 
 (** [update round_st] is [st] with all agents updated one move
     e.g. all enemies moved one step; projectiles moved one unit; 

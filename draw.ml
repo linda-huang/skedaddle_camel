@@ -96,11 +96,12 @@ let draw_welcome () =
   Graphics.draw_string "Welcome to Skedaddle Camel!";
   Graphics.moveto 20 650; 
   Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
+  Graphics.moveto 20 635;
+  Graphics.draw_string "The beginning of the maze is the blue square in the upper left corner; exit is the bottom right.";
   Graphics.moveto 20 600; 
   Graphics.draw_string "Use WASD to move and press space to shoot projectiles.";
-  Graphics.moveto 20 575;
-  Graphics.draw_string "The projectiles will be 
-  shot in the same direction you are going.";
+  Graphics.moveto 20 585;
+  Graphics.draw_string "The projectiles will be shot in the same direction you are going.";
   Graphics.moveto 20 550; 
   Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
   Graphics.moveto 20 500; 

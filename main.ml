@@ -40,7 +40,10 @@ let input (gs : Game_state.game_state) : Game_state.game_state =
   in
   let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
     then st else st' in 
-  let finst = st'' |> move_proj |> move_enemies |> hit_enemy in 
+  let finst = 
+    st'' |>  update_round_state 
+    (* st'' |> move_proj |> move_enemies |> hit_enemy  *)
+  in 
   {gs with round_state = finst}
 
 (** [run st] runs game responding to key presses *)

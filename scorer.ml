@@ -23,7 +23,7 @@ let score scr camel =
       (fun acc x -> let x' = if x > time_mult then 0. else time_mult -. x in 
         acc +. x') 0. scr.time in 
   scr.mazes * int_of_float timecalc + scr.hit * hit_bonus + 
-  health * health_bonus
+  health * health_bonus + camel.coins 
 
 let string_of_score scr camel = 
   let num = score scr camel in 
