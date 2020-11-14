@@ -33,6 +33,7 @@ graph:
 clean:
 	ocamlbuild -clean
 	rm -rf *.byte
+	rm camels.zip
 
 zip:
 	zip camels.zip *.ml* _tags *.txt Makefile
