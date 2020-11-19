@@ -16,8 +16,8 @@ type round_info = {
   enemies : int
 }
 
-let round1 = {dimx = 11; dimy = 11; enemies = 1}
-let round2 = {dimx = 15; dimy = 15; enemies = 5}
+let round1 = {dimx = 11; dimy = 11; enemies = 0}
+let round2 = {dimx = 15; dimy = 15; enemies = 2}
 let round3 = {dimx = 21; dimy = 21; enemies = 10}
 
 let totrounds = 3
@@ -34,9 +34,10 @@ let new_level (gs : game_state) : game_state =
                  round1.dimx round1.dimy round1.enemies} 
   else 
     let newscr = Scorer.update_time gs.score (Sys.time ()) in
-    if gs.score.mazes = totrounds-1 then {gs with current_state = Won} 
+    if gs.score.mazes = totrounds-1 then 
+      {gs with current_state = Won; score = newscr} 
     else if Camel.is_dead gs.round_state.camel then 
-      {gs with current_state = GameOver} 
+      {gs with current_state = GameOver; score = newscr} 
     else 
       let round = if gs.score.mazes = 0 then round2 else round3 in 
       let newstate = Round_state.init round.dimx round.dimy round.enemies in 
@@ -44,14 +45,14 @@ let new_level (gs : game_state) : game_state =
 
 let update_game_state (gs : game_state) : game_state = 
   let st = Round_state.update_round_state gs.round_state in 
+  let enemies_hit = 
+    (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
+  let gs = {gs with round_state = st; 
+                    score = {gs.score with hit = gs.score.hit + enemies_hit}} in 
   if Round_state.at_exit st then new_level gs else 
   if Camel.is_dead st.camel then 
     {gs with current_state = GameOver; round_state = st} 
-  else 
-    let enemies_hit = 
-      (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
-    {gs with round_state = st; 
-             score = {gs.score with hit = gs.score.hit + enemies_hit}} 
+  else gs
 
 let init (st : Round_state.t) : game_state = 
   {score = Scorer.init (); current_state = Welcome; round_state = st}
