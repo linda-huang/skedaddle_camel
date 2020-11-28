@@ -67,6 +67,12 @@ let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of m
   let row = Random.int (Array.length mz.(0) - 1) in 
   if Wall = Maze.tile_type mz col row then random_valid_tile mz else (col, row)
 
+(** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
+    that is at least 5 tiles away from the origin *)
+let rec random_valid_tile_enemy mz = 
+  let (x, y) = random_valid_tile mz in 
+  if x < 5 || y < 5 then random_valid_tile_enemy mz else (x, y)
+
 (* [near_enemy camel maze] detects if [camel]'s position is near 
    an enemy camel *)
 let near_enemy (camel : Camel.t) (st : t) = 

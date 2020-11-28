@@ -24,10 +24,9 @@ let input (gs : Game_state.game_state) : Game_state.game_state =
   in 
   let gs = wait_kp gs in  
   let camel = gs.round_state.camel in 
-  let k = Graphics.read_key () in 
   let st = gs.round_state in 
   let st' = 
-    match k with 
+    match Graphics.read_key () with 
     | '0' -> exit 0  
     | 'w' -> {st with camel = (Camel.move_vert camel 1 'w')}
     | 'a' -> {st with camel = (Camel.move_horiz camel ~-1 'a')}
@@ -40,11 +39,15 @@ let input (gs : Game_state.game_state) : Game_state.game_state =
   in
   let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
     then st else st' in 
-  let finst = 
-    st'' |>  update_round_state 
-    (* st'' |> move_proj |> move_enemies |> hit_enemy  *)
-  in 
+  let finst = st'' |> update_round_state in 
   {gs with round_state = finst}
+
+(** [flush_keypress ()] clears the queue of key presses 
+    from [Graphics.read_key ()] *)
+let rec flush_keypress () = 
+  if Graphics.key_pressed () 
+  then (ignore (read_key ()); flush_keypress ();)
+  else () 
 
 (** [run st] runs game responding to key presses *)
 let rec run (gs : Game_state.game_state) = 
@@ -81,8 +84,15 @@ let rec run (gs : Game_state.game_state) =
       | Start -> "start" in
     Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
     Graphics.set_color Graphics.black;
-    if extract_wall_type gs.round_state.maze col row = "exit" then 
-      run (Game_state.new_level gs)  
+    if extract_wall_type gs.round_state.maze col row = "exit" then (
+      Unix.sleep 1; 
+      (* flush_keypress (); *)
+      let levelup_gs = Game_state.new_level gs in 
+      (* draw the new level and pause all enemy movement until player moves *)
+      Draw.draw_game_state levelup_gs; 
+      Unix.sleep 1;
+      match Graphics.read_key () with 
+      | _ -> run levelup_gs)  
     else run newgs
 
 (** [init k] creates a new game round_state with camel initialized at the origin
