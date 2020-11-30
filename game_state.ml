@@ -49,7 +49,7 @@ let update_game_state (gs : game_state) : game_state =
     (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
   let gs = {gs with round_state = st; 
                     score = {gs.score with hit = gs.score.hit + enemies_hit}} in 
-  if Round_state.at_exit st then new_level gs else 
+  (* if Round_state.at_exit st then new_level gs else  *)
   if Camel.is_dead st.camel then 
     {gs with current_state = GameOver; round_state = st} 
   else gs

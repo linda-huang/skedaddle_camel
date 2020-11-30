@@ -85,8 +85,6 @@ let rec run (gs : Game_state.game_state) =
     Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
     Graphics.set_color Graphics.black;
     if extract_wall_type gs.round_state.maze col row = "exit" then (
-      Unix.sleep 1; 
-      (* flush_keypress (); *)
       let levelup_gs = Game_state.new_level gs in 
       (* draw the new level and pause all enemy movement until player moves *)
       Draw.draw_game_state levelup_gs; 
