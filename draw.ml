@@ -109,14 +109,14 @@ let draw_welcome () =
   Graphics.synchronize ()
 
 let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
-  (* let coins = st.camel.coins in  *)
+  let coins = st.camel.coins in 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
   let x = fst start_pos in 
   let y = snd start_pos in 
   Graphics.moveto x (y - 25);
   Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
   Graphics.moveto x (y - 50);
-  (* Graphics.draw_string ("Coins collected: " ^ string_of_int coins); *)
+  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
   Graphics.moveto x (y - 75);
   Graphics.draw_string ("Final score: " ^ 
                         string_of_int (Scorer.score scr st.camel));

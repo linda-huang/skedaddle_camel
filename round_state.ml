@@ -161,8 +161,7 @@ let remove_coin (c : Coin.t) (st : t) =
 let get_coin (st : t) : t = 
   let c = Coin.find_coin st.camel.pos st.coins in 
   let st' = remove_coin c st in 
-  let coindiff = Array.length st.coins - Array.length st'.coins in 
-  {st' with camel = {st'.camel with coins = coindiff}} 
+  {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
 (** [update round_st] is [st] with all agents updated one move
     e.g. all enemies moved one step; projectiles moved one unit; 
@@ -186,7 +185,7 @@ let init_coin_lst n mz start_pos=
   Array.init n (fun i -> 
       (Coin.init 
          (random_valid_tile mz |> Position.tile_to_pixel start_pos 
-          |> Position.init_pos) 100))
+          |> Position.init_pos) (100 * Random.int 4 + 100)))
 
 (** [init camel x y numenemy] is a fresh round_with [camel] at
     the beginning of an [x] x [y] maze with [numenemy] enemies *)

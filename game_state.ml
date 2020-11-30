@@ -22,8 +22,7 @@ let round3 = {dimx = 21; dimy = 21; enemies = 10}
 
 let totrounds = 3
 
-let set_game_state g s = 
-  { g with current_state = s }
+let set_game_state g s = { g with current_state = s }
 
 let get_game_state g = g.current_state
 
@@ -48,8 +47,7 @@ let update_game_state (gs : game_state) : game_state =
   let enemies_hit = 
     (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
   let gs = {gs with round_state = st; 
-                    score = {gs.score with hit = gs.score.hit + enemies_hit}} in 
-  (* if Round_state.at_exit st then new_level gs else  *)
+                    score = {gs.score with hit = gs.score.hit + enemies_hit}} in
   if Camel.is_dead st.camel then 
     {gs with current_state = GameOver; round_state = st} 
   else gs

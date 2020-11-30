@@ -69,20 +69,21 @@ let rec run (gs : Game_state.game_state) =
                          (300,40);
                          (300,0)|];
     Graphics.set_color Graphics.red;
-    Graphics.draw_string "current tile ";
-    Graphics.draw_string (string_of_int col);
-    Graphics.draw_string " ";
-    Graphics.draw_string (string_of_int row);
-    Graphics.draw_string " ";
-    Graphics.draw_string "current direction ";
-    Graphics.draw_string (string_of_int (newgs.round_state.camel.dir));
+    (* Graphics.draw_string "current tile ";
+       Graphics.draw_string (string_of_int col);
+       Graphics.draw_string " ";
+       Graphics.draw_string (string_of_int row);
+       Graphics.draw_string " ";
+       Graphics.draw_string "current direction ";
+       Graphics.draw_string (string_of_int (newgs.round_state.camel.dir)); *)
+    Graphics.draw_string ("COINS: " ^ string_of_int (newgs.round_state.camel.coins));
     let extract_wall_type maze col row = 
       match Maze.tile_type maze col row with
       | Wall -> "wall"
       | Path -> "path"
       | Exit -> "exit"
       | Start -> "start" in
-    Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
+    (* Graphics.draw_string (extract_wall_type gs.round_state.maze col row); *)
     Graphics.set_color Graphics.black;
     if extract_wall_type gs.round_state.maze col row = "exit" then (
       let levelup_gs = Game_state.new_level gs in 
