@@ -161,6 +161,7 @@ let remove_coin (c : Coin.t) (st : t) =
 let get_coin (st : t) : t = 
   let c = Coin.find_coin st.camel.pos st.coins in 
   let st' = remove_coin c st in 
+  (* let coindiff = Array.length st.coins - Array.length st'.coins in  *)
   {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
 (** [update round_st] is [st] with all agents updated one move
@@ -198,8 +199,8 @@ let init rows cols numenemy =
   let start_y = window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
   let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
   let start_pos = (start_x, start_y) in
-  let camel = Camel.init ((fst start_pos) + camel_radius) ((snd start_pos) - camel_radius) 
-  in
+  let camel = Camel.init ((fst start_pos) + camel_radius) 
+      ((snd start_pos) - camel_radius) in
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;

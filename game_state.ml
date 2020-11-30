@@ -32,7 +32,8 @@ let new_level (gs : game_state) : game_state =
              round_state = Round_state.init 
                  round1.dimx round1.dimy round1.enemies} 
   else 
-    let newscr = Scorer.update_time gs.score (Sys.time ()) in
+    let newscr = 
+      Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
     if gs.score.mazes = totrounds-1 then 
       {gs with current_state = Won; score = newscr} 
     else if Camel.is_dead gs.round_state.camel then 
