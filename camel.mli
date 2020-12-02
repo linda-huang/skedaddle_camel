@@ -3,6 +3,7 @@ type t = {
   pos : Position.t;
   dir : int; (* direction in degrees *)
   health : int;
+  lasthealthlost : float; 
   coins : int;
 }
 

@@ -2,6 +2,7 @@ val camel_speed : int
 val camel_rot : int
 val camel_width : int
 val camel_radius : int
+val health_delay : float 
 val camel_color : Graphics.color
 val enemy_color : Graphics.color
 

@@ -129,13 +129,12 @@ let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t =
     let next_move_up = Enemy.change_dir enemy 90 in
     let next_move_down = Enemy.change_dir enemy 270 in 
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-    let valid_moves = List.filter (fun next_move -> not (hit_wall st 
-                                                           (move next_move).pos next_move.dir)) 
-        all_moves in 
-    let random_turn_enemy =  List.nth valid_moves (Random.int (List.length valid_moves))
+    let valid_moves = List.filter (fun next_move -> 
+        not (hit_wall st (move next_move).pos next_move.dir)) all_moves in 
+    let random_turn_enemy =  
+      List.nth valid_moves (Random.int (List.length valid_moves))
     in 
     move (random_turn_enemy) 
-
 
 (** [move_enemies st] is [st] with all enemies moved one move *)
 let move_enemies (st : t) : t =
@@ -145,8 +144,11 @@ let move_enemies (st : t) : t =
    health and coin total updated *)
 let update_camel (st : t) : t = 
   let camel = st.camel in 
-  let camel' = if (near_enemy camel st) then 
-      {camel with health = camel.health - 1} else camel in 
+  let camel' = if (near_enemy camel st) 
+               && (Unix.gettimeofday ()) -. camel.lasthealthlost 
+                  > Constant.health_delay 
+    then {camel with health = camel.health - 1; lasthealthlost = Unix.gettimeofday ()} 
+    else camel in 
   (* let camel'' = if (on_coin st) then 
       {camel with coins = camel.coins + 1} else camel' in  *)
   {st with camel = camel'}  

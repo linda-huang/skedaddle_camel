@@ -10,8 +10,7 @@ open Constant
 
 let draw_element x y color size= 
   set_color color;
-  fill_poly [|(x,y); (x+size,y); (x+size, y- size); 
-              (x, y-size)|]
+  fill_poly [|(x,y); (x+size,y); (x+size, y- size);(x, y-size)|]
 
 let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
@@ -78,8 +77,7 @@ let draw_projectile (proj : Projectile.t) =
   fill_poly [|(x-projectile_radius,y+projectile_radius); 
               (x+projectile_radius,y+projectile_radius); 
               (x+projectile_radius, y-projectile_radius); 
-              (x-projectile_radius, y-projectile_radius)|];
-  ()
+              (x-projectile_radius, y-projectile_radius)|]
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
@@ -155,6 +153,15 @@ let draw_won (gs : Game_state.game_state) : unit =
 let draw_game_state (gs : Game_state.game_state) = 
   match gs.current_state with 
   | Welcome -> draw_welcome ()
-  | InPlay -> draw_round_state gs.round_state
+  | InPlay -> draw_round_state gs.round_state; 
+    Graphics.moveto 0 0;
+    Graphics.set_text_size 50;
+    Graphics.set_color Graphics.white;
+    Graphics.fill_poly [|(0,0);(0,40);(300,40);(300,0)|];
+    Graphics.set_color Graphics.red;
+    Graphics.draw_string ("COINS: " ^ string_of_int 
+                            (gs.score.coins + gs.round_state.camel.coins));
+    Graphics.draw_string ("     LIVES LEFT: " ^ 
+                          string_of_int gs.round_state.camel.health); 
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs
