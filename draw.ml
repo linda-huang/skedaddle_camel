@@ -109,8 +109,7 @@ let draw_welcome () =
 let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
   let coins = scr.coins in 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
-  let x = fst start_pos in 
-  let y = snd start_pos in 
+  let x, y = start_pos in 
   Graphics.moveto x (y - 25);
   Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
   Graphics.moveto x (y - 50);
@@ -161,7 +160,7 @@ let draw_game_state (gs : Game_state.game_state) =
     Graphics.set_color Graphics.red;
     Graphics.draw_string ("COINS: " ^ string_of_int 
                             (gs.score.coins + gs.round_state.camel.coins));
-    Graphics.draw_string ("     LIVES LEFT: " ^ 
+    Graphics.draw_string (" LIVES LEFT: " ^ 
                           string_of_int gs.round_state.camel.health); 
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs

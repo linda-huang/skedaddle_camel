@@ -1,5 +1,4 @@
-(** [main m n] generates a new maze dimensions [m] x [n]. 
-    Requires: [m] and [n] to be positive and odd. *)
+(** [draw_maze st] draws the maze corresponding to [st] *)
 val draw_maze : Round_state.t -> unit
 
 (** [draw_camel camel] draws a rectangle representing the player's camel.*)

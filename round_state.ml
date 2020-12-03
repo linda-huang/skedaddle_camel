@@ -77,7 +77,7 @@ let rec random_valid_tile_enemy mz =
    an enemy camel *)
 let near_enemy (camel : Camel.t) (st : t) = 
   (* array filter, returns true if an enemy is within a certain distance *)
-  let f (c : Enemy.t) = Position.dist c.pos camel.pos < near in 
+  let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
 (* [shoot camel] shoots a projectile in the direction of [camel]

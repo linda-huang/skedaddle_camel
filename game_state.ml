@@ -8,8 +8,8 @@ type game_state = {
   round_state : Round_state.t
 }
 
-(* [round_info] stores constants about each round
-   e.g. the size of maze and number of enemies *)
+(** [round_info] stores constants about each round
+    e.g. the size of maze and number of enemies *)
 type round_info = {
   dimx : int;
   dimy : int;
