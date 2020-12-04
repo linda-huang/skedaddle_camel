@@ -3,6 +3,7 @@ type t = {
   pos : Position.t;
 }
 
+(** [change_dir camel dir] is [camel] going in direction [dir] *)
 val change_dir : t -> int -> t 
 
 (** [speed] is the number of pixels an Enemy moves per turn *)

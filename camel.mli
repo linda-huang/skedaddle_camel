@@ -3,9 +3,9 @@ type t = {
   pos : Position.t;
   dir : int; (* direction in degrees *)
   health : int;
+  lasthealthlost : float; 
   coins : int;
 }
-
 
 (** [init x y] is a new camel at position ([x],[y]) *)
 val init : int -> int -> t 

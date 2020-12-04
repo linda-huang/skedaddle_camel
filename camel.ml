@@ -5,11 +5,12 @@ type t = {
   pos : Position.t; (* center coordinates of camel *)
   dir : int; (* direction in degrees *)
   health : int;
+  lasthealthlost : float; (* the last time the camel lost health *)
   coins : int;
 }
 
 let init x y = 
-  {pos = {x = x; y = y}; dir = 0; health = 3; coins = 0}
+  {pos = {x = x; y = y}; dir = 0; health = 3; lasthealthlost = 0.; coins = 0}
 
 let rotate camel key =
   match key with 
@@ -27,11 +28,13 @@ let turn_left camel =
 
 let move_horiz camel sign key = 
   let camel' = rotate camel key in
-  {camel' with pos = {x = camel'.pos.x + (sign * Constant.camel_speed); y = camel'.pos.y}}
+  {camel' with pos = {x = camel'.pos.x + (sign * Constant.camel_speed); 
+                      y = camel'.pos.y}}
 
 let move_vert camel sign key = 
   let camel' = rotate camel key in
-  {camel' with pos = {x = camel'.pos.x; y = camel'.pos.y + (sign * Constant.camel_speed)}}
+  {camel' with pos = {x = camel'.pos.x; 
+                      y = camel'.pos.y + (sign * Constant.camel_speed)}}
 
 let adj_health camel h = 
   {camel with health = camel.health + h}
