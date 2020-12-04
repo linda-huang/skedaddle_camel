@@ -47,13 +47,15 @@ let draw_maze (st : Round_state.t) =
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
-  let color = Constant.camel_color in 
-  set_color color; 
-  let (x, y) = (camel.pos.x, camel.pos.y) in 
-  fill_poly [|(x-camel_radius,y+camel_radius); 
+  (* let color = Constant.camel_color in 
+     set_color color; 
+     let (x, y) = (camel.pos.x, camel.pos.y) in 
+     fill_poly [|(x-camel_radius,y+camel_radius); 
               (x+camel_radius,y+camel_radius); 
               (x+camel_radius, y-camel_radius); 
-              (x-camel_radius, y-camel_radius)|]
+              (x-camel_radius, y-camel_radius)|] *)
+  let (x, y) = (camel.pos.x, camel.pos.y) in 
+  draw_image camel_picture (x - camel_radius) (y - camel_radius)
 
 let draw_enemy (enemy : Enemy.t) = 
   let color = Constant.enemy_color in 

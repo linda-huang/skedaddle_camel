@@ -15,3 +15,5 @@ val near : int
 
 val coin_width : int
 val coin_radius : int
+
+val camel_picture : Graphics.image
