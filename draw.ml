@@ -20,8 +20,10 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width , snd !curr_pos);
       let tile = tile_type gen_maze j i in
       if tile = Wall then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
-          Constant.tile_width;
+        let wall_img = make_image path_pic in 
+        draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        (* draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
+           Constant.tile_width; *)
       end 
       else if tile = Start then begin 
         draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
@@ -32,12 +34,13 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
           Constant.tile_width;
       end
       else
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.path_color
-          Constant.tile_width;
+        let path_img = make_image wall_pic in 
+        draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
     end
     done
   end
-  done 
+  done
+
 
 let draw_maze (st : Round_state.t) = 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
@@ -56,7 +59,14 @@ let draw_camel (camel : Camel.t) =
               (x+camel_radius, y-camel_radius); 
               (x-camel_radius, y-camel_radius)|] *)
   let (x, y) = (camel.pos.x, camel.pos.y) in 
-  draw_image camel_picture (x - camel_radius) (y - camel_radius)
+  let camel_pic = match camel.dir with 
+    | 0 -> make_image camel_0
+    | 90 -> make_image camel_90
+    | 180 -> make_image camel_180
+    | 270 -> make_image camel_270
+    | _ -> failwith "impossible"
+  in 
+  draw_image camel_pic (x - camel_radius) (y - camel_radius)
 
 let draw_enemy (enemy : Enemy.t) = 
   set_color Constant.enemy_color; 
@@ -67,12 +77,15 @@ let draw_enemy (enemy : Enemy.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_coin (coin : Coin.t) =
-  set_color Constant.coin_color;
-  let (x, y) = (coin.pos.x, coin.pos.y) in 
-  fill_poly [|(x-coin_radius,y+coin_radius); 
+  (* set_color Constant.coin_color;
+     let (x, y) = (coin.pos.x, coin.pos.y) in 
+     fill_poly [|(x-coin_radius,y+coin_radius); 
               (x+coin_radius,y+coin_radius); 
               (x+coin_radius, y-coin_radius); 
-              (x-coin_radius, y-coin_radius)|]
+              (x-coin_radius, y-coin_radius)|] *)
+  let (x, y) = (coin.pos.x, coin.pos.y) in 
+  let coin_img = make_image coin_pic in 
+  draw_image coin_img (x - coin_radius) (y - coin_radius)
 
 let draw_projectile (proj : Projectile.t) =
   set_color Constant.projectile_color;

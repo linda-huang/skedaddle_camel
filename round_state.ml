@@ -63,8 +63,8 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
  ***********************************************************)
 (* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze.*)
-  let col = Random.int (Array.length mz - 1) in
-  let row = Random.int (Array.length mz.(0) - 1) in 
+  let row = Random.int (Array.length mz - 1) in
+  let col = Random.int (Array.length mz.(0) - 1) in 
   if Wall = Maze.tile_type mz col row then random_valid_tile mz else (col, row)
 
 (** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
@@ -192,8 +192,8 @@ let init_coin_lst n mz start_pos=
 
 (** [init camel x y numenemy] is a fresh round_with [camel] at
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
-let init rows cols numenemy = 
-  let mz = Maze.populate rows cols (0,0) in 
+let init cols rows numenemy = 
+  let mz = Maze.populate cols rows (0,0) in 
   let maze_row = rows in
   let maze_col = cols in
   let window_height = maze_row * Constant.tile_width + 200 in 

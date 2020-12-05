@@ -8,8 +8,8 @@ type t =
 (** The type of maze. *)
 type maze = t array array
 
-(** [populate maze m n (x, y)] is a randomly populated maze with m rows and 
-    n columns. [(x, y)] is the index of the starting position.
+(** [populate maze cols rows (x, y)] is a randomly populated maze with [cols]
+    columns and [rows] rows. [(x, y)] is the index of the starting position.
     Requires:
     [m] >= 1
     [n] >= 1

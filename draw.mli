@@ -1,3 +1,4 @@
+val draw_walls : Maze.maze -> int * int -> int -> int -> unit
 (** [draw_maze st] draws the maze corresponding to [st] *)
 val draw_maze : Round_state.t -> unit
 

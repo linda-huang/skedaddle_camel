@@ -18,7 +18,9 @@ val health_delay : float
 val tile_width : int
 val tile_radius : int
 val path_color : Graphics.color
+val path_pic : Graphics.color array array
 val wall_color : Graphics.color
+val wall_pic : Graphics.color array array
 val start_color : Graphics.color
 val exit_color : Graphics.color
 
@@ -28,10 +30,16 @@ val near : int
 
 val coin_width : int
 val coin_radius : int
-
-val camel_picture : Graphics.image
 val coin_color : Graphics.color
+val coin_pic : Graphics.color array array
 
 val projectile_width : int
 val projectile_radius : int
 val projectile_color : Graphics.color 
+
+val camel_0 : Graphics.color array array
+val camel_90 : Graphics.color array array
+val camel_180 : Graphics.color array array
+val camel_270 : Graphics.color array array
+
+

@@ -53,32 +53,32 @@ let rec run (gs : Game_state.game_state) =
   let coord_mapping = Position.pixel_to_tile gs.round_state.camel.pos 
       gs.round_state.top_left_corner in
   match coord_mapping with 
-  | Position.Out_of_bounds -> Graphics.draw_string "out of bounds";
+  | Position.Out_of_bounds -> failwith "Out_of_bounds";
   | Valid (col, row) -> 
-    Graphics.moveto 0 0;
-    Graphics.set_text_size 50;
-    Graphics.set_color Graphics.white;
-    Graphics.fill_poly [|(0,0);
-                         (0,40);
-                         (300,40);
-                         (300,0)|];
-    Graphics.set_color Graphics.red;
-    Graphics.draw_string "current tile ";
-    Graphics.draw_string (string_of_int col);
-    Graphics.draw_string " ";
-    Graphics.draw_string (string_of_int row);
-    Graphics.draw_string " ";
-    Graphics.draw_string "current direction ";
-    Graphics.draw_string (string_of_int (newgs.round_state.camel.dir));
-    let extract_wall_type maze col row = 
-      match Maze.tile_type maze col row with
-      | Wall -> "wall"
-      | Path -> "path"
-      | Exit -> "exit"
-      | Start -> "start" in
-    Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
-    Graphics.set_color Graphics.black;
-    if extract_wall_type gs.round_state.maze col row = "exit" then 
+    (* Graphics.moveto 0 0;
+       Graphics.set_text_size 50;
+       Graphics.set_color Graphics.white;
+       Graphics.fill_poly [|(0,0);
+                        (0,40);
+                        (300,40);
+                        (300,0)|];
+       Graphics.set_color Graphics.red;
+       Graphics.draw_string "current tile ";
+       Graphics.draw_string (string_of_int col);
+       Graphics.draw_string " ";
+       Graphics.draw_string (string_of_int row);
+       Graphics.draw_string " ";
+       Graphics.draw_string "current direction ";
+       Graphics.draw_string (string_of_int (newgs.round_state.camel.dir)); *)
+    (* let extract_wall_type maze col row = 
+       match Maze.tile_type maze col row with
+       | Wall -> "wall"
+       | Path -> "path"
+       | Exit -> "exit"
+       | Start -> "start" in
+       Graphics.draw_string (extract_wall_type gs.round_state.maze col row);
+       Graphics.set_color Graphics.black; *)
+    if Maze.tile_type gs.round_state.maze col row = Exit then 
       run (Game_state.new_level gs)  
     else run newgs
 
@@ -97,7 +97,7 @@ let init () =
 
 (* Start on key press *)
 let main () = 
-  Graphics.open_graph " ";
+  Graphics.open_graph "";
   Graphics.auto_synchronize false;
   Graphics.set_window_title "Skedaddle Camel";
   Graphics.set_text_size 300;
