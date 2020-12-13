@@ -1,10 +1,10 @@
+(** [Projectile] generation and movement *)
+
+(** The type of a projectile *)
 type t = {
   pos : Position.t;
   dir : int;
 }
-
-(** [speed] is how many pixels a projectile will move each turn *)
-val speed : int
 
 (** [init i d pos] is a projectile with id [i], dir [d]; and pos [pos] *)
 val init : int -> Position.t -> t

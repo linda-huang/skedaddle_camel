@@ -61,39 +61,36 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
 (**********************************************************
    helpers for updating round_state
  ***********************************************************)
-(* [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
-let rec random_valid_tile mz = (* TODO make sure can access xsize and ysize of maze.*)
-  let col = Random.int (Array.length mz - 1) in
-  let row = Random.int (Array.length mz.(0) - 1) in 
-  if Wall = Maze.tile_type mz col row then random_valid_tile mz else (col, row)
+(** [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
+(* TODO make sure can access xsize and ysize of maze.*)
+let rec random_valid_tile mz = 
+  let row = Random.int (Array.length mz - 1) in
+  let col = Random.int (Array.length mz.(0) - 1) in 
+  if Wall = Maze.tile_type mz col row 
+  then random_valid_tile mz else (col, row)
 
-(* [near_enemy camel maze] detects if [camel]'s position is near 
-   an enemy camel *)
+(** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
+    that is at least 5 tiles away from the origin *)
+let rec random_valid_tile_enemy mz = 
+  let (x, y) = random_valid_tile mz in 
+  if x < 5 || y < 5 then random_valid_tile_enemy mz else (x, y)
+
 let near_enemy (camel : Camel.t) (st : t) = 
-  (* array filter, returns true if an enemy is within a certain distance *)
-  let f (c : Enemy.t) = Position.dist c.pos camel.pos < near in 
+  let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
-(* [shoot camel] shoots a projectile in the direction of [camel]
-   instantiates a new projectile in the round_? do we keep a list of all
-   active projectiles as a field in the round_*)
 let shoot (camel : Camel.t) (st : t) = 
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
-(* [move_proj st] is the round_with all active projectiles moved one step 
-   (e.g. in a straight line according to their direction). If a projectile runs
-   into a wall, it stops and is removed from the game. *)
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
                        List.map Projectile.move_proj st.projectiles} in 
   {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall st' p.pos p.dir)) st'.projectiles}
+                  not (hit_wall st' p.pos p.dir)) 
+                st'.projectiles}
 
-(** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
-    If a projectile has hit an enemy, both the projectile and enemy 
-    are removed from [st] *)
 let hit_enemy (st : t) = 
   let rec check_proj (lst : Projectile.t list) 
       ((accproj : Projectile.t list), (accenemy : Enemy.t list)) = 
@@ -102,7 +99,8 @@ let hit_enemy (st : t) =
     | h :: t -> let remaining  = 
                   List.fold_left (fun acc (x : Enemy.t) -> 
                       if Position.dist x.pos h.pos < near + camel_width  
-                      then acc else x :: acc) [] accenemy in 
+                      then acc else x :: acc) 
+                    [] accenemy in 
       if List.length remaining = List.length accenemy  
       then check_proj t (h :: accproj, remaining) 
       else check_proj t (accproj, remaining)
@@ -123,15 +121,13 @@ let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t =
     let next_move_up = Enemy.change_dir enemy 90 in
     let next_move_down = Enemy.change_dir enemy 270 in 
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-    let valid_moves = List.filter (fun next_move -> not (hit_wall st 
-                                                           (move next_move).pos next_move.dir)) 
-        all_moves in 
-    let random_turn_enemy =  List.nth valid_moves (Random.int (List.length valid_moves))
+    let valid_moves = List.filter (fun next_move -> 
+        not (hit_wall st (move next_move).pos next_move.dir)) all_moves in 
+    let random_turn_enemy =  
+      List.nth valid_moves (Random.int (List.length valid_moves))
     in 
     move (random_turn_enemy) 
 
-
-(** [move_enemies st] is [st] with all enemies moved one move *)
 let move_enemies (st : t) : t =
   {st with enemies = Array.map (move_enemy st) st.enemies}
 
@@ -139,28 +135,26 @@ let move_enemies (st : t) : t =
    health and coin total updated *)
 let update_camel (st : t) : t = 
   let camel = st.camel in 
-  let camel' = if (near_enemy camel st) then 
-      {camel with health = camel.health - 1} else camel in 
-  (* let camel'' = if (on_coin st) then 
-      {camel with coins = camel.coins + 1} else camel' in  *)
+  let camel' = if (near_enemy camel st) 
+               && (Unix.gettimeofday ()) -. camel.lasthealthlost 
+                  > Constant.health_delay 
+    then {camel with health = camel.health - 1; 
+                     lasthealthlost = Unix.gettimeofday ()} 
+    else camel in 
   {st with camel = camel'}  
 
-(* [remove_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
       (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
   {st with coins = Array.of_list coinlst}
 
-(** [get_coin st] is [st] with the coin the camel is currently on removed *)
+(** [get_coin st] is [st] with the coin the camel is currently on removed 
+    and [camel]'s coin value count updated accordingly *)
 let get_coin (st : t) : t = 
   let c = Coin.find_coin st.camel.pos st.coins in 
   let st' = remove_coin c st in 
-  let coindiff = Array.length st.coins - Array.length st'.coins in 
-  {st' with camel = {st'.camel with coins = coindiff}} 
+  {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
-(** [update round_st] is [st] with all agents updated one move
-    e.g. all enemies moved one step; projectiles moved one unit; 
-    any applicable coins picked up; camel score and health adjusted *)
 let update_round_state (st : t) : t = 
   let st' = update_camel st |> move_proj |> move_enemies |> hit_enemy in 
   if on_coin st' then get_coin st' else st' 
@@ -172,29 +166,30 @@ let update_round_state (st : t) : t =
 let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
   Array.init n (fun i -> 
       (Enemy.init (90 * Random.int 4) 
-         (random_valid_tile mz |> Position.tile_to_pixel start_pos 
+         (random_valid_tile mz 
+          |> Position.tile_to_pixel start_pos 
           |> Position.init_pos)))
 
 (** [init_coin_lst n mz] is an Array of [n] coins with valid positions in [mz]. *)
 let init_coin_lst n mz start_pos=
   Array.init n (fun i -> 
       (Coin.init 
-         (random_valid_tile mz |> Position.tile_to_pixel start_pos 
-          |> Position.init_pos) 100))
+         (random_valid_tile mz 
+          |> Position.tile_to_pixel start_pos 
+          |> Position.init_pos) (100 * Random.int 4 + 100)))
 
-(** [init camel x y numenemy] is a fresh round_with [camel] at
-    the beginning of an [x] x [y] maze with [numenemy] enemies *)
-let init rows cols numenemy = 
-  let mz = Maze.populate rows cols (0,0) in 
+let init cols rows numenemy = 
+  let mz = Maze.populate cols rows (0,0) in 
   let maze_row = rows in
   let maze_col = cols in
   let window_height = maze_row * Constant.tile_width + 200 in 
   let window_width = maze_col * Constant.tile_width + 200 in
-  let start_y = window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
+  let start_y = 
+    window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
   let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
   let start_pos = (start_x, start_y) in
-  let camel = Camel.init ((fst start_pos) + camel_radius) ((snd start_pos) - camel_radius) 
-  in
+  let camel = Camel.init ((fst start_pos) + camel_radius) 
+      ((snd start_pos) - camel_radius) in
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;

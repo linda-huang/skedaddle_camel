@@ -1,4 +1,8 @@
 B _build
 PKG oUnit
+PKG ounit2
 PKG ANSITerminal 
-PKG graphics 
+PKG graphics
+PKG unix
+PKG ocamlbuild
+PKG bisect_ppx-ocamlbuild

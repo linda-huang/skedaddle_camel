@@ -1,11 +1,10 @@
 open Position
+open Constant
 
 type t = {
   dir : int;
   pos : Position.t;
 }
-
-let speed = 1
 
 let change_dir camel dir = 
   {camel with dir = dir} 
@@ -15,10 +14,10 @@ let turn_around camel =
   {camel with dir = (camel.dir + (Random.int 4) * 90) mod 360}
 
 let move_horiz pos sign = 
-  {pos with x = pos.x + sign * speed}
+  {pos with x = pos.x + sign * Constant.enemy_speed}
 
 let move_vert pos sign = 
-  {pos with y = pos.y + sign * speed}
+  {pos with y = pos.y + sign * Constant.enemy_speed}
 
 let move enemy =
   let dir = enemy.dir mod 360 in 

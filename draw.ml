@@ -10,8 +10,7 @@ open Constant
 
 let draw_element x y color size= 
   set_color color;
-  fill_poly [|(x,y); (x+size,y); (x+size, y- size); 
-              (x, y-size)|]
+  fill_poly [|(x,y); (x+size,y); (x+size, y- size);(x, y-size)|]
 
 let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
@@ -21,8 +20,10 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width , snd !curr_pos);
       let tile = tile_type gen_maze j i in
       if tile = Wall then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
-          Constant.tile_width;
+        let wall_img = make_image path_pic in 
+        draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        (* draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
+           Constant.tile_width; *)
       end 
       else if tile = Start then begin 
         draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
@@ -33,12 +34,12 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
           Constant.tile_width;
       end
       else
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.path_color
-          Constant.tile_width;
+        let path_img = make_image wall_pic in 
+        draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
     end
     done
   end
-  done 
+  done
 
 let draw_maze (st : Round_state.t) = 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
@@ -49,12 +50,22 @@ let draw_maze (st : Round_state.t) =
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
-  set_color Constant.camel_color; 
-  let (x, y) = (camel.pos.x, camel.pos.y) in 
-  fill_poly [|(x-camel_radius,y+camel_radius); 
+  (* let color = Constant.camel_color in 
+     set_color color; 
+     let (x, y) = (camel.pos.x, camel.pos.y) in 
+     fill_poly [|(x-camel_radius,y+camel_radius); 
               (x+camel_radius,y+camel_radius); 
               (x+camel_radius, y-camel_radius); 
-              (x-camel_radius, y-camel_radius)|]
+              (x-camel_radius, y-camel_radius)|] *)
+  let (x, y) = (camel.pos.x, camel.pos.y) in 
+  let camel_pic = match camel.dir with 
+    | 0 -> make_image camel_0
+    | 90 -> make_image camel_90
+    | 180 -> make_image camel_180
+    | 270 -> make_image camel_270
+    | _ -> failwith "impossible"
+  in 
+  draw_image camel_pic (x - camel_radius) (y - camel_radius)
 
 let draw_enemy (enemy : Enemy.t) = 
   set_color Constant.enemy_color; 
@@ -65,12 +76,15 @@ let draw_enemy (enemy : Enemy.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_coin (coin : Coin.t) =
-  set_color Constant.coin_color;
-  let (x, y) = (coin.pos.x, coin.pos.y) in 
-  fill_poly [|(x-coin_radius,y+coin_radius); 
+  (* set_color Constant.coin_color;
+     let (x, y) = (coin.pos.x, coin.pos.y) in 
+     fill_poly [|(x-coin_radius,y+coin_radius); 
               (x+coin_radius,y+coin_radius); 
               (x+coin_radius, y-coin_radius); 
-              (x-coin_radius, y-coin_radius)|]
+              (x-coin_radius, y-coin_radius)|] *)
+  let (x, y) = (coin.pos.x, coin.pos.y) in 
+  let coin_img = make_image coin_pic in 
+  draw_image coin_img (x - coin_radius) (y - coin_radius)
 
 let draw_projectile (proj : Projectile.t) =
   set_color Constant.projectile_color;
@@ -78,8 +92,7 @@ let draw_projectile (proj : Projectile.t) =
   fill_poly [|(x-projectile_radius,y+projectile_radius); 
               (x+projectile_radius,y+projectile_radius); 
               (x+projectile_radius, y-projectile_radius); 
-              (x-projectile_radius, y-projectile_radius)|];
-  ()
+              (x-projectile_radius, y-projectile_radius)|]
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
@@ -109,14 +122,13 @@ let draw_welcome () =
   Graphics.synchronize ()
 
 let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
-  (* let coins = st.camel.coins in  *)
+  let coins = scr.coins in 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
-  let x = fst start_pos in 
-  let y = snd start_pos in 
+  let x, y = start_pos in 
   Graphics.moveto x (y - 25);
   Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
   Graphics.moveto x (y - 50);
-  (* Graphics.draw_string ("Coins collected: " ^ string_of_int coins); *)
+  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
   Graphics.moveto x (y - 75);
   Graphics.draw_string ("Final score: " ^ 
                         string_of_int (Scorer.score scr st.camel));
@@ -155,6 +167,15 @@ let draw_won (gs : Game_state.game_state) : unit =
 let draw_game_state (gs : Game_state.game_state) = 
   match gs.current_state with 
   | Welcome -> draw_welcome ()
-  | InPlay -> draw_round_state gs.round_state
+  | InPlay -> draw_round_state gs.round_state; 
+    Graphics.moveto 0 0;
+    Graphics.set_text_size 50;
+    Graphics.set_color Graphics.white;
+    Graphics.fill_poly [|(0,0);(0,40);(300,40);(300,0)|];
+    Graphics.set_color Graphics.red;
+    Graphics.draw_string ("COINS: " ^ string_of_int 
+                            (gs.score.coins + gs.round_state.camel.coins));
+    Graphics.draw_string (" LIVES LEFT: " ^ 
+                          string_of_int gs.round_state.camel.health); 
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs

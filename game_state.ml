@@ -8,22 +8,21 @@ type game_state = {
   round_state : Round_state.t
 }
 
-(* [round_info] stores constants about each round
-   e.g. the size of maze and number of enemies *)
+(** [round_info] stores constants about each round
+    e.g. the size of maze and number of enemies *)
 type round_info = {
   dimx : int;
   dimy : int;
   enemies : int
 }
 
-let round1 = {dimx = 11; dimy = 11; enemies = 0}
+let round1 = {dimx = 19; dimy = 11; enemies = 0}
 let round2 = {dimx = 15; dimy = 15; enemies = 2}
-let round3 = {dimx = 21; dimy = 21; enemies = 10}
+let round3 = {dimx = 15; dimy = 15; enemies = 10}
 
 let totrounds = 3
 
-let set_game_state g s = 
-  { g with current_state = s }
+let set_game_state g s = { g with current_state = s }
 
 let get_game_state g = g.current_state
 
@@ -33,7 +32,8 @@ let new_level (gs : game_state) : game_state =
              round_state = Round_state.init 
                  round1.dimx round1.dimy round1.enemies} 
   else 
-    let newscr = Scorer.update_time gs.score (Sys.time ()) in
+    let newscr = 
+      Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
     if gs.score.mazes = totrounds-1 then 
       {gs with current_state = Won; score = newscr} 
     else if Camel.is_dead gs.round_state.camel then 
@@ -48,14 +48,17 @@ let update_game_state (gs : game_state) : game_state =
   let enemies_hit = 
     (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
   let gs = {gs with round_state = st; 
-                    score = {gs.score with hit = gs.score.hit + enemies_hit}} in 
-  if Round_state.at_exit st then new_level gs else 
+                    score = {gs.score with 
+                             hit = gs.score.hit + enemies_hit}} in
   if Camel.is_dead st.camel then 
-    {gs with current_state = GameOver; round_state = st} 
+    {gs with current_state = GameOver; 
+             round_state = st} 
   else gs
 
 let init (st : Round_state.t) : game_state = 
-  {score = Scorer.init (); current_state = Welcome; round_state = st}
+  {score = Scorer.init (); 
+   current_state = Welcome; 
+   round_state = st}
 
 let string_of_game_state (gs : game_state) : string = 
   let msg = match get_game_state gs with 

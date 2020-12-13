@@ -1,5 +1,9 @@
+(** Interactions across levels of the game *)
+
+(** The variant type of the game state *)
 type state = Welcome | GameOver | Won | InPlay
 
+(** The type of a game *)
 type game_state =  {
   score : Scorer.t;
   current_state : state;

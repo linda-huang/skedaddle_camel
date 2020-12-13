@@ -1,3 +1,6 @@
+(** Coin generation and finding *)
+
+(** The type of a coin *)
 type t = {
   pos : Position.t;
   value : int;

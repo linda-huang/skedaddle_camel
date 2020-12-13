@@ -1,17 +1,20 @@
-(* the type [t] stores all information relevant to scoring *)
+(** Computing and maintaining game score across levels *)
+
+(** The type of all information relevant to computing score *)
 type t = {
   mazes : int;
   time : float list; 
-  hit : int 
+  hit : int;
+  coins : int 
 }
 
-(**  [time_mult] is the multiplier applied to the 
+(** [time_mult] is the multiplier applied to the 
      time taken to complete a maze *)
 val time_mult : float 
 
-(** [update_time scorer] is [scorer] updated with the 
-    completion time of a new maze *)
-val update_time : t -> float -> t 
+(** [update_score scorer time camel] is [scorer] updated with the completion 
+    time of a level and the coins collected by [camel] in that level*)
+val update_score : t -> float -> Camel.t -> t 
 
 (** [score scr camel] is the score earned by [camel] over the entire game *)
 val score : t -> Camel.t -> int 

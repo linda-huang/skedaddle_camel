@@ -1,18 +1,25 @@
-(* the type [t] represents a camel *)
+(** The player camel movement and information updating *)
+
+(** The type of a player camel.
+    [pos] is the center coordinates of the camel; 
+    [dir] is the direction in degrees *)
 type t = {
   pos : Position.t;
   dir : int; (* direction in degrees *)
   health : int;
+  lasthealthlost : float; 
   coins : int;
 }
 
 (** [init x y] is a new camel at position ([x],[y]) *)
 val init : int -> int -> t 
 
-(** [turn_right camel] is [camel] turned right [rot] degrees *)
+(** [turn_right camel] is [camel] turned right [rot] degrees.
+    Requires: [rot] must be a multiple of 90 *)
 val turn_right : t -> t 
 
-(** [turn_left camel] is [camel] turned right [rot] degrees *)
+(** [turn_left camel] is [camel] turned right [rot] degrees.
+    Requires: [rot] must be a multiple of 90 *)
 val turn_left : t -> t 
 
 (** [move_horix camel sign] is [camel] after moving horizontally 

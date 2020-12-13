@@ -1,0 +1,5 @@
+The image matrices in [constant.ml] result in the inflation of LOC. 
+[constant.ml] has roughly 7000 LOC. 
+
+Subtract this from the result of [cloc .] to yield 
+the main substaintial LOC count.  
