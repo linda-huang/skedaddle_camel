@@ -13,8 +13,8 @@ let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_s
   let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
     Unix.sleepf 0.001;
     if not (Graphics.key_pressed ()) then  
-      let gs' = Game_state.update_game_state gs in 
       let timer = Timer.update_timer timer in 
+      let gs' = Game_state.update_game_state gs timer in 
       Draw.draw_game_state gs' timer;
       wait_kp gs' timer 
     else gs
@@ -83,8 +83,13 @@ let init () =
   draw_game_state gs timer; 
   Graphics.moveto 20 700;
   Graphics.synchronize ();
-  let s = wait_next_event[Key_pressed] in 
-  if s.keypressed then 
+  let gs = 
+    match Graphics.read_key () with 
+    | '0' -> exit 0  
+    | '1' -> gs
+    | '2' -> update_difficulty gs Hard 
+    | _ -> gs
+  in
     let gs' = Game_state.new_level gs in 
     let timer = Timer.init_timer () in 
     run gs' timer 

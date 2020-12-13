@@ -18,7 +18,7 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
   for i = 0 to maze_row - 1 do begin
     curr_pos := ((fst !curr_pos), (snd start_pos) - i*Constant.tile_width);
     for j = 0 to maze_col - 1 do begin  
-      curr_pos := ((fst start_pos) + (j)*Constant.tile_width , snd !curr_pos);
+      curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
       if tile = Wall then begin
         let wall_img = make_image path_pic in 
@@ -45,7 +45,6 @@ let draw_maze (st : Round_state.t) =
   moveto (fst start_pos) (snd start_pos);
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.black;
-  Graphics.draw_string "WELCOME TO CAMEL MAZE";
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
@@ -62,8 +61,8 @@ let draw_camel (camel : Camel.t) =
 let draw_enemy (enemy : Enemy.t) = 
   set_color Constant.enemy_color; 
   let (x, y) = (enemy.pos.x, enemy.pos.y) in 
-  fill_poly [|(x-camel_radius,y+camel_radius); 
-              (x+camel_radius,y+camel_radius); 
+  fill_poly [|(x-camel_radius, y+camel_radius); 
+              (x+camel_radius, y+camel_radius); 
               (x+camel_radius, y-camel_radius); 
               (x-camel_radius, y-camel_radius)|]
 
@@ -73,10 +72,10 @@ let draw_coin (coin : Coin.t) =
   draw_image coin_img (x - coin_radius) (y - coin_radius)
 
 let draw_projectile (proj : Projectile.t) =
-  set_color Constant.projectile_color;
+  Graphics.set_color Constant.projectile_color;
   let (x, y) = (proj.pos.x, proj.pos.y) in 
-  fill_poly [|(x-projectile_radius,y+projectile_radius); 
-              (x+projectile_radius,y+projectile_radius); 
+  fill_poly [|(x-projectile_radius, y+projectile_radius); 
+              (x+projectile_radius, y+projectile_radius); 
               (x+projectile_radius, y-projectile_radius); 
               (x-projectile_radius, y-projectile_radius)|]
 
@@ -104,31 +103,47 @@ let draw_welcome () =
   Graphics.moveto 20 550; 
   Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
   Graphics.moveto 20 500; 
-  Graphics.draw_string "Press any key to start";
+  Graphics.set_color Graphics.red; 
+  Graphics.draw_string "Choose your level of difficulty to start playing! (default: easy)";
+  Graphics.moveto 20 485; 
+  Graphics.draw_string "Press `1` for easy, press `2` for hard";
+  Graphics.set_color Graphics.black;
   Graphics.synchronize ()
 
-let draw_finscore (st : Round_state.t) (scr : Scorer.t) = 
+let draw_finscore (gs : Game_state.game_state) = 
+  let st = gs.round_state in 
+  let scr = gs.score in 
   let coins = scr.coins in 
-  let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
-  let x, y = start_pos in 
+  let difficulty = 
+    match gs.game_difficulty with 
+    | Easy -> "Easy"
+    | Hard -> "Hard"
+  in 
+  let x, y = (fst st.top_left_corner - 25, 
+              snd st.top_left_corner - 25) in
+  Graphics.moveto x y;
+  Graphics.draw_string ("Game difficulty: " ^ difficulty);
   Graphics.moveto x (y - 25);
   Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
   Graphics.moveto x (y - 50);
   Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
   Graphics.moveto x (y - 75);
+  let calculated_score = 
+    match gs.game_difficulty with 
+    | Easy -> Scorer.score scr st.camel false
+    | Hard -> Scorer.score scr st.camel true 
+  in 
   Graphics.draw_string ("Final score: " ^ 
-                        string_of_int (Scorer.score scr st.camel));
+                        string_of_int calculated_score);
   Graphics.synchronize ()
 
 let draw_gameover (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
-  let start_pos = (fst gs.round_state.top_left_corner, 
-                   snd gs.round_state.top_left_corner) in
-  let x = fst start_pos in 
-  let y = snd start_pos in 
+  let x, y = (fst gs.round_state.top_left_corner, 
+              snd gs.round_state.top_left_corner) in
   Graphics.moveto x y;
   Graphics.draw_string "Game ended!";
-  draw_finscore gs.round_state gs.score; 
+  draw_finscore gs; 
   Graphics.synchronize ();
   match Graphics.read_key () with 
   | '0' -> exit 0
@@ -136,13 +151,11 @@ let draw_gameover (gs : Game_state.game_state) : unit =
 
 let draw_won (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
-  let start_pos = (fst gs.round_state.top_left_corner, 
-                   snd gs.round_state.top_left_corner) in
-  let x = fst start_pos in 
-  let y = snd start_pos in 
+  let x, y = (fst gs.round_state.top_left_corner, 
+              snd gs.round_state.top_left_corner) in
   Graphics.moveto x y;
   Graphics.draw_string "Congratulations! You've escaped!";
-  draw_finscore gs.round_state gs.score; 
+  draw_finscore gs; 
   Graphics.synchronize ();
   let s = wait_next_event[Key_pressed] in
   if s.keypressed then 
@@ -150,24 +163,81 @@ let draw_won (gs : Game_state.game_state) : unit =
     | '0' -> exit 0
     | _ -> ()
 
+(** [draw_time gs timer] draws the time elapsed during a round
+    and time remaining, if the difficulty of [gs] is set to Hard *)
+let draw_time (gs : Game_state.game_state) (timer : Timer.timer) = 
+  let st = gs.round_state in 
+  let x, y = (200 + fst st.top_left_corner, (snd st.top_left_corner)+10) in
+  Graphics.moveto x y;
+  Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.white;
+  Graphics.fill_poly [|((x),(y-10)); 
+                       ((x),(40 + y));
+                       ((800 + x),(y-10)); 
+                       ((800 + x),(40 + y));|];
+  Graphics.set_color Graphics.black; 
+  Graphics.draw_string ("TIME ELAPSED: " ^ 
+                        string_of_int (timer.elapsedtime));
+  match gs.game_difficulty with 
+  | Easy -> ()
+  | Hard -> begin 
+      let curr_round = 
+        if gs.score.mazes = 0 then Constant.round1 
+        else if gs.score.mazes = 1 then Constant.round2 
+        else Constant.round3 in 
+      match Timer.time_left curr_round timer with 
+      | None -> begin
+          moveto (150 + x) (y);
+          Graphics.set_text_size 300; 
+          Graphics.set_color Graphics.white;
+          Graphics.fill_poly [|((150 + x),(y - 10)); 
+                               ((150 + x),(40 + y));
+                               ((800 + x),(y - 10)); 
+                               ((800 + x),(40 + y));|];
+          Graphics.set_color Graphics.blue; 
+          Graphics.draw_string ("This round has no time limit");
+        end 
+      | Some time -> begin 
+          moveto (150 + x) (y);
+          Graphics.set_text_size 300; 
+          Graphics.set_color Graphics.white;
+          Graphics.fill_poly [|((150 + x),(y - 10)); 
+                               ((150 + x),(40 + y));
+                               ((800 + x),(y - 10)); 
+                               ((800 + x),(40 + y));|];
+          Graphics.set_color Graphics.red; 
+          Graphics.draw_string ("TIME LEFT: " ^ 
+                                string_of_int time);
+        end 
+    end
+
+(** [draw_level_num gs] draws the number level the player is currently on *)
+let draw_level_num gs = 
+  let st = gs.round_state in 
+  let start_pos = (fst st.top_left_corner, snd st.top_left_corner + 10) in
+  Graphics.moveto (fst start_pos) (snd start_pos);
+  Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.black;
+  if gs.score.mazes = 0 then Graphics.draw_string "ROUND 1"
+  else if gs.score.mazes = 1 then Graphics.draw_string "ROUND 2"
+  else Graphics.draw_string "ROUND 3"
+
 let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) = 
   match gs.current_state with 
   | Welcome -> draw_welcome ()
   | InPlay -> draw_round_state gs.round_state; 
-    Graphics.moveto 0 0;
+    draw_level_num gs; 
+    let x = fst gs.round_state.top_left_corner in 
+    Graphics.moveto x 0;
     Graphics.set_text_size 50;
     Graphics.set_color Graphics.white;
-    Graphics.fill_poly [|(0,0);(0,40);(300,40);(300,0)|];
-    Graphics.set_color Graphics.red;
+    Graphics.fill_poly [|(x,0);(x,40);(x+300,40);(x+300,0)|];
+    Graphics.set_color Graphics.black;
     Graphics.draw_string ("COINS: " ^ string_of_int 
                             (gs.score.coins + gs.round_state.camel.coins));
+    Graphics.set_color Graphics.red;
     Graphics.draw_string (" LIVES LEFT: " ^ 
                           string_of_int gs.round_state.camel.health); 
-    Graphics.moveto 150 10; 
-    Graphics.set_color Graphics.white;
-    Graphics.fill_poly [|(150,0); (150,40);(300,40);(300,0)|];
-    Graphics.set_color Graphics.red; 
-    Graphics.draw_string ("TIME ELAPSED: " ^ 
-                          string_of_int (timer.elapsedtime));
+    draw_time gs timer
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs

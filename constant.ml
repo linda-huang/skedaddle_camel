@@ -6,12 +6,13 @@ open Graphics
 type round_info = {
   dimx : int;
   dimy : int;
-  enemies : int
+  enemies : int;
+  timelim : int;
 }
 
-let round1 = {dimx = 19; dimy = 11; enemies = 0}
-let round2 = {dimx = 15; dimy = 15; enemies = 2}
-let round3 = {dimx = 15; dimy = 15; enemies = 10}
+let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int}
+let round2 = {dimx = 15; dimy = 13; enemies = 2; timelim = 100}
+let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60}
 
 let totrounds = 3
 

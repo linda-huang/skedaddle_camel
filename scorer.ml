@@ -19,16 +19,20 @@ let update_score scr time (camel : Camel.t) =
   in {scr with mazes = scr.mazes + 1; time = newtimes; 
                coins = scr.coins + camel.coins} 
 
-let score scr camel = 
+let score scr camel timed = 
   let health = if camel.health < 0 then 0 else camel.health in 
-  let timecalc = List.fold_left 
-      (fun acc x -> let x' = if x > time_mult then 0. else time_mult -. x in 
-        acc +. x') 0. scr.time in 
-  scr.mazes * int_of_float timecalc + scr.hit * hit_bonus + 
+  let timecalc = 
+    if timed then List.fold_left 
+        (fun acc x -> 
+           let x' = if x > time_mult then 0. else time_mult -. x in acc +. x') 
+        0. scr.time 
+    else 0. in 
+  scr.mazes * (1 + int_of_float timecalc) + 
+  scr.hit * hit_bonus + 
   health * health_bonus + camel.coins 
 
-let string_of_score scr camel = 
-  let num = score scr camel in 
+let string_of_score scr camel timed = 
+  let num = score scr camel timed in 
   "Score: " ^ string_of_int num ^ 
   "       Lives Remaining: " ^ string_of_int camel.health 
 

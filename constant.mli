@@ -6,7 +6,8 @@
 type round_info = {
   dimx : int;
   dimy : int;
-  enemies : int
+  enemies : int;
+  timelim : int;
 }
 
 (** [round1] is the information for the first level *)
