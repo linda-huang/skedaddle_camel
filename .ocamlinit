@@ -2,6 +2,7 @@
 #require "ounit2";;
 #require "graphics";;
 #require "ANSITerminal";;
+#require "bisect_ppx.runtime";;
 #load "constant.cmo";;
 #load "position.cmo";;
 #load "camel.cmo";;

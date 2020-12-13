@@ -118,13 +118,13 @@ let position_tests = [
   dist_test "origin" (0, 0) (0, 0) 0;
   dist_test "3, 4, 5" (0, 3) (4, 0) 5;
   (* tile_to_pixel *)
-  tile_to_pixel_test "origin" startpos (0, 0) (12, ~-12);
-  tile_to_pixel_test "(1,1)" startpos (1, 1) (37, ~-37);
-  tile_to_pixel_test "(0, 100)" startpos (0, 100) (12, ~-2512);
+  tile_to_pixel_test "origin" startpos (0, 0) (20, ~-20);
+  tile_to_pixel_test "(1,1)" startpos (1, 1) (60, ~-60);
+  tile_to_pixel_test "(0, 100)" startpos (0, 100) (20, ~-4020);
   (* pixel_to_tile *)
   pixel_to_tile_test "center origin (25, 25)" startpos (25, 25) Out_of_bounds;
   pixel_to_tile_test "corner origin (0, 0)" startpos (0, 0) (Valid (0, 0));
-  pixel_to_tile_test "edge origin (50, 0)" startpos (50, 0) (Valid (2, 0));
+  pixel_to_tile_test "edge origin (50, 0)" startpos (50, 0) (Valid (1, 0));
   pixel_to_tile_test "corner origin (50,50)" startpos (50, 50) Out_of_bounds;
 ]
 (*******************************************************************

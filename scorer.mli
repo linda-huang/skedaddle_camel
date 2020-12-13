@@ -1,4 +1,6 @@
-(* the type [t] stores all information relevant to scoring *)
+(** Computing and maintaining game score across levels *)
+
+(** The type of all information relevant to computing score *)
 type t = {
   mazes : int;
   time : float list; 
@@ -6,7 +8,7 @@ type t = {
   coins : int 
 }
 
-(**  [time_mult] is the multiplier applied to the 
+(** [time_mult] is the multiplier applied to the 
      time taken to complete a maze *)
 val time_mult : float 
 

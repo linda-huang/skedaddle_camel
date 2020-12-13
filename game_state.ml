@@ -48,13 +48,17 @@ let update_game_state (gs : game_state) : game_state =
   let enemies_hit = 
     (Array.length gs.round_state.enemies) - (Array.length st.enemies) in 
   let gs = {gs with round_state = st; 
-                    score = {gs.score with hit = gs.score.hit + enemies_hit}} in
+                    score = {gs.score with 
+                             hit = gs.score.hit + enemies_hit}} in
   if Camel.is_dead st.camel then 
-    {gs with current_state = GameOver; round_state = st} 
+    {gs with current_state = GameOver; 
+             round_state = st} 
   else gs
 
 let init (st : Round_state.t) : game_state = 
-  {score = Scorer.init (); current_state = Welcome; round_state = st}
+  {score = Scorer.init (); 
+   current_state = Welcome; 
+   round_state = st}
 
 let string_of_game_state (gs : game_state) : string = 
   let msg = match get_game_state gs with 

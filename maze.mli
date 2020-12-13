@@ -1,3 +1,5 @@
+(** Random maze generation *)
+
 (** The abstract type representing the value of a tile in a maze. *)
 type t = 
   | Wall
@@ -5,7 +7,7 @@ type t =
   | Exit
   | Start
 
-(** The type of maze. *)
+(** The type of maze *)
 type maze = t array array
 
 (** [populate maze cols rows (x, y)] is a randomly populated maze with [cols]

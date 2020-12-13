@@ -20,7 +20,6 @@ let update_starttime starttime time = starttime := time
 let timer time = time -. !starttime |> int_of_float 
 (*************************  end timer functions *************************)
 
-(** [input st] updates [st] in response to user key presses *)
 let input (gs : Game_state.game_state) : Game_state.game_state = 
   let rec wait_kp (gs : Game_state.game_state) : Game_state.game_state = 
     Unix.sleepf 0.001;
@@ -62,7 +61,6 @@ let rec flush_keypress () =
   then (ignore (read_key ()); flush_keypress ();)
   else () 
 
-(** [run st] runs game responding to key presses *)
 let rec run (gs : Game_state.game_state) = 
   Graphics.moveto 50 10;
   let newgs = input gs in 
@@ -78,7 +76,6 @@ let rec run (gs : Game_state.game_state) =
       | Path -> "path"
       | Exit -> "exit"
       | Start -> "start" in
-    (* Graphics.draw_string (extract_wall_type gs.round_state.maze col row); *)
     Graphics.set_color Graphics.black;
     if extract_wall_type gs.round_state.maze col row = "exit" then (
       let levelup_gs = Game_state.new_level gs in 
@@ -90,8 +87,6 @@ let rec run (gs : Game_state.game_state) =
         run levelup_gs)  
     else run newgs
 
-(** [init k] creates a new game round_state with camel initialized at the origin
-    in a maze of dimensions 10x10 and then runs the game *)
 let init () = 
   let st = Round_state.init 21 21 5 in 
   let gs = Game_state.init st in 
@@ -103,7 +98,6 @@ let init () =
     let gs' = Game_state.new_level gs in 
     run gs'
 
-(* Start on key press *)
 let main () = 
   Graphics.open_graph " ";
   Graphics.auto_synchronize false;
@@ -114,5 +108,4 @@ let main () =
   Graphics.synchronize ();
   init ()
 
-(* Execute the demo. *)
 let () = main ()

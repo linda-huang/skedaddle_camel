@@ -1,4 +1,6 @@
-(** The type representing the state of the game *)
+(** Inter-agent interactions within a single round of the game  *)
+
+(** The type of a single round (or level) of the game *)
 type t = {
   camel : Camel.t;
   maze : Maze.maze;
@@ -10,31 +12,31 @@ type t = {
   top_left_corner: int * int
 }
 
-(* [on_coin camel maze] detects if [camel]'s position is on a coin in [maze]. *)
+(** [on_coin camel maze] detects if [camel]'s position is on a coin in [maze]. *)
 val on_coin : t -> bool
 
-(* [at_exit state] detects if camel's position is on the Exit tile of maze. *)
+(** [at_exit state] detects if camel's position is on the Exit tile of maze. *)
 val at_exit : t -> bool
 
-(* [hit_wall pos maze] detect if the position [pos] is a valid
-   move in [maze] *)
+(** [hit_wall pos maze] detect if the position [pos] is a valid
+    move in [maze] *)
 val hit_wall : t -> Position.t -> int -> bool
 
-(* [near_enemy camel maze] detects if [camel]'s position is near 
-   an enemy camel *)
+(** [near_enemy camel maze] detects if [camel]'s position is near 
+    an enemy camel *)
 val near_enemy : Camel.t -> t -> bool
 
-(* [rem_coin c st] is [st] with [c] removed *)
+(** [rem_coin c st] is [st] with [c] removed *)
 val remove_coin : Coin.t -> t -> t
 
-(* [shoot camel] shoots a projectile in the direction of [camel]
-   instantiates a new projectile in the state?? do we keep a list of all
-   active projectiles as a field in the state *)
+(** [shoot camel] shoots a projectile in the direction of [camel]
+    instantiates a new projectile in the state?? do we keep a list of all
+    active projectiles as a field in the state *)
 val shoot : Camel.t -> t -> t
 
-(* [move_proj st] is the state with all active projectiles moved one step 
-   (e.g. in a straight line according to their direction). If a projectile runs
-   into a wall, it stops and is removed from the game. *)
+(** [move_proj st] is the state with all active projectiles moved one step 
+    (e.g. in a straight line according to their direction). If a projectile runs
+    into a wall, it stops and is removed from the game. *)
 val move_proj : t -> t 
 
 (** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
@@ -42,12 +44,12 @@ val move_proj : t -> t
     are removed from [st] *)
 val hit_enemy : t -> t 
 
-(** [move_enemies st] is the round_state after updating the position of all enemy
-    camels. *)
+(** [move_enemies st] is the round_state 
+    after updating the position of all enemy camels. *)
 val move_enemies : t -> t 
 
-(** [update_round_state st] is [st] with all agents updated one move
-    e.g. all enemies moved one step; projectiles moved one unit; 
+(** [update_round_state st] is [st] with all agents updated one move. 
+    All enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
 val update_round_state : t -> t 
 

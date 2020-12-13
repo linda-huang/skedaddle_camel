@@ -41,7 +41,6 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
   end
   done
 
-
 let draw_maze (st : Round_state.t) = 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
   moveto (fst start_pos) (snd start_pos);
