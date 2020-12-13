@@ -19,4 +19,4 @@ val draw_projectile : Projectile.t -> unit
 val draw_round_state : Round_state.t -> unit
 
 (** [draw_game_state gs] is the Graphics representation of [gs]. *)
-val draw_game_state : Game_state.game_state -> unit 
+val draw_game_state : Game_state.game_state -> Timer.timer -> unit 

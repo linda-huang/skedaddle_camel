@@ -166,7 +166,17 @@ let coin_tests = []
 (*******************************************************************
    tests from Caeml.ml
  *********************************************************************)
-let camel_tests = [] 
+
+let camel_tests = [
+  (* TODO *)
+  (* Camel.init *)
+  (* Camel.turn_right *)
+  (* Camel.turn_left *)
+  (* Camel.move_horiz *)
+  (* Camel.adj_health *)
+  (* Camel.adj_coin *)
+  (* Camel.is_dead *)
+] 
 (*******************************************************************
    end tests from Camel.ml
  *********************************************************************)
