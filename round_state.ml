@@ -176,7 +176,7 @@ let init_coin_lst n mz start_pos=
       (Coin.init 
          (random_valid_tile mz 
           |> Position.tile_to_pixel start_pos 
-          |> Position.init_pos) (100 * Random.int 4 + 100)))
+          |> Position.init_pos) (10 * Random.int 4 + 10)))
 
 let init cols rows numenemy = 
   let mz = Maze.populate cols rows (0,0) in 

@@ -1,9 +1,12 @@
 (** Interactions across levels of the game *)
 
+(** The variant type of how a game can end, if not won *)
+type game_end = Time | Health 
+
 (** The variant type of the game state *)
 type state = 
   | Welcome 
-  | GameOver 
+  | GameOver of game_end 
   | Won 
   | InPlay
   | Transition of int 

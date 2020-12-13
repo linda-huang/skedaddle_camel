@@ -1,9 +1,11 @@
 open Round_state
 open Constant
 
+type game_end = Time | Health 
+
 type state = 
   | Welcome 
-  | GameOver 
+  | GameOver of game_end
   | Won 
   | InPlay
   | Transition of int 
@@ -36,14 +38,15 @@ let new_level (gs : game_state) : game_state =
       if gs.score.mazes = Constant.totrounds-1 then 
         {gs with current_state = Won; score = newscr} 
       else if Camel.is_dead gs.round_state.camel then 
-        {gs with current_state = GameOver; score = newscr} 
+        {gs with current_state = GameOver Health; score = newscr} 
       else 
         (* move to the next level *)
         let round, transition_num = 
           if gs.score.mazes = 0 
           then Constant.round2, 1 
           else Constant.round3, 2 in 
-        let newstate = Round_state.init round.dimx round.dimy round.enemies in 
+        let newstate = 
+          Round_state.init round.dimx round.dimy round.enemies in 
         {gs with score = newscr; 
                  current_state = Transition transition_num;
                  round_state = newstate}
@@ -63,13 +66,16 @@ let update_game_state (gs : game_state) (timer : Timer.timer): game_state =
   match gs.game_difficulty with 
   | Easy -> begin 
       if Camel.is_dead st.camel 
-      then {gs with current_state = GameOver; 
+      then {gs with current_state = GameOver Health; 
                     round_state = st} 
       else gs
     end 
   | Hard -> begin 
-      if Camel.is_dead st.camel || Timer.out_of_time timer curr_round.timelim
-      then {gs with current_state = GameOver; 
+      if Camel.is_dead st.camel  
+      then {gs with current_state = GameOver Health; 
+                    round_state = st} 
+      else if Timer.out_of_time timer curr_round.timelim 
+      then {gs with current_state = GameOver Time; 
                     round_state = st} 
       else gs
     end 
@@ -87,7 +93,11 @@ let string_of_game_state (gs : game_state) : string =
   let msg = match get_game_state gs with 
     | Welcome -> "Welcome!"
     | InPlay -> "Game in progress"
-    | GameOver -> "Game over" 
+    | GameOver overmsg -> begin 
+        match overmsg with 
+        | Time -> "Game over: time"
+        | Health -> "Game over: health" 
+      end 
     | Won -> "You've won!"
     | Transition t -> "Transition " ^ string_of_int t 
   in 

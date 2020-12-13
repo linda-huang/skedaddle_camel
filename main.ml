@@ -69,17 +69,20 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
       (* draw transition *)
       let transition_gs = Game_state.new_level gs in 
       Draw.draw_game_state transition_gs timer; 
-      (* draw next level *)
-      match Graphics.read_key () with 
-      | _ -> begin 
-          let levelup_gs = Game_state.new_level transition_gs in 
-          let timer = Timer.init_timer () in 
-          Draw.draw_game_state levelup_gs timer; 
-          Unix.sleep 1;
-          match Graphics.read_key () with 
-          | _ -> let timer = Timer.init_timer () in  
-            run levelup_gs timer
-        end 
+      (* wait until use presses [x] to go to next level *)
+      let rec go_to_nextlvl () = 
+        match Graphics.read_key () with 
+        | 'x' -> begin 
+            let levelup_gs = Game_state.new_level transition_gs in 
+            let timer = Timer.init_timer () in 
+            Draw.draw_game_state levelup_gs timer; 
+            Unix.sleep 1;
+            match Graphics.read_key () with 
+            | _ -> let timer = Timer.init_timer () in  
+              run levelup_gs timer
+          end 
+        | _ -> go_to_nextlvl () in 
+      go_to_nextlvl ()
     end 
     else 
       let timer = Timer.update_timer timer in 

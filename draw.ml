@@ -119,7 +119,7 @@ let draw_finscore (gs : Game_state.game_state) =
     | Easy -> "Easy"
     | Hard -> "Hard"
   in 
-  let x, y = (fst st.top_left_corner - 25, 
+  let x, y = (fst st.top_left_corner, 
               snd st.top_left_corner - 25) in
   Graphics.moveto x y;
   Graphics.draw_string ("Game difficulty: " ^ difficulty);
@@ -143,11 +143,19 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
   let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
   Graphics.moveto x y;
   Graphics.set_text_size 300; 
-  Graphics.set_color Graphics.black;
+  Graphics.set_color Graphics.blue;
   Graphics.draw_string ("Welcome to level " ^ string_of_int (t + 1));
   let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "(Press any key to start the next level)";
+  Graphics.draw_string "(Press `x` to start the next level)";
   Graphics.set_color Graphics.black;
+  let calculated_score = if t = 0 then 0 else 
+      match gs.game_difficulty with 
+      | Easy -> Scorer.score gs.score st.camel false
+      | Hard -> Scorer.score gs.score st.camel true 
+  in 
+  let y = y - 25 in Graphics.moveto (x + 25) y;
+  Graphics.draw_string ("Score so far: " ^ 
+                        string_of_int calculated_score);
   Graphics.synchronize ();
   let y = y - 25 in Graphics.moveto x y;
   let _ = match t with 
@@ -168,17 +176,25 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
       end 
   in Graphics.synchronize () 
 
-let draw_gameover (gs : Game_state.game_state) : unit = 
+let draw_gameover (gs : Game_state.game_state) (over : Game_state.game_end) = 
   Graphics.clear_graph ();
+  let msg = 
+    match over with 
+    | Time -> "You ran out of time!"
+    | Health -> "You ran out of lives!"
+  in 
   let x, y = (fst gs.round_state.top_left_corner, 
               snd gs.round_state.top_left_corner) in
   Graphics.moveto x y;
-  Graphics.draw_string "Game ended!";
+  Graphics.draw_string ("Game over! " ^ msg);
+  Graphics.set_color Graphics.black;
   draw_finscore gs; 
   Graphics.synchronize ();
-  match Graphics.read_key () with 
-  | '0' -> exit 0
-  | _ -> ()
+  let rec exit_game () = 
+    match Graphics.read_key () with 
+    |'0' -> exit 0
+    | _ -> exit_game () 
+  in exit_game () 
 
 let draw_won (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
@@ -188,13 +204,11 @@ let draw_won (gs : Game_state.game_state) : unit =
   Graphics.draw_string "Congratulations! You've escaped!";
   draw_finscore gs; 
   Graphics.synchronize ();
-  let rec flush_keypress () = 
-    if Graphics.key_pressed () 
-    then (ignore (read_key ()); flush_keypress ();)
-    else () in 
-  flush_keypress (); 
-  let s = wait_next_event[Key_pressed] in
-  if s.keypressed then exit 0
+  let rec exit_game () = 
+    match Graphics.read_key () with 
+    |'0' -> exit 0
+    | _ -> exit_game () 
+  in exit_game () 
 
 (** [draw_time gs timer] draws the time elapsed during a round
     and time remaining, if the difficulty of [gs] is set to Hard *)
@@ -274,4 +288,4 @@ let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) =
     draw_time gs timer
   | Transition t -> draw_transition t gs 
   | Won -> draw_won gs
-  | GameOver -> draw_gameover gs
+  | GameOver over -> draw_gameover gs over
