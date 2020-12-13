@@ -63,15 +63,24 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
       | Exit -> "exit"
       | Start -> "start" in
     Graphics.set_color Graphics.black;
-    if extract_wall_type gs.round_state.maze col row = "exit" then (
-      let levelup_gs = Game_state.new_level gs in 
-      (* draw the new level and pause all enemy movement until player moves *)
-      let timer = Timer.init_timer () in 
-      Draw.draw_game_state levelup_gs timer; 
-      Unix.sleep 1;
+    if extract_wall_type gs.round_state.maze col row = "exit" 
+    then begin 
+      flush_keypress (); 
+      (* draw transition *)
+      let transition_gs = Game_state.new_level gs in 
+      Draw.draw_game_state transition_gs timer; 
+      (* draw next level *)
       match Graphics.read_key () with 
-      | _ -> let timer = Timer.init_timer () in  
-        run levelup_gs timer)  
+      | _ -> begin 
+          let levelup_gs = Game_state.new_level transition_gs in 
+          let timer = Timer.init_timer () in 
+          Draw.draw_game_state levelup_gs timer; 
+          Unix.sleep 1;
+          match Graphics.read_key () with 
+          | _ -> let timer = Timer.init_timer () in  
+            run levelup_gs timer
+        end 
+    end 
     else 
       let timer = Timer.update_timer timer in 
       run newgs timer 
@@ -80,7 +89,7 @@ let init () =
   let st = Round_state.init 21 21 5 in 
   let gs = Game_state.init st in 
   let timer = Timer.init_timer () in 
-  draw_game_state gs timer; 
+  Draw.draw_game_state gs timer; 
   Graphics.moveto 20 700;
   Graphics.synchronize ();
   let gs = 
@@ -90,9 +99,19 @@ let init () =
     | '2' -> update_difficulty gs Hard 
     | _ -> gs
   in
-    let gs' = Game_state.new_level gs in 
-    let timer = Timer.init_timer () in 
-    run gs' timer 
+  (* let gs' = Game_state.new_level gs in  *)
+  let timer = Timer.init_timer () in 
+  let transition_gs = Game_state.new_level gs 
+  in 
+  Draw.draw_game_state transition_gs timer; 
+  let levelup_gs = 
+    match Graphics.read_key () with 
+    | _ -> Game_state.new_level transition_gs
+  in
+  let timer = Timer.init_timer () in 
+  Draw.draw_game_state levelup_gs timer; 
+  run levelup_gs timer 
+(* run gs' timer  *)
 
 let main () = 
   Graphics.open_graph " ";

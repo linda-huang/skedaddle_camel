@@ -1,7 +1,12 @@
 (** Interactions across levels of the game *)
 
 (** The variant type of the game state *)
-type state = Welcome | GameOver | Won | InPlay
+type state = 
+  | Welcome 
+  | GameOver 
+  | Won 
+  | InPlay
+  | Transition of int 
 
 (** The variant type of difficulty *)
 type difficulty = Easy | Hard 
@@ -24,7 +29,7 @@ val new_level : game_state -> game_state
 val update_game_state : game_state -> Timer.timer -> game_state 
 
 (** [update_difficulty gs diff] is [gs] with game difficulty
-updated according to user input *)
+    updated according to user input *)
 val update_difficulty : game_state -> difficulty -> game_state 
 
 (** [init st] is a fresh game_state with round_state [st], 

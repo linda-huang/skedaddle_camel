@@ -1,7 +1,12 @@
 open Round_state
 open Constant
 
-type state = Welcome | GameOver | Won | InPlay
+type state = 
+  | Welcome 
+  | GameOver 
+  | Won 
+  | InPlay
+  | Transition of int 
 
 type difficulty = Easy | Hard 
 
@@ -17,23 +22,32 @@ let set_game_state g s = { g with current_state = s }
 let get_game_state g = g.current_state
 
 let new_level (gs : game_state) : game_state = 
-  if gs.current_state = Welcome then 
-    {gs with current_state = InPlay; 
-             round_state = Round_state.init 
-                 Constant.round1.dimx Constant.round1.dimy 
-                 Constant.round1.enemies} 
-  else 
-    let newscr = 
-      Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
-    if gs.score.mazes = Constant.totrounds-1 then 
-      {gs with current_state = Won; score = newscr} 
-    else if Camel.is_dead gs.round_state.camel then 
-      {gs with current_state = GameOver; score = newscr} 
-    else 
-      let round = if gs.score.mazes = 0 then Constant.round2 
-        else Constant.round3 in 
-      let newstate = Round_state.init round.dimx round.dimy round.enemies in 
-      {gs with score = newscr; round_state = newstate}
+  match gs.current_state with 
+  | Welcome -> begin 
+      {gs with current_state = Transition 0; 
+               round_state = Round_state.init 
+                   Constant.round1.dimx Constant.round1.dimy 
+                   Constant.round1.enemies} 
+    end 
+  | Transition t -> {gs with current_state = InPlay}
+  | _ -> begin 
+      let newscr = 
+        Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
+      if gs.score.mazes = Constant.totrounds-1 then 
+        {gs with current_state = Won; score = newscr} 
+      else if Camel.is_dead gs.round_state.camel then 
+        {gs with current_state = GameOver; score = newscr} 
+      else 
+        (* move to the next level *)
+        let round, transition_num = 
+          if gs.score.mazes = 0 
+          then Constant.round2, 1 
+          else Constant.round3, 2 in 
+        let newstate = Round_state.init round.dimx round.dimy round.enemies in 
+        {gs with score = newscr; 
+                 current_state = Transition transition_num;
+                 round_state = newstate}
+    end 
 
 let update_game_state (gs : game_state) (timer : Timer.timer): game_state = 
   let st = Round_state.update_round_state gs.round_state in 
@@ -75,6 +89,7 @@ let string_of_game_state (gs : game_state) : string =
     | InPlay -> "Game in progress"
     | GameOver -> "Game over" 
     | Won -> "You've won!"
+    | Transition t -> "Transition " ^ string_of_int t 
   in 
   let score = match gs.game_difficulty with 
     | Easy -> Scorer.string_of_score gs.score gs.round_state.camel false

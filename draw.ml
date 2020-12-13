@@ -137,6 +137,37 @@ let draw_finscore (gs : Game_state.game_state) =
                         string_of_int calculated_score);
   Graphics.synchronize ()
 
+let draw_transition (t : int) (gs : Game_state.game_state) : unit = 
+  Graphics.clear_graph ();
+  let st = gs.round_state in 
+  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
+  Graphics.moveto x y;
+  Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.black;
+  Graphics.draw_string ("Welcome to level " ^ string_of_int (t + 1));
+  let y = y - 25 in Graphics.moveto x y;
+  Graphics.draw_string "(Press any key to start the next level)";
+  Graphics.set_color Graphics.black;
+  Graphics.synchronize ();
+  let y = y - 25 in Graphics.moveto x y;
+  let _ = match t with 
+    | 0 -> Graphics.draw_string "This level has 0 enemies";
+    | 1 -> Graphics.draw_string "This level has 2 enemies";
+    | 2 -> Graphics.draw_string "This level has 10 enemies";
+    | _ -> ();
+  in 
+  let _ = match gs.game_difficulty with 
+    | Easy -> ();
+    | Hard -> begin
+        let y = y - 25 in Graphics.moveto x y;
+        match t with 
+        | 0 -> Graphics.draw_string "There is no time limit";
+        | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";
+        | 2 -> Graphics.draw_string "You have 60 seconds to escape this level!";
+        | _ -> ();
+      end 
+  in Graphics.synchronize () 
+
 let draw_gameover (gs : Game_state.game_state) : unit = 
   Graphics.clear_graph ();
   let x, y = (fst gs.round_state.top_left_corner, 
@@ -157,11 +188,13 @@ let draw_won (gs : Game_state.game_state) : unit =
   Graphics.draw_string "Congratulations! You've escaped!";
   draw_finscore gs; 
   Graphics.synchronize ();
+  let rec flush_keypress () = 
+    if Graphics.key_pressed () 
+    then (ignore (read_key ()); flush_keypress ();)
+    else () in 
+  flush_keypress (); 
   let s = wait_next_event[Key_pressed] in
-  if s.keypressed then 
-    match Graphics.read_key () with 
-    | '0' -> exit 0
-    | _ -> ()
+  if s.keypressed then exit 0
 
 (** [draw_time gs timer] draws the time elapsed during a round
     and time remaining, if the difficulty of [gs] is set to Hard *)
@@ -239,5 +272,6 @@ let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) =
     Graphics.draw_string (" LIVES LEFT: " ^ 
                           string_of_int gs.round_state.camel.health); 
     draw_time gs timer
+  | Transition t -> draw_transition t gs 
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs
