@@ -7,6 +7,7 @@ open Game_state
 open Scorer 
 open Coin
 open Constant 
+open Timer 
 
 let draw_element x y color size= 
   set_color color;
@@ -22,8 +23,6 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       if tile = Wall then begin
         let wall_img = make_image path_pic in 
         draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
-        (* draw_element (fst !curr_pos) (snd !curr_pos) Constant.wall_color
-           Constant.tile_width; *)
       end 
       else if tile = Start then begin 
         draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
@@ -50,13 +49,6 @@ let draw_maze (st : Round_state.t) =
   draw_walls st.maze start_pos st.rows st.cols
 
 let draw_camel (camel : Camel.t) = 
-  (* let color = Constant.camel_color in 
-     set_color color; 
-     let (x, y) = (camel.pos.x, camel.pos.y) in 
-     fill_poly [|(x-camel_radius,y+camel_radius); 
-              (x+camel_radius,y+camel_radius); 
-              (x+camel_radius, y-camel_radius); 
-              (x-camel_radius, y-camel_radius)|] *)
   let (x, y) = (camel.pos.x, camel.pos.y) in 
   let camel_pic = match camel.dir with 
     | 0 -> make_image camel_0
@@ -76,12 +68,6 @@ let draw_enemy (enemy : Enemy.t) =
               (x-camel_radius, y-camel_radius)|]
 
 let draw_coin (coin : Coin.t) =
-  (* set_color Constant.coin_color;
-     let (x, y) = (coin.pos.x, coin.pos.y) in 
-     fill_poly [|(x-coin_radius,y+coin_radius); 
-              (x+coin_radius,y+coin_radius); 
-              (x+coin_radius, y-coin_radius); 
-              (x-coin_radius, y-coin_radius)|] *)
   let (x, y) = (coin.pos.x, coin.pos.y) in 
   let coin_img = make_image coin_pic in 
   draw_image coin_img (x - coin_radius) (y - coin_radius)
@@ -164,7 +150,7 @@ let draw_won (gs : Game_state.game_state) : unit =
     | '0' -> exit 0
     | _ -> ()
 
-let draw_game_state (gs : Game_state.game_state) = 
+let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) = 
   match gs.current_state with 
   | Welcome -> draw_welcome ()
   | InPlay -> draw_round_state gs.round_state; 
@@ -177,5 +163,11 @@ let draw_game_state (gs : Game_state.game_state) =
                             (gs.score.coins + gs.round_state.camel.coins));
     Graphics.draw_string (" LIVES LEFT: " ^ 
                           string_of_int gs.round_state.camel.health); 
+    Graphics.moveto 150 10; 
+    Graphics.set_color Graphics.white;
+    Graphics.fill_poly [|(150,0); (150,40);(300,40);(300,0)|];
+    Graphics.set_color Graphics.red; 
+    Graphics.draw_string ("TIME ELAPSED: " ^ 
+                          string_of_int (timer.elapsedtime));
   | Won -> draw_won gs
   | GameOver -> draw_gameover gs

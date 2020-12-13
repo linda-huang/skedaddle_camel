@@ -4,7 +4,7 @@
 type state = Welcome | GameOver | Won | InPlay
 
 (** The type of a game *)
-type game_state =  {
+type game_state = {
   score : Scorer.t;
   current_state : state;
   round_state : Round_state.t

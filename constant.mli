@@ -1,6 +1,26 @@
 (** Game-wide constants relating to movement, display, 
     and inter-agent interactions *)
 
+(** The type storing constants about each round
+    e.g. the size of maze and number of enemies *)
+type round_info = {
+  dimx : int;
+  dimy : int;
+  enemies : int
+}
+
+(** [round1] is the information for the first level *)
+val round1 : round_info
+
+(** [round2] is the information for the second level *)
+val round2 : round_info
+
+(** [round3] is the information for the third level *)
+val round3 : round_info
+
+(** [totrounds] is the total number of levels in the game *)
+val totrounds : int 
+
 (** [camel_speed] is the distance (in pixels) camel travels on one key press *)
 val camel_speed : int
 
