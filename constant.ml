@@ -31,6 +31,16 @@ let enemy_color = Graphics.rgb 179 27 27
 let health_delay = 1.
 
 (**********************************************************
+   Genie constants 
+ ***********************************************************)
+let genie_width = 10
+let genie_radius = genie_width / 2
+let genie_speed = 15
+let genie_power = 1000
+let genie_color = Graphics.rgb 253 168 255
+let genie_teleport_time = 3.5
+
+(**********************************************************
    Maze constants
  ***********************************************************)
 let tile_width = 40

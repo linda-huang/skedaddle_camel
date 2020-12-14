@@ -71,6 +71,8 @@ let draw_coin (coin : Coin.t) =
   let coin_img = make_image coin_pic in 
   draw_image coin_img (x - coin_radius) (y - coin_radius)
 
+(** [draw_potion potion] draws a solid potion pixel icon
+    by the position defined by [potion] *)
 let draw_potion (potion : Potion.potion) = 
   let (x, y) = (potion.pos.x, potion.pos.y) in 
   Graphics.set_color Constant.potion_color;
@@ -79,6 +81,8 @@ let draw_potion (potion : Potion.potion) =
               (x+potion_radius, y-potion_radius); 
               (x-potion_radius, y-potion_radius)|]
 
+(** [draw_projectile proj] draws a solid projectile pixel icon
+    by the position defined by [proj] *)
 let draw_projectile (proj : Projectile.t) =
   Graphics.set_color Constant.projectile_color;
   let (x, y) = (proj.pos.x, proj.pos.y) in 
@@ -87,6 +91,20 @@ let draw_projectile (proj : Projectile.t) =
               (x+projectile_radius, y-projectile_radius); 
               (x-projectile_radius, y-projectile_radius)|]
 
+(** [draw_genie genie] draws a solid genie pixel icon 
+    at the position defined by [genie] *)
+let draw_genie (genie : Genie.genie option) = 
+  match genie with 
+  | None -> ()
+  | Some genie -> begin 
+      Graphics.set_color Constant.genie_color;
+      let x, y = (genie.pos.x, genie.pos.y) in 
+      fill_poly [|(x-genie_radius, y+genie_radius); 
+                  (x+genie_radius, y+genie_radius); 
+                  (x+genie_radius, y-genie_radius); 
+                  (x-genie_radius, y-genie_radius)|]
+    end 
+
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
   draw_camel st.camel; 
@@ -94,6 +112,7 @@ let draw_round_state (st : Round_state.t) =
   List.iter draw_projectile st.projectiles;
   Array.iter draw_coin st.coins;
   Array.iter draw_potion st.potions;
+  draw_genie st.genie;
   Graphics.synchronize ()
 
 let draw_welcome () = 
@@ -173,19 +192,25 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
       Graphics.moveto x (y - 25);
       Graphics.set_color Constant.potion_color;
       Graphics.draw_string 
-        "There are two potions you can collect to gain more health"
+        "There are two potions you can collect to gain more health";
     | 2 -> Graphics.draw_string "This level has 10 enemies";
       Graphics.moveto x (y - 25);
       Graphics.set_color Constant.potion_color;
       Graphics.draw_string 
-        "There are two potions you can collect to gain more health"
+        "There are two potions you can collect to gain more health";
+      Graphics.moveto x (y - 50);
+      Graphics.set_color Constant.genie_color;
+      Graphics.draw_string 
+        "There is a speedy genie in this maze! Catch it for extra points.";
+      Graphics.moveto x (y - 65);
+      Graphics.draw_string "The genie teleports sometimes :)";
     | _ -> ();
   in 
   Graphics.set_color Graphics.black; 
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
-        let y = y - 50 in Graphics.moveto x y;
+        let y = y - 75 in Graphics.moveto x y;
         match t with 
         | 0 -> Graphics.draw_string "There is no time limit";
         | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";

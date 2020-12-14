@@ -48,6 +48,26 @@ val enemy_color : Graphics.color
     camel loses one unit of health *)
 val health_delay : float 
 
+(** [genie_width] is the pixel width of the genie *)
+val genie_width : int
+
+(** [genie_radius] is half of [genie_width] *)
+val genie_radius : int
+
+(** [genie_speed] is the distance (in pixels) that a genie
+    travels on one unit of game time *)
+val genie_speed : int 
+
+(** [genie_power] is the amount that the genie increases the 
+    camel's coin count by *)
+val genie_power : int 
+
+(** [genie_color] is the Graphics color code for a solid Genie icon *)
+val genie_color : Graphics.color
+
+(** [genie_teleport_time] is how often (in seconds) a genie teleports *)
+val genie_teleport_time : float 
+
 (** [tile_width] is the pixel width of a maze tile *)
 val tile_width : int
 
