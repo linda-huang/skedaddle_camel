@@ -48,6 +48,8 @@ let clear_path maze row col new_row new_col =
   else if diffy = -2 then maze.(row).(col - 1) <- Path
   else if diffy = 2 then maze.(row).(col + 1) <- Path
 
+(** [dfs maze row col] performs a dfs walk to make sure there is a 
+    possible path from the start to the exit in [maze] *)
 let rec dfs maze row col =
   let direction = [|(row - 2, col); (row + 2, col); 
                     (row, col - 2); (row, col + 2)|] in 

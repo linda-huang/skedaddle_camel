@@ -125,12 +125,14 @@ let draw_hourglass (hourglass : Hourglass.hourglass option) =
 (** [draw_hourglass_msg x y] is the message in the transition screen 
     printed at [x,y] to explain the hourglasses *)
 let draw_hourglass_msg x y  = 
-  Graphics.moveto x (y - 15);
+  let y = y - 15 in Graphics.moveto x y;
   Graphics.set_color Constant.hourglass_add_color; 
-  Graphics.draw_string "There is an hourglass you can collect! It will be this color if it gives you 15 more seconds to complete the level.";
-  Graphics.moveto x (y - 30);
+  Graphics.draw_string "There is an hourglass you can collect!";
+  let y = y - 15 in Graphics.moveto x y;
+  Graphics.draw_string "It will be this color if it gives you 15 more seconds to complete the level.";
+  let y = y - 15 in Graphics.moveto x y;
   Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
-  Graphics.moveto x (y - 45); 
+  let y = y - 15 in Graphics.moveto x y;
   Graphics.draw_string "If it is this rare special hourglass, it will be white"
 
 let draw_round_state (st : Round_state.t) = 

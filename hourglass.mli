@@ -1,7 +1,6 @@
 (** Hourglass generation *)
 
-(** The type of the power of an hourglass.
-*)
+(** The type of the power of an hourglass.*)
 type hourglass_power = Add | Pause 
 
 (** The type of an hourglass *)

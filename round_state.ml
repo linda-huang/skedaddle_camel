@@ -83,12 +83,25 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
 (**********************************************************
    helpers for updating round_state
  ***********************************************************)
+(** [get_start_pos r c] generates the pixel start position for a state
+    with a maze that has [r] rows and [c] columns.
+    used for computing locations of other objects in [st] *)
+let get_start_pos r c = 
+  let maze_row = r in
+  let maze_col = c in
+  let window_height = maze_row * Constant.tile_width + 200 in 
+  let window_width = maze_col * Constant.tile_width + 200 in
+  let start_y = 
+    window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
+  let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
+  (start_x, start_y)
+
 (** [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 (* TODO make sure can access xsize and ysize of maze.*)
 let rec random_valid_tile mz = 
   let row = Random.int (Array.length mz - 1) in
   let col = Random.int (Array.length mz.(0) - 1) in 
-  if Wall = Maze.tile_type mz col row 
+  if Path <> Maze.tile_type mz col row 
   then random_valid_tile mz else (col, row)
 
 (** [random_valid_tile_potion mz start_pos coins] makes sure the tile 
@@ -174,24 +187,25 @@ let hit_enemy (st : t) =
     check_proj st.projectiles ([], Array.to_list st.enemies) in 
   {st with enemies = Array.of_list newenemy; projectiles = newproj}
 
+(** [teleport_genie st genie start_pos] ensures that the postiion
+    the genie teleports to next is not within 6 tiles of the player camel *)
+let rec teleport_genie (st : t) (genie : Genie.genie) start_pos =
+  let teleportto = random_valid_tile st.maze 
+                   |> Position.tile_to_pixel start_pos 
+                   |> Position.init_pos
+  in 
+  if Position.dist teleportto st.camel.pos < 6 * Constant.tile_width 
+  then teleport_genie st genie start_pos else teleportto
+
 (** [move_genie genie st] is [genie] with updated position or direction.
     if [genie] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
 let move_genie (st : t) (genie : Genie.genie) : Genie.genie = 
   (* info to compute teleportation *)
-  let maze_row = st.rows in
-  let maze_col = st.cols in
-  let window_height = maze_row * Constant.tile_width + 200 in 
-  let window_width = maze_col * Constant.tile_width + 200 in
-  let start_y = 
-    window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
-  let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
-  let start_pos = (start_x, start_y) in
+  let start_pos = get_start_pos st.rows st.cols in 
   let genie = if (Unix.gettimeofday ()) -. genie.lastteleport 
                  > Constant.genie_teleport_time then 
-      let teleportto = random_valid_tile st.maze 
-                       |> Position.tile_to_pixel start_pos 
-                       |> Position.init_pos in 
+      let teleportto = teleport_genie st genie start_pos in 
       {genie with pos = teleportto;
                   lastteleport = Unix.gettimeofday ()}
     else genie in 
@@ -348,13 +362,16 @@ let init_potion_lst n mz start_pos coins =
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos)))
 
-(** [init_genie mz start_pos] is a genie with a valid position in [mz] *)
-let init_genie mz start_pos = 
-  Some (Genie.init
-          (90 * Random.int 4) 
-          (random_valid_tile mz 
-           |> Position.tile_to_pixel start_pos 
-           |> Position.init_pos))
+(** [init_genie mz start_pos] is a genie with a valid position in [mz]. 
+    It does not generate the genie within 10 tiles of the start of [mz] *)
+let rec init_genie mz start_pos = 
+  let (tilex, tiley) = random_valid_tile mz in 
+  if tilex < 10 || tiley < 10 then init_genie mz start_pos 
+  else Some (Genie.init
+               (90 * Random.int 4) 
+               ((tilex, tiley) 
+                |> Position.tile_to_pixel start_pos 
+                |> Position.init_pos))
 
 (** [init_hourglass mz start_pos coins potions] is an hourglass with
     a valid position in [mz], one that is not a tile
