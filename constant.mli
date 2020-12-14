@@ -78,6 +78,15 @@ val exit_color : Graphics.color
     considered a hit *)
 val near : int
 
+(** [potion_width] is the pixel width of a potion *)
+val potion_width : int
+
+(** [potion_radius] is half of [potion_width] *)
+val potion_radius : int
+
+(** [potion_color] is the Graphics color code for a solid potion pixel icon *)
+val potion_color : Graphics.color
+
 (** [coin_width] is the pixel width of a coin *)
 val coin_width : int
 

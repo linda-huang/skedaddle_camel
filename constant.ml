@@ -3247,9 +3247,16 @@ let exit_color = Graphics.rgb 146 168 209
 let start_color = Graphics.rgb 146 168 209
 
 (**********************************************************
+   Potion constants 
+ ***********************************************************)
+let potion_width = 10
+let potion_radius = potion_width / 2
+let potion_color = Graphics.rgb 183 41 245
+
+(**********************************************************
    Coin constants
  ***********************************************************)
-let coin_width = 15
+let coin_width = 14
 let coin_radius = coin_width / 2
 let coin_color = Graphics.rgb 171 149 7
 

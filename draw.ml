@@ -71,6 +71,14 @@ let draw_coin (coin : Coin.t) =
   let coin_img = make_image coin_pic in 
   draw_image coin_img (x - coin_radius) (y - coin_radius)
 
+let draw_potion (potion : Potion.potion) = 
+  let (x, y) = (potion.pos.x, potion.pos.y) in 
+  Graphics.set_color Constant.potion_color;
+  fill_poly [|(x-potion_radius, y+potion_radius); 
+              (x+potion_radius, y+potion_radius); 
+              (x+potion_radius, y-potion_radius); 
+              (x-potion_radius, y-potion_radius)|]
+
 let draw_projectile (proj : Projectile.t) =
   Graphics.set_color Constant.projectile_color;
   let (x, y) = (proj.pos.x, proj.pos.y) in 
@@ -85,6 +93,7 @@ let draw_round_state (st : Round_state.t) =
   Array.iter draw_enemy st.enemies; 
   List.iter draw_projectile st.projectiles;
   Array.iter draw_coin st.coins;
+  Array.iter draw_potion st.potions;
   Graphics.synchronize ()
 
 let draw_welcome () = 
@@ -161,13 +170,22 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
   let _ = match t with 
     | 0 -> Graphics.draw_string "This level has 0 enemies";
     | 1 -> Graphics.draw_string "This level has 2 enemies";
+      Graphics.moveto x (y - 25);
+      Graphics.set_color Constant.potion_color;
+      Graphics.draw_string 
+        "There are two potions you can collect to gain more health"
     | 2 -> Graphics.draw_string "This level has 10 enemies";
+      Graphics.moveto x (y - 25);
+      Graphics.set_color Constant.potion_color;
+      Graphics.draw_string 
+        "There are two potions you can collect to gain more health"
     | _ -> ();
   in 
+  Graphics.set_color Graphics.black; 
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
-        let y = y - 25 in Graphics.moveto x y;
+        let y = y - 50 in Graphics.moveto x y;
         match t with 
         | 0 -> Graphics.draw_string "There is no time limit";
         | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";

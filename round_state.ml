@@ -5,6 +5,7 @@ open Maze
 open Coin
 open Random
 open Constant
+open Potion
 
 type t = {
   camel : Camel.t;
@@ -13,6 +14,7 @@ type t = {
   rows : int;
   enemies : Enemy.t array;
   coins : Coin.t array;
+  potions : Potion.potion array;
   projectiles : Projectile.t list;
   top_left_corner : int * int
 }
@@ -25,6 +27,12 @@ let on_coin (st : t)  =
       (Position.dist st.camel.pos coin.pos < 
        (Constant.camel_radius + Constant.coin_radius)) || acc)
     false st.coins
+
+let on_potion (st : t) = 
+  Array.fold_left (fun acc (potion : Potion.potion) -> 
+      (Position.dist st.camel.pos potion.pos < 
+       (Constant.camel_radius + Constant.potion_radius)) || acc)
+    false st.potions
 
 let at_exit (st : t) = 
   let camel = st.camel in 
@@ -68,6 +76,19 @@ let rec random_valid_tile mz =
   let col = Random.int (Array.length mz.(0) - 1) in 
   if Wall = Maze.tile_type mz col row 
   then random_valid_tile mz else (col, row)
+
+(** [random_valid_tile_potion mz start_pos coins] makes sure the tile 
+    a new potion is generated on does not already have a coin on it *)
+let rec random_valid_tile_potion mz start_pos coins = 
+  let c, r = random_valid_tile mz in 
+  let potionpos = (tile_to_pixel start_pos (c, r)) 
+                  |> Position.init_pos in 
+  let occupied = Array.fold_left (fun acc (coin : Coin.t) -> 
+      (Position.dist potionpos coin.pos < 
+       (Constant.potion_radius + Constant.coin_radius)) || acc)
+      false coins in 
+  if occupied then random_valid_tile_potion mz start_pos coins 
+  else c, r
 
 (** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
     that is at least 5 tiles away from the origin *)
@@ -131,8 +152,7 @@ let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t =
 let move_enemies (st : t) : t =
   {st with enemies = Array.map (move_enemy st) st.enemies}
 
-(* [update_camel st] is the round_with the camel's 
-   health and coin total updated *)
+(** [update_camel st] is the round_with the camel's health updated *)
 let update_camel (st : t) : t = 
   let camel = st.camel in 
   let camel' = if (near_enemy camel st) 
@@ -155,14 +175,30 @@ let get_coin (st : t) : t =
   let st' = remove_coin c st in 
   {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
+let remove_potion (p : Potion.potion) (st : t) = 
+  let potlst = Array.fold_left 
+      (fun acc x -> if x = p then acc else x :: acc) [] st.potions in 
+  {st with potions = Array.of_list potlst}
+
+(** [get_potion st] is [st] with the potion the camel is currently on removed
+    and [camel]'s health updated accordingly. 
+    Health cannot exceed 3. *)
+let get_potion (st : t) : t = 
+  let potion = Potion.find_potion st.camel.pos st.potions in 
+  let st' = remove_potion potion st in 
+  let health' = if st.camel.health = 3 then 3 else st.camel.health + 1 in 
+  {st' with camel = {st'.camel with health = health'}}
+
 let update_round_state (st : t) : t = 
   let st' = update_camel st |> move_proj |> move_enemies |> hit_enemy in 
-  if on_coin st' then get_coin st' else st' 
+  let st'' = if on_coin st' then get_coin st' else st' in 
+  if on_potion st'' then get_potion st'' else st''
 
 (************************************************************
    initialization
  ***********************************************************)
-(** [init_enemy_lst n mz] is an Array of [n] enemy camels with valid positions *)
+(** [init_enemy_lst n mz] is an Array of [n] enemy camels 
+    with valid positions in [mz] *)
 let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
   Array.init n (fun i -> 
       (Enemy.init (90 * Random.int 4) 
@@ -170,13 +206,23 @@ let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array =
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos)))
 
-(** [init_coin_lst n mz] is an Array of [n] coins with valid positions in [mz]. *)
+(** [init_coin_lst n mz] is an Array of [n] coins 
+    with valid positions in [mz]. *)
 let init_coin_lst n mz start_pos=
   Array.init n (fun i -> 
       (Coin.init 
          (random_valid_tile mz 
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos) (10 * Random.int 4 + 10)))
+
+(** [init_potion_lst n mz] is an Array of [n] potions 
+    with valid positions in [mz]. *)
+let init_potion_lst n mz start_pos coins =
+  Array.init n (fun i -> 
+      (Potion.init 
+         (random_valid_tile_potion mz start_pos coins
+          |> Position.tile_to_pixel start_pos 
+          |> Position.init_pos)))
 
 let init cols rows numenemy = 
   let mz = Maze.populate cols rows (0,0) in 
@@ -190,13 +236,16 @@ let init cols rows numenemy =
   let start_pos = (start_x, start_y) in
   let camel = Camel.init ((fst start_pos) + camel_radius) 
       ((snd start_pos) - camel_radius) in
+  let numpotions = if numenemy = 0 then 0 else 2 in 
+  let coinarr = init_coin_lst 20 mz start_pos in 
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;
    cols = cols;
    rows = rows;
    enemies = init_enemy_lst numenemy mz start_pos;
-   coins = init_coin_lst 20 mz start_pos;
+   coins = coinarr;
+   potions = init_potion_lst numpotions mz start_pos coinarr;
    projectiles = [];
    top_left_corner = start_pos}
 
@@ -217,4 +266,5 @@ let string_of_round_state st =
   "Camel: " ^ Camel.string_of_camel st.camel ^ 
   "\n" ^ "Enemies: " ^ pp_array st.enemies Enemy.string_of_enemy ^ 
   "\n" ^  "Coins: " ^ pp_array st.coins Coin.string_of_coin ^ 
+  "\n" ^ "Potions: " ^ pp_array st.potions Potion.string_of_potion ^ 
   "\n" ^  "Projectiles: " ^ pp_lst st.projectiles Projectile.string_of_proj

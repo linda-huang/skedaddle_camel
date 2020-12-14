@@ -8,12 +8,10 @@ type t = {
   rows : int;
   enemies : Enemy.t array;
   coins : Coin.t array;
+  potions : Potion.potion array;
   projectiles : Projectile.t list;
   top_left_corner: int * int
 }
-
-(** [on_coin camel maze] detects if [camel]'s position is on a coin in [maze]. *)
-val on_coin : t -> bool
 
 (** [at_exit state] detects if camel's position is on the Exit tile of maze. *)
 val at_exit : t -> bool
@@ -26,8 +24,19 @@ val hit_wall : t -> Position.t -> int -> bool
     an enemy camel *)
 val near_enemy : Camel.t -> t -> bool
 
+(** [on_coin st] detects if the position of [camel] in [st] 
+    is on a coin. *)
+val on_coin : t -> bool
+
 (** [rem_coin c st] is [st] with [c] removed *)
 val remove_coin : Coin.t -> t -> t
+
+(** [on_potion st] detects if the position of [camel] in [st] 
+    is on a potion.*)
+val on_potion : t -> bool 
+
+(** [remove_potion pot st] is [st] with [pot] removed *)
+val remove_potion : Potion.potion -> t -> t
 
 (** [shoot camel] shoots a projectile in the direction of [camel]
     instantiates a new projectile in the state?? do we keep a list of all
@@ -50,7 +59,8 @@ val move_enemies : t -> t
 
 (** [update_round_state st] is [st] with all agents updated one move. 
     All enemies moved one step; projectiles moved one unit; 
-    any applicable coins picked up; camel score and health adjusted *)
+    any applicable coins and potions picked up; 
+    camel score and health adjusted *)
 val update_round_state : t -> t 
 
 (** [init camel x y numenemy] is a fresh round_state with [camel] at
