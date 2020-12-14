@@ -89,7 +89,7 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
       run newgs timer 
 
 let init () = 
-  let st = Round_state.init 21 21 5 in 
+  let st = Round_state.init 21 21 5 1 in 
   let gs = Game_state.init st in 
   let timer = Timer.init_timer () in 
   Draw.draw_game_state gs timer; 

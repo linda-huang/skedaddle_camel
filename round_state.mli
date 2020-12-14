@@ -11,6 +11,7 @@ type t = {
   potions : Potion.potion array;
   projectiles : Projectile.t list;
   genie : Genie.genie option;
+  hourglass : Hourglass.hourglass option;
   top_left_corner: int * int
 }
 
@@ -64,9 +65,10 @@ val move_proj : t -> t
     camel score and health adjusted *)
 val update_round_state : t -> t 
 
-(** [init camel x y numenemy] is a fresh round_state with [camel] at
-    the beginning of an [x] x [y] maze with [numenemy] enemies *)
-val init : int -> int -> int -> t
+(** [init camel x y numenemy diff] is a fresh round_state with [camel] at
+    the beginning of an [x] x [y] maze with [numenemy] enemies
+    and difficulty corresponding to [diff] *)
+val init : int -> int -> int -> int -> t
 
 (** [string_of_round_state st] is [st], nicely formatted. *)
 val string_of_round_state : t -> string 

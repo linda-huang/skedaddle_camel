@@ -105,6 +105,34 @@ let draw_genie (genie : Genie.genie option) =
                   (x-genie_radius, y-genie_radius)|]
     end 
 
+(** [draw_hourglass hourglass] draws a solid hourglass pixel icon
+    at the position defined by [hourglass] and differentiates the 
+    color based on [hourglass]'s power *)
+let draw_hourglass (hourglass : Hourglass.hourglass option) = 
+  match hourglass with 
+  | None -> ()
+  | Some hourglass -> begin 
+      let _ = match hourglass.power with 
+        | Add -> Graphics.set_color Constant.hourglass_add_color; 
+        | Pause -> Graphics.set_color Constant.hourglass_pause_color; in 
+      let x, y = (hourglass.pos.x, hourglass.pos.y) in 
+      fill_poly [|(x-hourglass_radius, y+hourglass_radius); 
+                  (x+hourglass_radius, y+hourglass_radius); 
+                  (x+hourglass_radius, y-hourglass_radius); 
+                  (x-hourglass_radius, y-hourglass_radius)|]
+    end 
+
+(** [draw_hourglass_msg x y] is the message in the transition screen 
+    printed at [x,y] to explain the hourglasses *)
+let draw_hourglass_msg x y  = 
+  Graphics.moveto x (y - 15);
+  Graphics.set_color Constant.hourglass_add_color; 
+  Graphics.draw_string "There is an hourglass you can collect! It will be this color if it gives you 15 more seconds to complete the level.";
+  Graphics.moveto x (y - 30);
+  Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
+  Graphics.moveto x (y - 45); 
+  Graphics.draw_string "If it is this rare special hourglass, it will be white"
+
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
   draw_camel st.camel; 
@@ -113,6 +141,7 @@ let draw_round_state (st : Round_state.t) =
   Array.iter draw_coin st.coins;
   Array.iter draw_potion st.potions;
   draw_genie st.genie;
+  draw_hourglass st.hourglass;
   Graphics.synchronize ()
 
 let draw_welcome () = 
@@ -214,7 +243,9 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
         match t with 
         | 0 -> Graphics.draw_string "There is no time limit";
         | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";
+          draw_hourglass_msg x y;
         | 2 -> Graphics.draw_string "You have 60 seconds to escape this level!";
+          draw_hourglass_msg x y;
         | _ -> ();
       end 
   in Graphics.synchronize () 
@@ -275,7 +306,7 @@ let draw_time (gs : Game_state.game_state) (timer : Timer.timer) =
         if gs.score.mazes = 0 then Constant.round1 
         else if gs.score.mazes = 1 then Constant.round2 
         else Constant.round3 in 
-      match Timer.time_left curr_round timer with 
+      match Timer.time_left curr_round gs.round_state timer with 
       | None -> begin
           moveto (150 + x) (y);
           Graphics.set_text_size 300; 

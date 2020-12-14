@@ -22,6 +22,10 @@ type game_state = {
   game_difficulty : difficulty;
 }
 
+(** [int_of_difficulty diff] is the number corresponding 
+    to [diff] chosen by the player *)
+val int_of_difficulty : difficulty -> int 
+
 (** [new_level gs] is a new game_state with the appropriate
     next round_state level and updated score. *)
 val new_level : game_state -> game_state 

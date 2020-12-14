@@ -68,6 +68,24 @@ val genie_color : Graphics.color
 (** [genie_teleport_time] is how often (in seconds) a genie teleports *)
 val genie_teleport_time : float 
 
+(** [hourglass_width] is the pixel width of the hourglass *)
+val hourglass_width : int
+
+(** [hourglass_radius] is half of [hourglass_width] *)
+val hourglass_radius : int
+
+(** [hourglass_power] is the amount that the hourglass increases the 
+    remaining time by *)
+val hourglass_add : int 
+
+(** [hourglass_add_color] is the Graphics color code for a solid hourglass icon
+    that has the add time power *)
+val hourglass_add_color : Graphics.color
+
+(** [hourglass_pause_color] is the Graphics color code for a solid hourglass icon
+    that has the pause power *)
+val hourglass_pause_color : Graphics.color
+
 (** [tile_width] is the pixel width of a maze tile *)
 val tile_width : int
 

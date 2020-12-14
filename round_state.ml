@@ -7,6 +7,7 @@ open Random
 open Constant
 open Potion
 open Genie
+open Hourglass 
 
 type t = {
   camel : Camel.t;
@@ -18,6 +19,7 @@ type t = {
   potions : Potion.potion array;
   projectiles : Projectile.t list;
   genie : Genie.genie option;
+  hourglass : Hourglass.hourglass option;
   top_left_corner : int * int
 }
 
@@ -35,6 +37,16 @@ let on_potion (st : t) =
       (Position.dist st.camel.pos potion.pos < 
        (Constant.camel_radius + Constant.potion_radius)) || acc)
     false st.potions
+
+(** [on_hourglass camel st] detects if the position of [camel] in [st] 
+    is on an hourglass. *)
+let on_hourglass (camel : Camel.t) (st : t) = 
+  match st.hourglass with 
+  | None -> false
+  | Some hourglass -> begin 
+      if Position.dist hourglass.pos camel.pos < camel_width 
+      then true else false 
+    end 
 
 let at_exit (st : t) = 
   let camel = st.camel in 
@@ -90,6 +102,25 @@ let rec random_valid_tile_potion mz start_pos coins =
        (Constant.potion_radius + Constant.coin_radius)) || acc)
       false coins in 
   if occupied then random_valid_tile_potion mz start_pos coins 
+  else c, r
+
+(** [random_valid_tile_hourglass mz start_pos coins potions] makes sure 
+    the tile a new hourglass is generated on does not already have 
+    a coin or potion already on it *)
+let rec random_valid_tile_hourglass mz start_pos coins potions = 
+  let c, r = random_valid_tile mz in 
+  let hourglasspos = (tile_to_pixel start_pos (c, r)) 
+                     |> Position.init_pos in 
+  let coin_occupied = Array.fold_left (fun acc (coin : Coin.t) -> 
+      (Position.dist hourglasspos coin.pos < 
+       (Constant.hourglass_radius + Constant.coin_radius)) || acc)
+      false coins in 
+  let potion_occupied = Array.fold_left (fun acc (potion : Potion.potion) -> 
+      (Position.dist hourglasspos potion.pos < 
+       (Constant.hourglass_radius + Constant.potion_radius)) || acc)
+      false potions in 
+  if coin_occupied || potion_occupied 
+  then random_valid_tile_hourglass mz start_pos coins potions 
   else c, r
 
 (** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
@@ -214,26 +245,39 @@ let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t =
     Enemy.move (random_turn_enemy) 
 
 (** [move_enemies st] is the round_state 
-    after updating the position of all enemy camels. *)
+    after updating the position of all enemy camels. 
+    If the camel has collected the hourglass that freezes enenmies, 
+    then it is the original [st] *)
 let move_enemies (st : t) : t =
-  {st with enemies = Array.map (move_enemy st) st.enemies}
+  match st.camel.hourglasses with 
+  | None | Some Add -> 
+    {st with enemies = Array.map (move_enemy st) st.enemies}
+  | Some Pause -> st 
 
 (** [update_camel st] is the round_with the camel's health updated *)
 let update_camel (st : t) : t = 
   let camel = st.camel in 
   (* update if near any enemies *)
-  let camel' = if (near_enemy camel st) 
-               && (Unix.gettimeofday ()) -. camel.lasthealthlost 
-                  > Constant.health_delay 
+  let camel = if (near_enemy camel st) 
+              && (Unix.gettimeofday ()) -. camel.lasthealthlost 
+                 > Constant.health_delay 
     then {camel with health = camel.health - 1; 
                      lasthealthlost = Unix.gettimeofday ()} 
     else camel in 
   (* update if near a genie *)
-  let camel'', st = if near_genie camel' st 
-    then {camel' with coins = camel'.coins + Constant.genie_power}, 
+  let camel, st = if near_genie camel st 
+    then {camel with coins = camel.coins + Constant.genie_power}, 
          {st with genie = None}
-    else camel', st in 
-  {st with camel = camel''}  
+    else camel, st in 
+  (* update if on an hourglass *)
+  let camel, st = if on_hourglass camel st 
+    then {camel with hourglasses = 
+                       match st.hourglass with 
+                       | Some hg -> Some hg.power
+                       | None -> None},
+         {st with hourglass = None}
+    else camel, st in 
+  {st with camel = camel}  
 
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
@@ -271,6 +315,11 @@ let update_round_state (st : t) : t =
 (************************************************************
    initialization
  ***********************************************************)
+(** [tile_close_to_start (x,y)] is if the tile [(x,y)] is 
+    within 8 tiles of the start tile (0,0) *)
+let tile_close_to_start (x,y) = 
+  if x < 9 || y < 9 then false else true 
+
 (** [init_enemy_lst n mz] is an Array of [n] enemy camels 
     with valid positions in [mz] *)
 let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
@@ -299,7 +348,7 @@ let init_potion_lst n mz start_pos coins =
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos)))
 
-(** [init_genie mz] is a genie with a valid position in [mz] *)
+(** [init_genie mz start_pos] is a genie with a valid position in [mz] *)
 let init_genie mz start_pos = 
   Some (Genie.init
           (90 * Random.int 4) 
@@ -307,7 +356,16 @@ let init_genie mz start_pos =
            |> Position.tile_to_pixel start_pos 
            |> Position.init_pos))
 
-let init cols rows numenemy = 
+(** [init_hourglass mz start_pos coins potions] is an hourglass with
+    a valid position in [mz], one that is not a tile
+    or already occupied by a coin or a potion *)
+let init_hourglass mz start_pos coins potions = 
+  Hourglass.init
+    (random_valid_tile_hourglass mz start_pos coins potions 
+     |> Position.tile_to_pixel start_pos 
+     |> Position.init_pos)    
+
+let init cols rows numenemy difficulty = 
   let mz = Maze.populate cols rows (0,0) in 
   let maze_row = rows in
   let maze_col = cols in
@@ -323,6 +381,10 @@ let init cols rows numenemy =
   let genie = if numenemy = 10 then init_genie mz start_pos 
     else None in 
   let coinarr = init_coin_lst 20 mz start_pos in 
+  let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
+  let hourglass = if difficulty = 1 then None else 
+    if numenemy <> 0 then Some (init_hourglass mz start_pos coinarr potionarr)
+    else None in 
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz;
@@ -330,9 +392,10 @@ let init cols rows numenemy =
    rows = rows;
    enemies = init_enemy_lst numenemy mz start_pos;
    coins = coinarr;
-   potions = init_potion_lst numpotions mz start_pos coinarr;
+   potions = potionarr;
    projectiles = [];
    genie = genie;
+   hourglass = hourglass;
    top_left_corner = start_pos}
 
 (**********************************************************

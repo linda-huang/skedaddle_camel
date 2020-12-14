@@ -1,5 +1,6 @@
 open Position 
 open Constant
+open Hourglass
 
 type t = {
   pos : Position.t; 
@@ -7,6 +8,7 @@ type t = {
   health : int;
   lasthealthlost : float; (* the last time the camel lost health *)
   coins : int;
+  hourglasses : hourglass_power option; 
 }
 
 let init x y = 
@@ -14,7 +16,8 @@ let init x y =
    dir = 0; 
    health = 3; 
    lasthealthlost = 0.; 
-   coins = 0}
+   coins = 0;
+   hourglasses = None}
 
 let rotate camel key =
   match key with 

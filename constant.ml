@@ -41,6 +41,15 @@ let genie_color = Graphics.rgb 253 168 255
 let genie_teleport_time = 3.5
 
 (**********************************************************
+   Hourglass constants 
+ ***********************************************************)
+let hourglass_width = 16
+let hourglass_radius = hourglass_width / 2
+let hourglass_add = 15
+let hourglass_add_color = Graphics.rgb 179 220 255 
+let hourglass_pause_color = Graphics.rgb 255 255 255 
+
+(**********************************************************
    Maze constants
  ***********************************************************)
 let tile_width = 40

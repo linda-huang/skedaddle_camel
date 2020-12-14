@@ -23,13 +23,19 @@ let set_game_state g s = { g with current_state = s }
 
 let get_game_state g = g.current_state
 
+let int_of_difficulty diff = 
+  match diff with 
+  | Easy -> 1
+  | Hard -> 2
+
 let new_level (gs : game_state) : game_state = 
   match gs.current_state with 
   | Welcome -> begin 
       {gs with current_state = Transition 0; 
                round_state = Round_state.init 
                    Constant.round1.dimx Constant.round1.dimy 
-                   Constant.round1.enemies} 
+                   Constant.round1.enemies
+                   (int_of_difficulty gs.game_difficulty)} 
     end 
   | Transition t -> {gs with current_state = InPlay}
   | _ -> begin 
@@ -44,9 +50,10 @@ let new_level (gs : game_state) : game_state =
         let round, transition_num = 
           if gs.score.mazes = 0 
           then Constant.round2, 1 
-          else Constant.round3, 2 in 
+          else Constant.round3, 2 in  
         let newstate = 
-          Round_state.init round.dimx round.dimy round.enemies in 
+          Round_state.init round.dimx round.dimy 
+            round.enemies (int_of_difficulty gs.game_difficulty) in 
         {gs with score = newscr; 
                  current_state = Transition transition_num;
                  round_state = newstate}
@@ -74,7 +81,7 @@ let update_game_state (gs : game_state) (timer : Timer.timer): game_state =
       if Camel.is_dead st.camel  
       then {gs with current_state = GameOver Health; 
                     round_state = st} 
-      else if Timer.out_of_time timer curr_round.timelim 
+      else if Timer.out_of_time curr_round gs.round_state timer  
       then {gs with current_state = GameOver Time; 
                     round_state = st} 
       else gs
