@@ -16,7 +16,8 @@ let update_score scr time (camel : Camel.t) =
     match scr.time with 
     | [] -> [time] 
     | h :: t -> (time -. h) :: scr.time 
-  in {scr with mazes = scr.mazes + 1; time = newtimes; 
+  in {scr with mazes = scr.mazes + 1; 
+               time = newtimes; 
                coins = scr.coins + camel.coins} 
 
 let score scr camel timed = 
