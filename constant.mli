@@ -48,6 +48,8 @@ val enemy_color : Graphics.color
     camel loses one unit of health *)
 val health_delay : float 
 
+val heart_size: int
+
 (** [tile_width] is the pixel width of a maze tile *)
 val tile_width : int
 
@@ -57,16 +59,20 @@ val tile_radius : int
 (** [path_color] is the Graphics color code for a solid path tile *)
 val path_color : Graphics.color
 
-(** [path_pic] is the Graphics representation of the image 
-    for a path tile in the maze *)
-val path_pic : Graphics.color array array
+(** [grass_pic] is the Graphics representation of the image 
+    for a grassy path tile in the maze *)
+val grass_pic : Graphics.color array array
+
+(** [sand_pic] is the Graphics representation of the image 
+    for a sand path tile in the maze *)
+val sand_pic : Graphics.color array array
 
 (** [wall_color] is the Graphics color code for a solid wall tile *)
 val wall_color : Graphics.color
 
-(** [wall_pic] is the Graphics representation of the image 
-    for a wall tile in the maze *)
-val wall_pic : Graphics.color array array
+(** [stone_pic] is the Graphics representation of the image 
+    for a stone wall tile in the maze *)
+val stone_pic : Graphics.color array array
 
 (** [start_color] is the Graphics color code for a solid start tile *)
 val start_color : Graphics.color
@@ -120,3 +126,4 @@ val camel_180 : Graphics.color array array
 (** [camel_270] is the Graphics representation of the image 
     for a camel moving in direction 270 (down) *)
 val camel_270 : Graphics.color array array
+

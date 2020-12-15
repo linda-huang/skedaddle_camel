@@ -20,3 +20,7 @@ val draw_round_state : Round_state.t -> unit
 
 (** [draw_game_state gs] is the Graphics representation of [gs]. *)
 val draw_game_state : Game_state.game_state -> Timer.timer -> unit 
+
+(** [draw_initial_round_state gs] draws components that will mainly stay the
+    same. *)
+val draw_initial_round_state : Round_state.t -> unit

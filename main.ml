@@ -76,6 +76,7 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
             let levelup_gs = Game_state.new_level transition_gs in 
             let timer = Timer.init_timer () in 
             Draw.draw_game_state levelup_gs timer; 
+            draw_initial_round_state transition_gs.round_state;
             Unix.sleep 1;
             match Graphics.read_key () with 
             | _ -> let timer = Timer.init_timer () in  
@@ -113,6 +114,7 @@ let init () =
   in
   let timer = Timer.init_timer () in 
   Draw.draw_game_state levelup_gs timer; 
+  Draw.draw_initial_round_state gs.round_state;
   run levelup_gs timer 
 (* run gs' timer  *)
 
