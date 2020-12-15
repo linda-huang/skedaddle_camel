@@ -2,7 +2,7 @@
 
 (** The abstract type representing the value of a tile in a maze. *)
 type t = 
-  | Wall
+  | Wall of int
   | Path 
   | Exit
   | Start

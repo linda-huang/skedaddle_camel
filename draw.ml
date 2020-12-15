@@ -20,21 +20,34 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
     for j = 0 to maze_col - 1 do begin  
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
-      if tile = Wall then begin
-        let wall_img = make_image path_pic in 
-        draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
-      end 
-      else if tile = Start then begin 
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
-          Constant.tile_width;
-      end
-      else if tile = Exit then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
-          Constant.tile_width;
-      end
-      else
-        let path_img = make_image wall_pic in 
+      match tile with 
+      | Start -> draw_element (fst !curr_pos) (snd !curr_pos) 
+                   Constant.start_color Constant.tile_width;
+      | Exit -> draw_element (fst !curr_pos) (snd !curr_pos) 
+                  Constant.exit_color Constant.tile_width;
+      | Wall hp -> if hp > 0 then begin
+          let wall_img = make_image path_pic in 
+          draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        end 
+      | _ -> let path_img = make_image wall_pic in 
         draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+
+
+        (* if tile = Wall then begin
+           let wall_img = make_image path_pic in 
+           draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+           end 
+           else if tile = Start then begin 
+           draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
+            Constant.tile_width;
+           end
+           else if tile = Exit then begin
+           draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
+            Constant.tile_width;
+           end
+           else
+           let path_img = make_image wall_pic in 
+           draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1); *)
     end
     done
   end

@@ -14,9 +14,9 @@ open Random
 let startpos = (0,0)
 
 let maze_1 = 
-  [| [|Wall; Wall; Wall |];
-     [|Wall; Start; Wall |];
-     [|Wall; Wall; Wall |];
+  [| [|Wall 5; Wall 5; Wall 5 |];
+     [|Wall 5; Start; Wall 5 |];
+     [|Wall 5; Wall 5; Wall 5 |];
   |]
 
 (*******************************************************************

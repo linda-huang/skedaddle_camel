@@ -3,7 +3,7 @@ open Constant
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
-  | Wall
+  | Wall of int
   | Path 
   | Exit
   | Start
@@ -18,7 +18,7 @@ let in_limit maze row col = (row >= 0) && (row < Array.length maze) &&
 
 (** [visisted maze row col] is if the tile at [row] x [col] is a Wall *)
 let visited maze row col = 
-  if maze.(row).(col) = Wall then false else true
+  if maze.(row).(col) = Wall 5 then false else true
 
 (** [exchange arr i j] swaps the values at [arr.(i)] and [arr.(j)] *)
 let exchange arr i j = 
@@ -64,7 +64,7 @@ let rec dfs maze row col =
   done
 
 let populate cols rows start_pos = 
-  let maze = Array.make_matrix rows cols Wall in
+  let maze = Array.make_matrix rows cols (Wall 5) in
   let start_row, start_col = start_pos in
   dfs maze start_row start_col;
   maze.(start_row).(start_col) <- Path;
@@ -76,5 +76,5 @@ let tile_type maze col row =
   match maze.(row).(col) with
   | Exit -> Exit
   | Start -> Start
-  | Wall -> Wall
+  | Wall x -> Wall x
   | Path -> Path

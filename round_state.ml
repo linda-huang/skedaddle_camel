@@ -41,7 +41,11 @@ let hit_corner (st : t) (pos : Position.t) =
   | Position.Valid (col, row) -> col < 0 || row < 0 
                                  || row >= Array.length st.maze 
                                  || col >= Array.length st.maze.(0) 
-                                 || (Maze.tile_type st.maze col row = Wall)
+                                 || Maze.tile_type st.maze col row = Wall 5 
+                                 || Maze.tile_type st.maze col row = Wall 4 
+                                 || Maze.tile_type st.maze col row = Wall 3 
+                                 || Maze.tile_type st.maze col row = Wall 2 
+                                 || Maze.tile_type st.maze col row = Wall 1
 
 let hit_wall (st : t) (pos : Position.t) (dir : int) = 
   let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
@@ -63,11 +67,15 @@ let hit_wall (st : t) (pos : Position.t) (dir : int) =
  ***********************************************************)
 (** [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 (* TODO make sure can access xsize and ysize of maze.*)
-let rec random_valid_tile mz = 
+let rec random_valid_tile mz : int * int = 
   let row = Random.int (Array.length mz - 1) in
   let col = Random.int (Array.length mz.(0) - 1) in 
-  if Wall = Maze.tile_type mz col row 
-  then random_valid_tile mz else (col, row)
+  match Maze.tile_type mz col row with 
+  | Wall 0 
+  | Path 
+  | Exit 
+  | Start -> (col, row)
+  | _ -> random_valid_tile mz
 
 (** [random_valid_tile_enemy mz] is a random valid (non-wall) tile in [mz]
     that is at least 5 tiles away from the origin *)
