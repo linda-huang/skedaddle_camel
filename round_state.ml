@@ -46,12 +46,11 @@ let hit_corner (st : t) (pos : Position.t) =
         | Wall x when x > 0 -> true
         | _ -> false)
 
-
-let hit_wall (st : t) (pos : Position.t) (dir : int) = 
-  let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let tr = (pos.x + Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let bl = (pos.x - Constant.camel_radius, pos.y - Constant.camel_radius) in
-  let br = (pos.x + Constant.camel_radius, pos.y - Constant.camel_radius) in
+let hit_wall (st : t) (pos : Position.t) (dir : int) (radius : int) = 
+  let tl = (pos.x - radius, pos.y + radius) in
+  let tr = (pos.x + radius, pos.y + radius) in
+  let bl = (pos.x - radius, pos.y - radius) in
+  let br = (pos.x + radius, pos.y - radius) in
   let two_corners =
     match dir with 
     | 0 -> (tr, br)
@@ -91,14 +90,6 @@ let shoot (camel : Camel.t) (st : t) =
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
-let matrix_to_list_list (matrix : 'a array array) : 'a list list = 
-  let outer_list = Array.to_list matrix in 
-  List.map (Array.to_list) outer_list
-
-let list_list_to_matrix (list : 'a list list) : 'a array array = 
-  let outer_array = Array.of_list list in 
-  Array.map (Array.of_list) outer_array
-
 (** st.maze with the (col, row) tile reduced by 1 hp **)
 let reduce_wall_hp col row st = 
   if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
@@ -116,14 +107,15 @@ let proj_hit_wall (st : t) =
     match remproj with 
     (* if h hits a wall then f with st (wall hp reduced or converted into path) and repeat with t
        if not hit wall then add h to accproj*)
-    | h::t -> if hit_wall st h.pos h.dir then
+    | h::t -> 
+      if hit_wall st h.pos h.dir Constant.projectile_radius then
         let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in 
         match coord_mapping with 
         | Position.Valid (col, row) -> begin 
             let st' = reduce_wall_hp col row st in
             f t accproj st'
           end
-        | _ -> f t accproj st
+        | Position.Out_of_bounds -> f t accproj st
       else f t (h :: accproj) st
     | [] -> {st with projectiles = accproj}
   in 
@@ -161,15 +153,16 @@ let hit_enemy (st : t) =
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
   let future_pos = (move enemy).pos in 
-  if not (hit_wall st future_pos enemy.dir) then move enemy
+  if not (hit_wall st future_pos enemy.dir Constant.camel_radius) then move enemy
   else 
     let next_move_l = Enemy.change_dir enemy 180 in
     let next_move_r = Enemy.change_dir enemy 0 in
     let next_move_up = Enemy.change_dir enemy 90 in
     let next_move_down = Enemy.change_dir enemy 270 in 
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-    let valid_moves = List.filter (fun next_move -> 
-        not (hit_wall st (move next_move).pos next_move.dir)) all_moves in 
+    let valid_moves = List.filter 
+        (fun next_move -> not (hit_wall st (move next_move).pos next_move.dir 
+                                 Constant.camel_radius)) all_moves in 
     let random_turn_enemy =  
       List.nth valid_moves (Random.int (List.length valid_moves))
     in 

@@ -34,7 +34,7 @@ let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_s
     | ' ' -> shoot camel st
     | _ -> {st with camel = camel} 
   in
-  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
+  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir Constant.camel_radius
     then st else st' in 
   let finst = st'' |> update_round_state in 
   {gs with round_state = finst}
