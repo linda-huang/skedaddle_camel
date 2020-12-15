@@ -38,14 +38,14 @@ let hit_corner (st : t) (pos : Position.t) =
   let coord_mapping = Position.pixel_to_tile pos st.top_left_corner in 
   match coord_mapping with 
   | Position.Out_of_bounds -> true
-  | Position.Valid (col, row) -> col < 0 || row < 0 
-                                 || row >= Array.length st.maze 
-                                 || col >= Array.length st.maze.(0) 
-                                 || Maze.tile_type st.maze col row = Wall 5 
-                                 || Maze.tile_type st.maze col row = Wall 4 
-                                 || Maze.tile_type st.maze col row = Wall 3 
-                                 || Maze.tile_type st.maze col row = Wall 2 
-                                 || Maze.tile_type st.maze col row = Wall 1
+  | Position.Valid (col, row) -> 
+    col < 0 || row < 0 
+    || row >= Array.length st.maze 
+    || col >= Array.length st.maze.(0) 
+    || (match (Maze.tile_type st.maze col row) with
+        | Wall x when x > 0 -> true
+        | _ -> false)
+
 
 let hit_wall (st : t) (pos : Position.t) (dir : int) = 
   let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
@@ -91,13 +91,52 @@ let shoot (camel : Camel.t) (st : t) =
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
+let matrix_to_list_list (matrix : 'a array array) : 'a list list = 
+  let outer_list = Array.to_list matrix in 
+  List.map (Array.to_list) outer_list
+
+let list_list_to_matrix (list : 'a list list) : 'a array array = 
+  let outer_array = Array.of_list list in 
+  Array.map (Array.of_list) outer_array
+
+(** st.maze with the (col, row) tile reduced by 1 hp **)
+let reduce_wall_hp col row st = 
+  if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
+  else if st.maze.(row).(col) = Wall 4 then st.maze.(row).(col) <- Wall 3
+  else if st.maze.(row).(col) = Wall 3 then st.maze.(row).(col) <- Wall 2
+  else if st.maze.(row).(col) = Wall 2 then st.maze.(row).(col) <- Wall 1
+  else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;
+  st
+
+(** returns st without projectiles that have hit walls, and with wall HP reduced
+    appropriately **)
+let proj_hit_wall (st : t) = 
+  let rec f (remproj : Projectile.t list) (accproj : Projectile.t list) (st : t)
+    : t = 
+    match remproj with 
+    (* if h hits a wall then f with st (wall hp reduced or converted into path) and repeat with t
+       if not hit wall then add h to accproj*)
+    | h::t -> if hit_wall st h.pos h.dir then
+        let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in 
+        match coord_mapping with 
+        | Position.Valid (col, row) -> begin 
+            let st' = reduce_wall_hp col row st in
+            f t accproj st'
+          end
+        | _ -> f t accproj st
+      else f t (h :: accproj) st
+    | [] -> {st with projectiles = accproj}
+  in 
+  f st.projectiles [] st
+
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
                        List.map Projectile.move_proj st.projectiles} in 
-  {st' with projectiles = 
+  (* {st' with projectiles = 
               List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall st' p.pos p.dir)) 
-                st'.projectiles}
+                  not (proj_hit_wall st' p.pos p.dir)) 
+                st'.projectiles} *)
+  proj_hit_wall st'
 
 let hit_enemy (st : t) = 
   let rec check_proj (lst : Projectile.t list) 
