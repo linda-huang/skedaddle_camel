@@ -11,6 +11,7 @@ open Timer
 open Background
 open Img_enemy_camel
 open Img_heart
+open Img_tile
 
 let initialize_lives (x, y) num_lives = 
   let counter = ref 0 in
@@ -35,7 +36,10 @@ let reduce_hearts_img (x, y) loss num_lives =
 let draw_initial_round_state st =
   initialize_lives 
     (fst st.top_left_corner, snd st.top_left_corner - st.rows * tile_width)
-    3
+    3;
+  let coin_img = make_image coin_symbol in 
+  draw_image coin_img (fst st.top_left_corner) 
+    (snd st.top_left_corner - (st.rows + 2) * tile_width)
 
 let draw_background ()= 
   let image = Graphics.make_image Background.background in 
@@ -53,19 +57,19 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
       if tile = Wall then begin
-        let wall_img = make_image stone_pic in 
+        let wall_img = make_image sand_wall in 
         draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
       end 
       else if tile = Start then begin 
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
-          Constant.tile_width;
+        let start_tile = make_image portal_tile in 
+        draw_image start_tile (fst !curr_pos) (snd !curr_pos - tile_width + 1);
       end
       else if tile = Exit then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
-          Constant.tile_width;
+        let end_tile = make_image portal_tile2 in 
+        draw_image end_tile (fst !curr_pos) (snd !curr_pos - tile_width + 1);
       end
       else
-        let path_img = make_image sand_pic in 
+        let path_img = make_image sand_tile2 in 
         draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
     end
     done
@@ -321,8 +325,6 @@ let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) =
     Graphics.set_color 0xFCF25D;
     reduce_hearts_img (x, snd st.top_left_corner - st.rows * tile_width) 
       (3 - st.camel.health) st.camel.health;
-    Graphics.draw_string (" LIVES LEFT: " ^ 
-                          string_of_int gs.round_state.camel.health); 
     draw_time gs timer
   | Transition t -> draw_transition t gs 
   | Won -> draw_won gs

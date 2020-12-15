@@ -4,6 +4,7 @@
 #require "ANSITerminal";;
 #require "bisect_ppx.runtime";;
 #load "img_heart.cmo";;
+#load "img_tile.cmo";;
 #load "background.cmo";;
 #load "img_enemy_camel.cmo";;
 #load "constant.cmo";;
