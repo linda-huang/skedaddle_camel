@@ -60,8 +60,8 @@
 <a id="L37"></a><span > </span>
 <a id="L38"></a><span > </span>
 <a id="L39"></a><span > </span>
-<a id="L40"></a><span class="visited"> </span>
-<a id="L41"></a><span > </span>
+<a id="L40"></a><span > </span>
+<a id="L41"></a><span class="visited"> </span>
 <a id="L42"></a><span > </span>
 <a id="L43"></a><span > </span>
 <a id="L44"></a><span > </span>
@@ -3267,8 +3267,8 @@
 <a id="L3244"></a><span > </span>
 <a id="L3245"></a><span > </span>
 <a id="L3246"></a><span > </span>
-<a id="L3247"></a><span class="visited"> </span>
-<a id="L3248"></a><span > </span>
+<a id="L3247"></a><span > </span>
+<a id="L3248"></a><span class="visited"> </span>
 <a id="L3249"></a><span > </span>
 <a id="L3250"></a><span > </span>
 <a id="L3251"></a><span > </span>
@@ -4870,16 +4870,16 @@
 <a id="L4847"></a><span > </span>
 <a id="L4848"></a><span > </span>
 <a id="L4849"></a><span > </span>
-<a id="L4850"></a><span class="visited"> </span>
+<a id="L4850"></a><span > </span>
 <a id="L4851"></a><span class="visited"> </span>
-<a id="L4852"></a><span > </span>
+<a id="L4852"></a><span class="visited"> </span>
 <a id="L4853"></a><span > </span>
 <a id="L4854"></a><span > </span>
 <a id="L4855"></a><span > </span>
 <a id="L4856"></a><span > </span>
 <a id="L4857"></a><span > </span>
-<a id="L4858"></a><span class="visited"> </span>
-<a id="L4859"></a><span > </span>
+<a id="L4858"></a><span > </span>
+<a id="L4859"></a><span class="visited"> </span>
 <a id="L4860"></a><span > </span>
 <a id="L4861"></a><span > </span>
 <a id="L4862"></a><span > </span>
@@ -5113,8 +5113,8 @@
 <a id="L5090"></a><span > </span>
 <a id="L5091"></a><span > </span>
 <a id="L5092"></a><span > </span>
-<a id="L5093"></a><span class="visited"> </span>
-<a id="L5094"></a><span > </span>
+<a id="L5093"></a><span > </span>
+<a id="L5094"></a><span class="visited"> </span>
 <a id="L5095"></a><span > </span>
 <a id="L5096"></a><span > </span>
 <a id="L5097"></a><span > </span>
@@ -8731,6 +8731,7 @@
 <a id="L8708"></a><span > </span>
 <a id="L8709"></a><span > </span>
 <a id="L8710"></a><span > </span>
+<a id="L8711"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -17445,6 +17446,7 @@
 <a href="#L8708">8708</a>
 <a href="#L8709">8709</a>
 <a href="#L8710">8710</a>
+<a href="#L8711">8711</a>
 </pre>
 <pre><code class="ocaml">open Graphics
 
@@ -17458,7 +17460,7 @@ type round_info = {
   timelim : int;
 }
 
-let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int}
+let round1 = {dimx = 13; dimy = 9; enemies = 4; timelim = max_int}
 let round2 = {dimx = 15; dimy = 13; enemies = 2; timelim = 100}
 let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60}
 
@@ -17467,7 +17469,7 @@ let totrounds = 3
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 5
+let camel_speed = 10
 let camel_rot = 90 
 let camel_width = 30
 let camel_radius = camel_width / 2
@@ -17477,6 +17479,7 @@ let enemy_speed = 1
 let enemy_color = Graphics.rg<span data-count="1">b</span> 179 27 27
 
 let health_delay = 1.
+let heart_size = 30
 
 (**********************************************************
    Maze constants

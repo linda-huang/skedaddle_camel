@@ -236,10 +236,10 @@ let clear_path maze row col new_row new_col =
   <span data-count="20000">m</span>aze.(new_row).(new_col) &lt;- Path;
   <span data-count="20000">l</span>et diffx = new_row - row in
   let diffy = new_col - col in
-  if diffx = -2 then <span data-count="5114">m</span>aze.(row-1).(col) &lt;- Path
-  else <span data-count="14886">i</span>f diffx = 2 then <span data-count="5295">m</span>aze.(row+1).(col) &lt;- Path
-  else <span data-count="9591">i</span>f diffy = -2 then <span data-count="4716">m</span>aze.(row).(col - 1) &lt;- Path
-  else <span data-count="4875">i</span>f diffy = 2 then <span data-count="4875">m</span>aze.(row).(col + 1) &lt;- Path
+  if diffx = -2 then <span data-count="5249">m</span>aze.(row-1).(col) &lt;- Path
+  else <span data-count="14751">i</span>f diffx = 2 then <span data-count="5299">m</span>aze.(row+1).(col) &lt;- Path
+  else <span data-count="9452">i</span>f diffy = -2 then <span data-count="4691">m</span>aze.(row).(col - 1) &lt;- Path
+  else <span data-count="4761">i</span>f diffy = 2 then <span data-count="4761">m</span>aze.(row).(col + 1) &lt;- Path
 
 let rec dfs maze row col =
   <span data-count="20008">l</span>et direction = [|(row - 2, col); (row + 2, col); 
