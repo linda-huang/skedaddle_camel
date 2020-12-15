@@ -90,25 +90,31 @@ let shoot (camel : Camel.t) (st : t) =
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
-(** st.maze with the (col, row) tile reduced by 1 hp **)
+(** st.maze with the (col, row) tile reduced by 1 hp 
+    requires (col, row) is a valid position**)
 let reduce_wall_hp col row st = 
-  if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
-  else if st.maze.(row).(col) = Wall 4 then st.maze.(row).(col) <- Wall 3
-  else if st.maze.(row).(col) = Wall 3 then st.maze.(row).(col) <- Wall 2
-  else if st.maze.(row).(col) = Wall 2 then st.maze.(row).(col) <- Wall 1
-  else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;
-  st
+  try (
+    if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
+    else if st.maze.(row).(col) = Wall 4 then st.maze.(row).(col) <- Wall 3
+    else if st.maze.(row).(col) = Wall 3 then st.maze.(row).(col) <- Wall 2
+    else if st.maze.(row).(col) = Wall 2 then st.maze.(row).(col) <- Wall 1
+    else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;st
+  ) with 
+  | x -> st
 
 (** returns st without projectiles that have hit walls, and with wall HP reduced
     appropriately **)
 let proj_hit_wall (st : t) = 
-  let rec f (remproj : Projectile.t list) (accproj : Projectile.t list) (st : t)
-    : t = 
+  let rec f 
+      (remproj : Projectile.t list) 
+      (accproj : Projectile.t list) 
+      (st : t) : t = 
     match remproj with 
     (* if h hits a wall then f with st (wall hp reduced or converted into path) and repeat with t
        if not hit wall then add h to accproj*)
     | h::t -> 
-      if hit_wall st h.pos h.dir Constant.projectile_radius then
+      if hit_wall st h.pos h.dir 0
+      then
         let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in 
         match coord_mapping with 
         | Position.Valid (col, row) -> begin 
@@ -123,11 +129,7 @@ let proj_hit_wall (st : t) =
 
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
-                       List.map Projectile.move_proj st.projectiles} in 
-  (* {st' with projectiles = 
-              List.filter (fun (p : Projectile.t) -> 
-                  not (proj_hit_wall st' p.pos p.dir)) 
-                st'.projectiles} *)
+                       List.map Projectile.move_proj st.projectiles} in
   proj_hit_wall st'
 
 let hit_enemy (st : t) = 
