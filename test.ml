@@ -2,7 +2,10 @@ open OUnit2
 open Camel 
 open Coin 
 open Enemy
+open Genie
+open Hourglass 
 open Maze
+open Potion
 open Position 
 open Projectile
 open Round_state 
@@ -11,13 +14,11 @@ open Random
 (*******************************************************************
    testing constants
    *********************************************************************)
-let startpos = (0,0)
-
-let maze_1 = 
-  [| [|Wall; Wall; Wall |];
-     [|Wall; Start; Wall |];
-     [|Wall; Wall; Wall |];
-  |]
+(* pixel start positions corresponding to level 1
+   r = 9, c = 13 *)
+let startposx = 100
+let startposy = 460
+let startpos = startposx, startposy
 
 (*******************************************************************
    helper functions
@@ -30,11 +31,12 @@ let string_of_tuple (x, y) =
 let string_of_tuple2 (x, y) = 
   "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
 
+(** [string_of_valid_tuple (x,y)] is [(x,y)] if it is not Out of Bounds *)
 let string_of_valid_tuple = function 
   | Valid (x,y) ->  "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
   | Out_of_bounds -> "OB"
 
-(* stolen from a2 *)
+(* from A2 *)
 (** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
     they are equivalent set-like lists.  That means checking two things.
     First, they must both be {i set-like}, meaning that they do not
@@ -64,12 +66,93 @@ let pp_list pp_elt lst =
     in loop 0 "" lst
   in "[" ^ pp_elts lst ^ "]"
 
+(** [string_of_coinarr] is the string representation of an 
+    array of coins *)
 let string_of_coinarr (arr : Coin.t array) = 
   Array.to_list arr |> pp_list (fun (x : Coin.t) -> string_of_pos x.pos)
 
 (** [coin_arr pos] is a Coin.t array of coins with positions in [pos] *)
 let coin_arr pos = 
   Array.map (fun (px, py) -> Coin.init (Position.init_pos (px, py)) 100) pos
+
+(*******************************************************************
+   tests from Caeml.ml
+ *********************************************************************)
+
+let camel_tests = [
+  (* TODO *)
+  (* Camel.init *)
+  (* Camel.turn_right *)
+  (* Camel.turn_left *)
+  (* Camel.move_horiz *)
+  (* Camel.adj_health *)
+  (* Camel.adj_coin *)
+  (* Camel.is_dead *)
+] 
+(*******************************************************************
+   end tests from Camel.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Coin.ml
+ *********************************************************************)
+(** [find_coin_test name (cx, cy) pos exp_val] constructs an OUnit
+    test named [name] that asserts the quality of 
+    [Coin.find_coin] applied to the position corresponding to [(cx, cy)] and 
+    Coin.t array with positions corresponding to [pos] 
+    against [exp_val] *)
+let find_coin_test 
+    (name : string) 
+    ((cx, cy) : int * int)
+    (pos : (int * int) array)
+    (exp_val : (int * int)) : test = 
+  name >:: (fun _ -> 
+      let exp_coin = Coin.init (Position.init_pos exp_val) 1 in  
+      assert_equal exp_coin 
+        (Coin.find_coin (Position.init_pos (cx, cy)) (coin_arr pos)) 
+        ~printer:string_of_coin)
+
+let coin_tests = []
+(*******************************************************************
+   end tests from Coin.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Enemy.ml
+ *********************************************************************)
+
+let enemy_tests = []
+(*******************************************************************
+   end tests from Enemy.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Genie.ml
+ *********************************************************************)
+
+let genie_tests = []
+(*******************************************************************
+   end tests from Genie.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Hourglass.ml
+ *********************************************************************)
+
+let hourglass_tests = []
+(*******************************************************************
+   end tests from Hourglass.ml
+ *********************************************************************)
+
+
+(*******************************************************************
+   tests from Potion.ml
+ *********************************************************************)
+
+let potion_tests = []
+(*******************************************************************
+   end tests from Potion.ml
+ *********************************************************************)
 
 (*******************************************************************
    tests from Position.ml
@@ -118,77 +201,32 @@ let position_tests = [
   dist_test "origin" (0, 0) (0, 0) 0;
   dist_test "3, 4, 5" (0, 3) (4, 0) 5;
   (* tile_to_pixel *)
-  tile_to_pixel_test "origin" startpos (0, 0) (20, ~-20);
-  tile_to_pixel_test "(1,1)" startpos (1, 1) (60, ~-60);
-  tile_to_pixel_test "(0, 100)" startpos (0, 100) (20, ~-4020);
+  tile_to_pixel_test "origin" startpos (0, 0) (120, 440);
+  tile_to_pixel_test "(1,1)" startpos (1, 1) (160, 400);
+  tile_to_pixel_test "(0, 10)" startpos (0, 10) (120, 40);
   (* pixel_to_tile *)
-  pixel_to_tile_test "center origin (25, 25)" startpos (25, 25) Out_of_bounds;
-  pixel_to_tile_test "corner origin (0, 0)" startpos (0, 0) (Valid (0, 0));
-  pixel_to_tile_test "edge origin (50, 0)" startpos (50, 0) (Valid (1, 0));
-  pixel_to_tile_test "corner origin (50,50)" startpos (50, 50) Out_of_bounds;
+  pixel_to_tile_test "out of bounds" startpos (25, 25) Out_of_bounds;
+  pixel_to_tile_test "corner origin (0, 0)" startpos startpos (Valid (0, 0));
+  pixel_to_tile_test "edge origin (50, 0)" startpos 
+    (startposx+3*Constant.tile_width, startposy-2*Constant.tile_width)
+    (Valid (3, 2));
+  pixel_to_tile_test "corner origin" startpos 
+    (startposx+Constant.tile_width, startposy-Constant.tile_width) 
+    (Valid (1,1));
 ]
 (*******************************************************************
    end tests from Position.ml
  *********************************************************************)
 
 (*******************************************************************
-   tests from Maze.ml
- *********************************************************************)
-let maze_tests = []
-(*******************************************************************
-   end tests from Maze.ml
+   tests from Projectile.ml
  *********************************************************************)
 
+let projectile_tests = []
 (*******************************************************************
-   tests from Coin.ml
- *********************************************************************)
-(** [find_coin_test name (cx, cy) pos exp_val] constructs an OUnit
-    test named [name] that asserts the quality of 
-    [Coin.find_coin] applied to the position corresponding to [(cx, cy)] and 
-    Coin.t array with positions corresponding to [pos] 
-    against [exp_val] *)
-let find_coin_test 
-    (name : string) 
-    ((cx, cy) : int * int)
-    (pos : (int * int) array)
-    (exp_val : (int * int)) : test = 
-  name >:: (fun _ -> 
-      let exp_coin = Coin.init (Position.init_pos exp_val) 1 in  
-      assert_equal exp_coin 
-        (Coin.find_coin (Position.init_pos (cx, cy)) (coin_arr pos)) 
-        ~printer:string_of_coin)
-
-let coin_tests = []
-(*******************************************************************
-   end tests from Coin.ml
+   end tests from Projectile.ml
  *********************************************************************)
 
-(*******************************************************************
-   tests from Caeml.ml
- *********************************************************************)
-
-let camel_tests = [
-  (* TODO *)
-  (* Camel.init *)
-  (* Camel.turn_right *)
-  (* Camel.turn_left *)
-  (* Camel.move_horiz *)
-  (* Camel.adj_health *)
-  (* Camel.adj_coin *)
-  (* Camel.is_dead *)
-] 
-(*******************************************************************
-   end tests from Camel.ml
- *********************************************************************)
-
-(*******************************************************************
-   tests from Enemy.ml
- *********************************************************************)
-
-let enemy_tests = []
-(*******************************************************************
-   end tests from Enemy.ml
- *********************************************************************)
 
 (*******************************************************************
    tests from Round_State.ml
@@ -210,14 +248,17 @@ let near_enemy_test
     (epos : (int * int) array)
     (exp_val : bool) : test = 
   name >:: (fun _ -> 
-      let camel = Camel.init cx cy in 
+      let camel = Camel.init cx cy in                 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
                 cols = 100; rows = 100;
                 enemies = enemy_arr epos;
                 coins = [||];
+                potions = [||];
                 projectiles = [];
-                top_left_corner = (43, 43)} in 
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos} in 
       assert_equal exp_val (near_enemy camel st)
         ~printer:string_of_bool)
 
@@ -238,8 +279,11 @@ let on_coin_test
                 cols = 100; rows = 100;
                 enemies = [||];
                 coins = coin_arr pos;
+                potions = [||];
                 projectiles = [];
-                top_left_corner = (43, 43)} in 
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos} in 
       assert_equal exp_val (on_coin st) 
         ~printer:string_of_bool)
 
@@ -277,7 +321,10 @@ let remove_coin_test
                 cols = 100; rows = 100;
                 enemies = [||];
                 coins = coin_arr pos;
+                potions = [||];
                 projectiles = [];
+                genie = None;
+                hourglass = None;
                 top_left_corner = startpos} in 
       let exp_coin = coin_arr exp_val in  
       assert_equal ~cmp:cmp_set_like_arrs exp_coin 
@@ -335,10 +382,13 @@ let round_state_tests = [
 
 let suite = "test suite" >::: List.flatten [
     camel_tests;
-    position_tests;
-    maze_tests;
     coin_tests;
     enemy_tests;
+    genie_tests;
+    hourglass_tests;
+    potion_tests;
+    position_tests;
+    projectile_tests;
     round_state_tests;
   ]
 
