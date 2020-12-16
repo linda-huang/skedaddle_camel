@@ -98,34 +98,37 @@ let reduce_wall_hp col row st =
     else if st.maze.(row).(col) = Wall 4 then st.maze.(row).(col) <- Wall 3
     else if st.maze.(row).(col) = Wall 3 then st.maze.(row).(col) <- Wall 2
     else if st.maze.(row).(col) = Wall 2 then st.maze.(row).(col) <- Wall 1
-    else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;st
-  ) with 
+    else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;
+    st
+  ) 
+  with 
   | x -> st
 
 (** returns st without projectiles that have hit walls, and with wall HP reduced
     appropriately **)
 let proj_hit_wall (st : t) = 
-  let rec f 
+  let rec proj_hit_wall_helper 
       (remproj : Projectile.t list) 
       (accproj : Projectile.t list) 
       (st : t) : t = 
-    match remproj with 
-    (* if h hits a wall then f with st (wall hp reduced or converted into path) and repeat with t
-       if not hit wall then add h to accproj*)
+    match remproj with
     | h::t -> 
+      (*if the projectile hits a wall/is out of bounds then remove it*)
       if hit_wall st h.pos h.dir 0
       then
-        let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in 
-        match coord_mapping with 
+        let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in  
+        (* if the projectile hits a wall then make the wall lose hp or 
+           turn into a path *)
+        match coord_mapping with
         | Position.Valid (col, row) -> begin 
             let st' = reduce_wall_hp col row st in
-            f t accproj st'
+            proj_hit_wall_helper t accproj st'
           end
-        | Position.Out_of_bounds -> f t accproj st
-      else f t (h :: accproj) st
+        | Position.Out_of_bounds -> proj_hit_wall_helper t accproj st
+      else proj_hit_wall_helper t (h :: accproj) st
     | [] -> {st with projectiles = accproj}
   in 
-  f st.projectiles [] st
+  proj_hit_wall_helper st.projectiles [] st
 
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
