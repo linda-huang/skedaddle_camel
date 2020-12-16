@@ -217,7 +217,8 @@ let near_enemy_test
                 enemies = enemy_arr epos;
                 coins = [||];
                 projectiles = [];
-                top_left_corner = (43, 43)} in 
+                top_left_corner = (43, 43);
+                portals = []} in 
       assert_equal exp_val (near_enemy camel st)
         ~printer:string_of_bool)
 
@@ -239,7 +240,8 @@ let on_coin_test
                 enemies = [||];
                 coins = coin_arr pos;
                 projectiles = [];
-                top_left_corner = (43, 43)} in 
+                top_left_corner = (43, 43);
+                portals = []} in 
       assert_equal exp_val (on_coin st) 
         ~printer:string_of_bool)
 
@@ -278,7 +280,8 @@ let remove_coin_test
                 enemies = [||];
                 coins = coin_arr pos;
                 projectiles = [];
-                top_left_corner = startpos} in 
+                top_left_corner = startpos; 
+                portals = []} in 
       let exp_coin = coin_arr exp_val in  
       assert_equal ~cmp:cmp_set_like_arrs exp_coin 
         (Round_state.remove_coin 

@@ -8,18 +8,21 @@ type round_info = {
   dimy : int;
   enemies : int;
   timelim : int;
+  portals : int
 }
 
-let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int}
-let round2 = {dimx = 15; dimy = 13; enemies = 2; timelim = 100}
-let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60}
+let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int; portals = 2}
+let round2 = {dimx =15; dimy = 13; enemies = 2; timelim = 100; portals = 4}
+let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60; portals = 8}
 
 let totrounds = 3
 
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 5
+let camel_speed = 10
+let camel_mud_speed = 5
+
 let camel_rot = 90 
 let camel_width = 30
 let camel_radius = camel_width / 2
@@ -36,6 +39,12 @@ let health_delay = 1.
 let tile_width = 40
 let tile_radius = tile_width / 2
 let near = 15 
+let exit_color = Graphics.rgb 146 168 209
+let start_color = Graphics.rgb 146 168 209
+
+let ice_color = Graphics.rgb 0 64 255
+let mud_color = Graphics.rgb 76 36 20
+let portal_color = Graphics.rgb 221 160 221
 
 let path_color = Graphics.rgb 255 248 220
 let path_pic = 
@@ -3243,8 +3252,7 @@ let wall_pic =
       0x73A326;
       0x7AA92C|];
   |]
-let exit_color = Graphics.rgb 146 168 209
-let start_color = Graphics.rgb 146 168 209
+
 
 (**********************************************************
    Coin constants

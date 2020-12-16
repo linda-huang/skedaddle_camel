@@ -9,10 +9,17 @@ type t = {
   health : int;
   lasthealthlost : float; 
   coins : int;
+  speed : int;
+  shoot : bool
 }
 
 (** [init x y] is a new camel at position ([x],[y]) *)
 val init : int -> int -> t 
+
+(** [change_dir camel dir] is [camel] going in direction [dir].
+    Requires: [rot] must be a multiple of 90 *)
+val change_dir : t -> int -> t 
+
 
 (** [turn_right camel] is [camel] turned right [rot] degrees.
     Requires: [rot] must be a multiple of 90 *)
@@ -31,6 +38,12 @@ val move_horiz : t -> int -> char -> t
     one step. The direction of movement (up/down) is determined by [sign]
     Requires: [sign] is either ~-1. or 1. *)
 val move_vert : t -> int -> char -> t
+
+(** [move camel] is [camel] moved one step *)
+val move : t -> t
+
+(** [teleport camel pos] is [camel] teleported to position pos *)
+val teleport : t -> Position.t -> t
 
 (** [adj_health camel h] is [camel] with health 
     incremented/decremented by [h] *)

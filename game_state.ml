@@ -29,7 +29,8 @@ let new_level (gs : game_state) : game_state =
       {gs with current_state = Transition 0; 
                round_state = Round_state.init 
                    Constant.round1.dimx Constant.round1.dimy 
-                   Constant.round1.enemies} 
+                   Constant.round1.enemies
+                   Constant.round1.portals } 
     end 
   | Transition t -> {gs with current_state = InPlay}
   | _ -> begin 
@@ -46,7 +47,7 @@ let new_level (gs : game_state) : game_state =
           then Constant.round2, 1 
           else Constant.round3, 2 in 
         let newstate = 
-          Round_state.init round.dimx round.dimy round.enemies in 
+          Round_state.init round.dimx round.dimy round.enemies round.portals in 
         {gs with score = newscr; 
                  current_state = Transition transition_num;
                  round_state = newstate}

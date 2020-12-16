@@ -14,7 +14,8 @@ type t = {
   enemies : Enemy.t array;
   coins : Coin.t array;
   projectiles : Projectile.t list;
-  top_left_corner : int * int
+  top_left_corner : int * int;
+  portals : Position.t list
 }
 
 (* *********************************************************
@@ -43,20 +44,149 @@ let hit_corner (st : t) (pos : Position.t) =
                                  || col >= Array.length st.maze.(0) 
                                  || (Maze.tile_type st.maze col row = Wall)
 
-let hit_wall (st : t) (pos : Position.t) (dir : int) = 
+let find_head (pos : Position.t) (dir : int) = 
   let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
   let tr = (pos.x + Constant.camel_radius, pos.y + Constant.camel_radius) in
   let bl = (pos.x - Constant.camel_radius, pos.y - Constant.camel_radius) in
   let br = (pos.x + Constant.camel_radius, pos.y - Constant.camel_radius) in
-  let two_corners =
-    match dir with 
-    | 0 -> (tr, br)
-    | 90 -> (tl, tr)
-    | 180 -> (tl, bl)
-    | 270 -> (bl, br)
-    | _ -> failwith "impossible"
-  in hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
-       (Position.init_pos (snd two_corners))
+  match dir with 
+  | 0 -> (tr, br)
+  | 90 -> (tl, tr)
+  | 180 -> (tl, bl)
+  | 270 -> (bl, br)
+  | _ -> failwith "impossible"
+
+let hit_wall (st : t) (pos : Position.t) (dir : int) = 
+  let two_corners = find_head pos dir in
+  Graphics.moveto (fst st.top_left_corner + 3) (snd st.top_left_corner + 30);
+  Graphics.set_color Graphics.black; 
+  Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 250 20;  
+  Graphics.set_color Graphics.red;
+  Graphics.draw_string (if (hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
+                              (Position.init_pos (snd two_corners)))then 
+                          "wall" else "path");                          
+  hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
+    (Position.init_pos (snd two_corners))
+
+let backwards_dir = function
+  | 90 -> 270
+  | 180 -> 0
+  | 270 -> 90
+  | 0 -> 180
+  | _ -> failwith "impossible"
+
+let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =  
+  let og_dir = camel.dir in 
+  let back_dir = backwards_dir og_dir in
+  let next_move_l = Camel.change_dir camel 180 in
+  let next_move_r = Camel.change_dir camel 0 in
+  let next_move_up = Camel.change_dir camel 90 in
+  let next_move_down = Camel.change_dir camel 270 in 
+  let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
+  let valid_moves = List.filter (fun next_move -> 
+      not (hit_wall st (Camel.move next_move).pos next_move.dir)) all_moves in 
+  Graphics.moveto (fst st.top_left_corner + 3) (snd st.top_left_corner + 60);
+  Graphics.set_color Graphics.black; 
+  Graphics.fill_rect (fst st.top_left_corner + 3) (snd st.top_left_corner + 60) 600 20;  
+  Graphics.set_color Graphics.red;
+  Graphics.draw_string (" number of valid moves: " ^ 
+                        (string_of_int (List.length valid_moves)));
+  Graphics.draw_string ("  og dir " ^ 
+                        (string_of_int (og_dir)));
+  let final_valid_moves = if List.length valid_moves > 1 then 
+      List.filter (fun (next : Camel.t) -> next.dir <> back_dir) valid_moves
+    else valid_moves
+  in 
+  Graphics.draw_string ("  number of valid moves that are not last move: " ^ 
+                        (string_of_int (List.length final_valid_moves)));
+  let random_turn_camel =  List.nth final_valid_moves 
+      (Random.int (List.length final_valid_moves)) in
+  Camel.move (random_turn_camel) 
+
+let teleport_camel (st : t) (camel : Camel.t) = 
+  []
+
+let restore_speed_camel camel = 
+  if camel.speed <> Constant.camel_mud_speed then camel 
+  else {camel with speed = Constant.camel_speed} 
+
+let restore_shoot_camel camel = 
+  if camel.shoot then camel else {camel with shoot = true} 
+
+let restore_default_camel (camel : Camel.t) = 
+  let speedy_camel = restore_speed_camel camel in 
+  restore_shoot_camel speedy_camel
+
+let handle_hit_ice (st : t) (camel : Camel.t) = 
+  if camel.shoot then let new_camel = restore_speed_camel camel in
+    move_camel_ice st {new_camel with shoot = false} 
+  else move_camel_ice st camel 
+
+let handle_hit_mud (camel : Camel.t) = 
+  if camel.speed = Constant.camel_mud_speed then camel 
+  else let speedy_camel = restore_shoot_camel camel in 
+    {speedy_camel with speed = Constant.camel_mud_speed}
+
+let handle_hit_portal (st : t) (camel : Camel.t) = 
+  let new_camel = restore_default_camel camel in 
+  let curr_tile = Position.pixel_to_tile (camel.pos) (st.top_left_corner) in
+  let possible_portals = List.filter (fun ppos -> 
+      (Position.pixel_to_tile ppos st.top_left_corner) <> curr_tile) st.portals 
+  in
+  Graphics.moveto (fst st.top_left_corner - 75) (snd st.top_left_corner + 60);
+  Graphics.set_color Graphics.black; 
+  Graphics.fill_rect (fst st.top_left_corner - 75) (snd st.top_left_corner + 60) 33 20; 
+  Graphics.set_color Graphics.white;
+  Graphics.draw_string (string_of_int (List.length st.portals));
+  Graphics.draw_string (" " ^ (string_of_int (List.length possible_portals))); 
+  let new_pos = List.nth possible_portals 
+      (Random.int (List.length possible_portals)) in  
+  Graphics.set_color Graphics.white;
+  Graphics.draw_string (" " ^ (string_of_int new_pos.x)); 
+  Graphics.draw_string (" " ^ (string_of_int new_pos.y)); 
+  Camel.teleport new_camel new_pos
+
+let hit_power_tile (st : t) (pos : Position.t) =
+  Graphics.moveto (fst st.top_left_corner - 50) (snd st.top_left_corner + 30);
+  Graphics.set_color Graphics.black; 
+  Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 250 20;  
+  let (t, b) = find_head pos st.camel.dir in 
+  let new_tile = Position.pixel_to_tile (Position.init_pos t) st.top_left_corner 
+  in 
+  match new_tile with 
+  | Valid (col, row) -> begin
+      match Maze.tile_type st.maze col row with 
+      | Power_Path Ice -> 
+        Graphics.moveto (fst st.top_left_corner + 50) (snd st.top_left_corner + 30);
+        Graphics.set_color Graphics.black; 
+        Graphics.fill_rect (fst st.top_left_corner + 50) (snd st.top_left_corner + 30) 33 20;  
+        Graphics.set_color Graphics.white;
+        Graphics.draw_string "Ice!"; 
+        handle_hit_ice st st.camel 
+      | Power_Path Mud -> 
+        Graphics.moveto (fst st.top_left_corner + 100) (snd st.top_left_corner + 30);
+        Graphics.set_color Graphics.black; 
+        Graphics.fill_rect (fst st.top_left_corner + 100) (snd st.top_left_corner + 30) 33 20;  
+        Graphics.set_color Graphics.white;
+        Graphics.draw_string "Mud!";  
+        handle_hit_mud st.camel
+      | Power_Path Portal -> 
+        Graphics.moveto (fst st.top_left_corner + 150) (snd st.top_left_corner + 30);
+        Graphics.set_color Graphics.black; 
+        Graphics.fill_rect (fst st.top_left_corner + 150) (snd st.top_left_corner + 30) 33 20;  
+        Graphics.set_color Graphics.white;
+        Graphics.draw_string "Portal!";   
+        handle_hit_portal st st.camel
+      | _ -> 
+        Graphics.moveto (fst st.top_left_corner - 50) (snd st.top_left_corner + 30);
+        Graphics.set_color Graphics.black; 
+        Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 33 20;  
+        Graphics.set_color Graphics.white;
+        Graphics.draw_string "None!"; 
+        {st.camel with speed = Constant.camel_speed; shoot = true}
+    end
+  | _ -> failwith "impossible"
+
 
 (**********************************************************
    helpers for updating round_state
@@ -75,13 +205,23 @@ let rec random_valid_tile_enemy mz =
   let (x, y) = random_valid_tile mz in 
   if x < 5 || y < 5 then random_valid_tile_enemy mz else (x, y)
 
+(** [random_valid_tile_enemy mz] is a random valid (non-wall and
+    non-portal) tile in [mz] *)
+let rec random_valid_tile_portal mz = 
+  let (col, row) = random_valid_tile mz in 
+  if Maze.tile_type mz col row = Power_Path Portal then 
+    random_valid_tile_portal mz 
+  else (col, row) 
+
 let near_enemy (camel : Camel.t) (st : t) = 
   let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
 let shoot (camel : Camel.t) (st : t) = 
-  let p = Projectile.init camel.dir camel.pos 
-  in {st with projectiles = p :: st.projectiles} 
+  if camel.shoot then 
+    let p = Projectile.init camel.dir camel.pos 
+    in {st with projectiles = p :: st.projectiles} 
+  else st
 
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
@@ -162,6 +302,19 @@ let update_round_state (st : t) : t =
 (************************************************************
    initialization
  ***********************************************************)
+(** [init_portals n mz acc] is an Array of [n] portals with valid positions, 
+    followed by a list of positions where the portals are located *)
+let rec init_portals (start_pos : int * int)
+    (nportals : int) (mz : Maze.maze) (acc : (Position.t list)) 
+  : (Maze.maze * Position.t list) = 
+  let (col, row) = random_valid_tile_portal mz in 
+  mz.(row).(col) <- Power_Path Portal; 
+  let (x, y) = Position.tile_to_pixel start_pos (col, row) in
+  if nportals > 1 then begin
+    init_portals start_pos (nportals - 1) mz ((Position.init_pos (x, y)) :: acc)
+  end
+  else (mz, ((Position.init_pos (x, y)) :: acc))
+
 (** [init_enemy_lst n mz] is an Array of [n] enemy camels with valid positions *)
 let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
   Array.init n (fun i -> 
@@ -178,7 +331,7 @@ let init_coin_lst n mz start_pos=
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos) (10 * Random.int 4 + 10)))
 
-let init cols rows numenemy = 
+let init cols rows numenemy portals = 
   let mz = Maze.populate cols rows (0,0) in 
   let maze_row = rows in
   let maze_col = cols in
@@ -190,15 +343,17 @@ let init cols rows numenemy =
   let start_pos = (start_x, start_y) in
   let camel = Camel.init ((fst start_pos) + camel_radius) 
       ((snd start_pos) - camel_radius) in
+  let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
   Graphics.resize_window window_width window_height;
   {camel = camel; 
-   maze = mz;
+   maze = mz_w_portals;
    cols = cols;
    rows = rows;
    enemies = init_enemy_lst numenemy mz start_pos;
    coins = init_coin_lst 20 mz start_pos;
    projectiles = [];
-   top_left_corner = start_pos}
+   top_left_corner = start_pos;
+   portals = portal_lst}
 
 (**********************************************************
    pretty printing things

@@ -1,22 +1,45 @@
 open Graphics
 open Constant 
 
+(** The variant type indicating type of path tiles *)
+type power_tile = Portal | Mud | Ice 
+
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
   | Wall
-  | Path 
+  | Power_Path of power_tile
+  | Path
   | Exit
   | Start
 
 (* maze as a 2d array*)
 type maze = t array array
 
+(* a list of all types of power tiles *)
+let power_tiles = [Mud; Ice]
+let power_tile_len = [1;2;3]
+
 (** [in_limit maze row col] checks if the position corresponding to 
     [row] x [col] is within the bounds of [maze]. *)
 let in_limit maze row col = (row >= 0) && (row < Array.length maze) && 
                             (col >= 0) && (col < Array.length maze.(0))
 
-(** [visisted maze row col] is if the tile at [row] x [col] is a Wall *)
+(** [power_or_not] is a weighted random generator that picks either power path
+    or normal path. 
+    The probability of selecting a power path to a normal path is 7:3. *)
+let power_or_not () = 
+  if (Random.int 10) < 7 then 0 else 1 
+
+(** [rand_power_tile] generates a randomly picked power tile *)
+let rand_power_tile () = 
+  List.nth power_tiles (Random.int (List.length power_tiles))
+
+(** [rand_power_tile] generates a randomly picked power tile length.
+    This refers to the number of power tiles of that type placed consecutively.*)
+let rand_power_len () = 
+  List.nth power_tile_len (Random.int (List.length power_tile_len))
+
+(** [visited maze row col] is if the tile at [row] x [col] is a Wall *)
 let visited maze row col = 
   if maze.(row).(col) = Wall then false else true
 
@@ -39,25 +62,37 @@ let shuffle arr =
   in helper arr 4
 
 (** [clear_path maze row col new_row new_col] creates a Path *)
-let clear_path maze row col new_row new_col = 
-  maze.(new_row).(new_col) <- Path;
+let clear_path maze row col new_row new_col tile_type tile_len = 
+  maze.(new_row).(new_col) <- tile_type;
   let diffx = new_row - row in
   let diffy = new_col - col in
-  if diffx = -2 then maze.(row-1).(col) <- Path
-  else if diffx = 2 then maze.(row+1).(col) <- Path
-  else if diffy = -2 then maze.(row).(col - 1) <- Path
-  else if diffy = 2 then maze.(row).(col + 1) <- Path
+  let next_tile_type = if tile_len = 1 then Path else tile_type in 
+  if diffx = -2 then maze.(row-1).(col) <- next_tile_type
+  else if diffx = 2 then maze.(row+1).(col) <- next_tile_type
+  else if diffy = -2 then maze.(row).(col - 1) <- next_tile_type
+  else if diffy = 2 then maze.(row).(col + 1) <- next_tile_type
 
-let rec dfs maze row col =
+(** [dfs maze row col] traverses the maze using depth first search
+    [row] indicates the row number of the tile that the traversal is currently 
+    visiting, [col] indicates the tile's column number *)
+let rec dfs maze row col prev counter =
   let direction = [|(row - 2, col); (row + 2, col); 
                     (row, col - 2); (row, col + 2)|] in 
   shuffle direction;
-  for i = 0 to Array.length direction - 1 do begin
+  for i = 0 to Array.length direction - 1 do begin  
+    let new_tile_type = if counter <= 0 then if power_or_not () = 0 then Path 
+        else Power_Path (rand_power_tile ()) 
+      else prev 
+    in 
+    let new_tile_len = if counter <= 0 then if new_tile_type = Path then 0 
+        else rand_power_len ()
+      else counter
+    in 
     let new_row, new_col = direction.(i) in
     if in_limit maze new_row new_col && not (visited maze new_row new_col) 
     then begin
-      clear_path maze row col new_row new_col;
-      dfs maze new_row new_col
+      clear_path maze row col new_row new_col new_tile_type new_tile_len;
+      dfs maze new_row new_col new_tile_type (new_tile_len-2)
     end
     else ()
   end
@@ -66,7 +101,7 @@ let rec dfs maze row col =
 let populate cols rows start_pos = 
   let maze = Array.make_matrix rows cols Wall in
   let start_row, start_col = start_pos in
-  dfs maze start_row start_col;
+  dfs maze start_row start_col Path 0;
   maze.(start_row).(start_col) <- Path;
   maze.(0).(0) <- Start;
   maze.(rows-1).(cols-1) <- Exit;
@@ -78,3 +113,4 @@ let tile_type maze col row =
   | Start -> Start
   | Wall -> Wall
   | Path -> Path
+  | Power_Path x -> Power_Path x 

@@ -9,8 +9,10 @@ open Game_state
 open Unix
 open Timer 
 
-let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
-  let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
+let input (gs : Game_state.game_state) (timer : Timer.timer) 
+  : Game_state.game_state = 
+  let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) 
+    : Game_state.game_state = 
     Unix.sleepf 0.001;
     if not (Graphics.key_pressed ()) then  
       let timer = Timer.update_timer timer in 
@@ -21,21 +23,33 @@ let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_s
   in 
   let gs = wait_kp gs timer in  
   let camel = gs.round_state.camel in 
-  let st = gs.round_state in 
+  let st = gs.round_state in
   let st' = 
-    match Graphics.read_key () with 
-    | '0' -> exit 0  
-    | 'w' -> {st with camel = (Camel.move_vert camel 1 'w')}
-    | 'a' -> {st with camel = (Camel.move_horiz camel ~-1 'a')}
-    | 's' -> {st with camel = (Camel.move_vert camel ~-1 's')}
-    | 'd' -> {st with camel = (Camel.move_horiz camel 1 'd')}
-    | 'e' -> {st with camel = (Camel.turn_right camel)}
-    | 'q' -> {st with camel = (Camel.turn_left camel)}
-    | ' ' -> shoot camel st
-    | _ -> {st with camel = camel} 
+    if camel.shoot then begin
+      match Graphics.read_key () with 
+      | '0' -> exit 0  
+      | 'w' -> {st with camel = (Camel.move_vert camel 1 'w')}
+      | 'a' -> {st with camel = (Camel.move_horiz camel ~-1 'a')}
+      | 's' -> {st with camel = (Camel.move_vert camel ~-1 's')}
+      | 'd' -> {st with camel = (Camel.move_horiz camel 1 'd')}
+      | 'e' -> {st with camel = (Camel.turn_right camel)}
+      | 'q' -> {st with camel = (Camel.turn_left camel)}
+      | ' ' -> shoot camel st
+      | _ -> {st with camel = camel} 
+    end
+    else {st with camel = Round_state.move_camel_ice st camel} 
   in
   let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
-    then st else st' in 
+    then begin 
+      (* if not camel.shoot then
+         {st' with camel = (Round_state.move_camel_ice st' camel)}
+         else  *)
+      st 
+    end 
+    else 
+      let updated_camel = Round_state.hit_power_tile st' st'.camel.pos in 
+      {st' with camel = updated_camel}
+  in 
   let finst = st'' |> update_round_state in 
   {gs with round_state = finst}
 
@@ -61,7 +75,11 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
       | Wall -> "wall"
       | Path -> "path"
       | Exit -> "exit"
-      | Start -> "start" in
+      | Start -> "start" 
+      | Power_Path Ice -> "ice path"
+      | Power_Path Mud -> "mud path"
+      | Power_Path Portal -> "portal path"
+    in
     Graphics.set_color Graphics.black;
     if extract_wall_type gs.round_state.maze col row = "exit" 
     then begin 
@@ -89,7 +107,7 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
       run newgs timer 
 
 let init () = 
-  let st = Round_state.init 21 21 5 in 
+  let st = Round_state.init 21 21 5 2 in 
   let gs = Game_state.init st in 
   let timer = Timer.init_timer () in 
   Draw.draw_game_state gs timer; 

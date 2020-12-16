@@ -8,6 +8,7 @@ type round_info = {
   dimy : int;
   enemies : int;
   timelim : int;
+  portals : int
 }
 
 (** [round1] is the information for the first level *)
@@ -24,6 +25,10 @@ val totrounds : int
 
 (** [camel_speed] is the distance (in pixels) camel travels on one key press *)
 val camel_speed : int
+
+(** [camel_mud_speed] is the distance (in pixels) camel travels on one key press 
+    on muddy tiles*)
+val camel_mud_speed : int
 
 (** [camel_rot] is the number of degrees the camel rotates on one key press *)
 val camel_rot : int
@@ -73,6 +78,15 @@ val start_color : Graphics.color
 
 (** [exit_color] is the Graphics color code for a solid exit tile *)
 val exit_color : Graphics.color
+
+(** [ice_color] is the Graphics color code for a solid ice tile *)
+val ice_color : Graphics.color
+
+(** [mud_color] is the Graphics color code for a solid mud tile *)
+val mud_color : Graphics.color
+
+(** [portal_color] is the Graphics color code for a solid portal tile *)
+val portal_color : Graphics.color
 
 (** [near] is how far two center points of agents must be to be 
     considered a hit *)

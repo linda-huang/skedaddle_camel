@@ -9,7 +9,8 @@ type t = {
   enemies : Enemy.t array;
   coins : Coin.t array;
   projectiles : Projectile.t list;
-  top_left_corner: int * int
+  top_left_corner: int * int;
+  portals : Position.t list
 }
 
 (** [on_coin camel maze] detects if [camel]'s position is on a coin in [maze]. *)
@@ -21,6 +22,10 @@ val at_exit : t -> bool
 (** [hit_wall pos maze] detect if the position [pos] is a valid
     move in [maze] *)
 val hit_wall : t -> Position.t -> int -> bool
+
+(** [hit_power_tile pos maze] detect if camel has hit a power tile and if 
+    so updates camel in response to power tile effect *)
+val hit_power_tile : t ->  Position.t -> Camel.t
 
 (** [near_enemy camel maze] detects if [camel]'s position is near 
     an enemy camel *)
@@ -48,6 +53,8 @@ val hit_enemy : t -> t
     after updating the position of all enemy camels. *)
 val move_enemies : t -> t 
 
+val move_camel_ice : t -> Camel.t -> Camel.t
+
 (** [update_round_state st] is [st] with all agents updated one move. 
     All enemies moved one step; projectiles moved one unit; 
     any applicable coins picked up; camel score and health adjusted *)
@@ -55,7 +62,7 @@ val update_round_state : t -> t
 
 (** [init camel x y numenemy] is a fresh round_state with [camel] at
     the beginning of an [x] x [y] maze with [numenemy] enemies *)
-val init : int -> int -> int -> t
+val init : int -> int -> int -> int -> t
 
 (** [string_of_round_state st] is [st], nicely formatted. *)
 val string_of_round_state : t -> string 

@@ -24,17 +24,21 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
         let wall_img = make_image path_pic in 
         draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
       end 
-      else if tile = Start then begin 
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
-          Constant.tile_width;
-      end
-      else if tile = Exit then begin
-        draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
-          Constant.tile_width;
-      end
-      else
+      else if tile = Path then begin
         let path_img = make_image wall_pic in 
         draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+      end
+      else begin
+        let tile_color = match tile with 
+          | Start -> Constant.start_color
+          | Exit -> Constant.exit_color
+          | Power_Path Ice -> Constant.ice_color
+          | Power_Path Mud -> Constant.mud_color
+          | Power_Path Portal -> Constant.portal_color 
+        in 
+        draw_element (fst !curr_pos) (snd !curr_pos) tile_color
+          Constant.tile_width;
+      end 
     end
     done
   end

@@ -1,8 +1,12 @@
 (** Random maze generation *)
 
+(** The variant type indicating type of path tiles *)
+type power_tile = Portal | Mud | Ice 
+
 (** The abstract type representing the value of a tile in a maze. *)
 type t = 
   | Wall
+  | Power_Path of power_tile
   | Path 
   | Exit
   | Start
