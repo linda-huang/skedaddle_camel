@@ -252,6 +252,34 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
       end 
   in Graphics.synchronize () 
 
+(** [draw_instructions gs] draws the instructions of the game
+    during game play, if requested *)
+let draw_instructions (gs : Game_state.game_state) timer i : unit = 
+  Graphics.clear_graph ();
+  let st = gs.round_state in 
+  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
+  Graphics.set_color Graphics.white;
+  Graphics.fill_poly [|((x),(y-10)); 
+                       ((x),(40 + y));
+                       ((800 + x),(y-10)); 
+                       ((800 + x),(40 + y));|];
+  Graphics.moveto x y;
+  Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.blue;
+  Graphics.draw_string ("instructions. called at " ^ (string_of_int i));
+  let y = y - 25 in Graphics.moveto x y;
+  Graphics.draw_string "(Press `x` to return to the game)";
+  let _ = match gs.game_difficulty with 
+    | Easy -> ();
+    | Hard -> begin
+        let y = y - 75 in Graphics.moveto x y;
+        Graphics.draw_string "hard features only";
+      end
+  in 
+  let y = y - 25 in Graphics.moveto x y;
+  Graphics.draw_string (Timer.string_of_timer timer);
+  Graphics.synchronize () 
+
 let draw_gameover (gs : Game_state.game_state) (over : Game_state.game_end) = 
   Graphics.clear_graph ();
   let msg = 
@@ -363,5 +391,6 @@ let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) =
                           string_of_int gs.round_state.camel.health); 
     draw_time gs timer
   | Transition t -> draw_transition t gs 
+  | Instructions i -> draw_instructions gs timer i 
   | Won -> draw_won gs
   | GameOver over -> draw_gameover gs over

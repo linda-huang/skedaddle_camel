@@ -23,8 +23,8 @@ let out_of_time (curr_round : Constant.round_info)
     | None -> max_int in 
   if time_left <= 0 then true else false 
 
-let update_timer (timer : timer) = 
-  let time = Unix.gettimeofday () in 
+let update_timer (timer : timer) (paused : float) = 
+  let time = Unix.gettimeofday () -. paused in 
   {timer with elapsedtime = 
                 time -. timer.starttime |> int_of_float}
 
@@ -32,3 +32,7 @@ let init_timer () = {
   starttime = Unix.gettimeofday ();
   elapsedtime = 0
 }
+
+let string_of_timer timer = 
+  "Starttime: " ^ string_of_float timer.starttime 
+  ^ " Elapsed: " ^ string_of_int timer.elapsedtime

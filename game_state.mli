@@ -10,6 +10,7 @@ type state =
   | Won 
   | InPlay
   | Transition of int 
+  | Instructions of int 
 
 (** The variant type of difficulty *)
 type difficulty = Easy | Hard 
