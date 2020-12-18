@@ -146,39 +146,43 @@ let handle_hit_mud (camel : Camel.t) =
 let in_tile (st : t) (camel : Camel.t) = function
   | Valid (col, row) -> 
     let (cx, cy) = Position.tile_to_pixel (st.top_left_corner) (col, row) in 
+    Graphics.draw_string ("abs " ^ (string_of_int (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy))));
     (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy)) < 20
   | Out_of_bounds -> false
 
 let handle_hit_portal (st : t) (camel : Camel.t) = 
-  let curr_tile = Position.pixel_to_tile (camel.pos) (st.top_left_corner) in
+  let curr_tile = Position.pixel_to_tile (Position.init_pos (fst (find_head camel.pos camel.dir))) (st.top_left_corner) in
   Graphics.moveto (100) (60);
   Graphics.set_color Graphics.black; 
-  Graphics.fill_rect (100) (60) 150 20; 
+  Graphics.fill_rect (100) (60) 250 20; 
   Graphics.set_color Graphics.white;
-  Graphics.draw_string ("in tile " ^ (string_of_bool (in_tile st camel curr_tile)));
+  Graphics.draw_string (" in tile " ^ (string_of_bool (in_tile st camel curr_tile)));
   Graphics.draw_string (" teleport " ^ (string_of_bool (camel.teleport))); 
   if camel.last_tile <> Maze.Power_Path Portal then 
     let default_camel = restore_default_camel camel in 
     {default_camel with last_tile = Power_Path Portal} 
   else 
-    (* let curr_tile = Position.pixel_to_tile (camel.pos) (st.top_left_corner) in *)
-  if not (in_tile st camel curr_tile) || camel.teleport then camel 
-  else 
-    let possible_portals = List.filter (fun ppos -> 
-        (Position.pixel_to_tile ppos st.top_left_corner) <> curr_tile) st.portals 
+    let curr_tile = Position.pixel_to_tile 
+        (Position.init_pos (fst (find_head camel.pos camel.dir))) 
+        (st.top_left_corner) 
     in
-    Graphics.moveto (100) (60);
-    Graphics.set_color Graphics.black; 
-    Graphics.fill_rect (100) (60) 150 20; 
-    Graphics.set_color Graphics.white;
-    Graphics.draw_string (string_of_int (List.length st.portals));
-    Graphics.draw_string (" " ^ (string_of_int (List.length possible_portals))); 
-    let new_pos = List.nth possible_portals 
-        (Random.int (List.length possible_portals)) in  
-    Graphics.set_color Graphics.white;
-    Graphics.draw_string (" " ^ (string_of_int new_pos.x)); 
-    Graphics.draw_string (" " ^ (string_of_int new_pos.y)); 
-    Camel.teleport {camel with teleport = true} new_pos
+    if not (in_tile st camel curr_tile) || camel.teleport then camel 
+    else 
+      let possible_portals = List.filter (fun ppos -> 
+          (Position.pixel_to_tile ppos st.top_left_corner) <> curr_tile) st.portals 
+      in
+      Graphics.moveto (100) (60);
+      Graphics.set_color Graphics.black; 
+      Graphics.fill_rect (100) (60) 250 20; 
+      Graphics.set_color Graphics.white;
+      Graphics.draw_string (string_of_int (List.length st.portals));
+      Graphics.draw_string (" " ^ (string_of_int (List.length possible_portals))); 
+      let new_pos = List.nth possible_portals 
+          (Random.int (List.length possible_portals)) in  
+      Graphics.set_color Graphics.white;
+      Graphics.draw_string (" " ^ (string_of_int new_pos.x)); 
+      Graphics.draw_string (" " ^ (string_of_int new_pos.y)); 
+      Camel.teleport {camel with teleport = true} new_pos
 
 let hit_power_tile (st : t) (pos : Position.t) =
   Graphics.moveto (fst st.top_left_corner - 50) (snd st.top_left_corner + 30);
