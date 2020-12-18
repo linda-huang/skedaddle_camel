@@ -61,7 +61,8 @@ let rec input (gs : Game_state.game_state) (timer : Timer.timer)
       | Instructions i -> gs', timer
       | _ -> begin 
           let st' = gs'.round_state in 
-          let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
+          let st'' = if Round_state.hit_wall st' st'.camel.pos 
+              st'.camel.dir Constant.camel_radius
             then st else st' in 
           let finst = st'' |> update_round_state in 
           {gs' with round_state = finst}, Timer.update_timer timer
