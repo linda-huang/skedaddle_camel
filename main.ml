@@ -34,7 +34,7 @@ let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_s
     | ' ' -> shoot camel st
     | _ -> {st with camel = camel} 
   in
-  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
+  let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir Constant.camel_radius
     then st else st' in 
   let finst = st'' |> update_round_state in 
   {gs with round_state = finst}
@@ -58,7 +58,7 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
   | Valid (col, row) -> 
     let extract_wall_type maze col row = 
       match Maze.tile_type maze col row with
-      | Wall -> "wall"
+      | Wall _ -> "wall"
       | Path -> "path"
       | Exit -> "exit"
       | Start -> "start" in
