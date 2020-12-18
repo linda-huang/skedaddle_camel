@@ -41,9 +41,6 @@ let input (gs : Game_state.game_state) (timer : Timer.timer)
   in
   let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
     then begin 
-      (* if not camel.shoot then
-         {st' with camel = (Round_state.move_camel_ice st' camel)}
-         else  *)
       st 
     end 
     else 

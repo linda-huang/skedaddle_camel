@@ -1,5 +1,6 @@
 open Position 
 open Constant
+open Maze
 
 type t = {
   pos : Position.t; 
@@ -9,6 +10,8 @@ type t = {
   coins : int;
   speed : int;
   shoot : bool;
+  last_tile : Maze.t;
+  teleport : bool
 }
 
 let init x y = 
@@ -18,7 +21,9 @@ let init x y =
    lasthealthlost = 0.; 
    coins = 0;
    speed = Constant.camel_speed;
-   shoot = true}
+   shoot = true;
+   last_tile = Start;
+   teleport = false}
 
 let rotate camel key =
   match key with 

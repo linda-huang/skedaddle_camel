@@ -44,11 +44,15 @@ let hit_corner (st : t) (pos : Position.t) =
                                  || col >= Array.length st.maze.(0) 
                                  || (Maze.tile_type st.maze col row = Wall)
 
-let find_head (pos : Position.t) (dir : int) = 
+let find_four_corners (pos : Position.t) (dir : int) = 
   let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
   let tr = (pos.x + Constant.camel_radius, pos.y + Constant.camel_radius) in
   let bl = (pos.x - Constant.camel_radius, pos.y - Constant.camel_radius) in
   let br = (pos.x + Constant.camel_radius, pos.y - Constant.camel_radius) in
+  (tl, tr, br, bl)
+
+let find_head (pos : Position.t) (dir : int) = 
+  let (tl, tr, br, bl) = find_four_corners pos dir in
   match dir with 
   | 0 -> (tr, br)
   | 90 -> (tl, tr)
@@ -56,11 +60,20 @@ let find_head (pos : Position.t) (dir : int) =
   | 270 -> (bl, br)
   | _ -> failwith "impossible"
 
+let find_tail (pos : Position.t) (dir : int) = 
+  let (tl, tr, br, bl) = find_four_corners pos dir in
+  match dir with 
+  | 0 -> (tl, bl)
+  | 90 -> (bl, br)
+  | 180 -> (tr, br)
+  | 270 -> (tl, tr)
+  | _ -> failwith "impossible"
+
 let hit_wall (st : t) (pos : Position.t) (dir : int) = 
   let two_corners = find_head pos dir in
   Graphics.moveto (fst st.top_left_corner + 3) (snd st.top_left_corner + 30);
   Graphics.set_color Graphics.black; 
-  Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 250 20;  
+  Graphics.fill_rect (fst st.top_left_corner + 3) (snd st.top_left_corner + 30) 33 20;  
   Graphics.set_color Graphics.red;
   Graphics.draw_string (if (hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
                               (Position.init_pos (snd two_corners)))then 
@@ -103,9 +116,6 @@ let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =
       (Random.int (List.length final_valid_moves)) in
   Camel.move (random_turn_camel) 
 
-let teleport_camel (st : t) (camel : Camel.t) = 
-  []
-
 let restore_speed_camel camel = 
   if camel.speed <> Constant.camel_mud_speed then camel 
   else {camel with speed = Constant.camel_speed} 
@@ -113,69 +123,96 @@ let restore_speed_camel camel =
 let restore_shoot_camel camel = 
   if camel.shoot then camel else {camel with shoot = true} 
 
+let restore_teleport_camel camel = 
+  if not camel.teleport then camel else {camel with teleport = false} 
+
 let restore_default_camel (camel : Camel.t) = 
   let speedy_camel = restore_speed_camel camel in 
-  restore_shoot_camel speedy_camel
+  let shooty_camel = restore_shoot_camel speedy_camel in
+  restore_teleport_camel shooty_camel
 
 let handle_hit_ice (st : t) (camel : Camel.t) = 
-  if camel.shoot then let new_camel = restore_speed_camel camel in
-    move_camel_ice st {new_camel with shoot = false} 
+  if camel.shoot then let new_camel = 
+                        restore_teleport_camel (restore_speed_camel camel) in
+    move_camel_ice st {new_camel with shoot = false; last_tile = Power_Path Ice} 
   else move_camel_ice st camel 
 
 let handle_hit_mud (camel : Camel.t) = 
-  if camel.speed = Constant.camel_mud_speed then camel 
-  else let speedy_camel = restore_shoot_camel camel in 
-    {speedy_camel with speed = Constant.camel_mud_speed}
+  if camel.last_tile = Maze.Power_Path Mud then camel 
+  else let speedy_camel = restore_teleport_camel (restore_shoot_camel camel) in 
+    {speedy_camel with speed = Constant.camel_mud_speed; last_tile = Power_Path
+                                                             Mud}
+
+let in_tile (st : t) (camel : Camel.t) = function
+  | Valid (col, row) -> 
+    let (cx, cy) = Position.tile_to_pixel (st.top_left_corner) (col, row) in 
+    (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy)) < 20
+  | Out_of_bounds -> false
 
 let handle_hit_portal (st : t) (camel : Camel.t) = 
-  let new_camel = restore_default_camel camel in 
   let curr_tile = Position.pixel_to_tile (camel.pos) (st.top_left_corner) in
-  let possible_portals = List.filter (fun ppos -> 
-      (Position.pixel_to_tile ppos st.top_left_corner) <> curr_tile) st.portals 
-  in
-  Graphics.moveto (fst st.top_left_corner - 75) (snd st.top_left_corner + 60);
+  Graphics.moveto (100) (60);
   Graphics.set_color Graphics.black; 
-  Graphics.fill_rect (fst st.top_left_corner - 75) (snd st.top_left_corner + 60) 33 20; 
+  Graphics.fill_rect (100) (60) 150 20; 
   Graphics.set_color Graphics.white;
-  Graphics.draw_string (string_of_int (List.length st.portals));
-  Graphics.draw_string (" " ^ (string_of_int (List.length possible_portals))); 
-  let new_pos = List.nth possible_portals 
-      (Random.int (List.length possible_portals)) in  
-  Graphics.set_color Graphics.white;
-  Graphics.draw_string (" " ^ (string_of_int new_pos.x)); 
-  Graphics.draw_string (" " ^ (string_of_int new_pos.y)); 
-  Camel.teleport new_camel new_pos
+  Graphics.draw_string ("in tile " ^ (string_of_bool (in_tile st camel curr_tile)));
+  Graphics.draw_string (" teleport " ^ (string_of_bool (camel.teleport))); 
+  if camel.last_tile <> Maze.Power_Path Portal then 
+    let default_camel = restore_default_camel camel in 
+    {default_camel with last_tile = Power_Path Portal} 
+  else 
+    (* let curr_tile = Position.pixel_to_tile (camel.pos) (st.top_left_corner) in *)
+  if not (in_tile st camel curr_tile) || camel.teleport then camel 
+  else 
+    let possible_portals = List.filter (fun ppos -> 
+        (Position.pixel_to_tile ppos st.top_left_corner) <> curr_tile) st.portals 
+    in
+    Graphics.moveto (100) (60);
+    Graphics.set_color Graphics.black; 
+    Graphics.fill_rect (100) (60) 150 20; 
+    Graphics.set_color Graphics.white;
+    Graphics.draw_string (string_of_int (List.length st.portals));
+    Graphics.draw_string (" " ^ (string_of_int (List.length possible_portals))); 
+    let new_pos = List.nth possible_portals 
+        (Random.int (List.length possible_portals)) in  
+    Graphics.set_color Graphics.white;
+    Graphics.draw_string (" " ^ (string_of_int new_pos.x)); 
+    Graphics.draw_string (" " ^ (string_of_int new_pos.y)); 
+    Camel.teleport {camel with teleport = true} new_pos
 
 let hit_power_tile (st : t) (pos : Position.t) =
   Graphics.moveto (fst st.top_left_corner - 50) (snd st.top_left_corner + 30);
   Graphics.set_color Graphics.black; 
   Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 250 20;  
-  let (t, b) = find_head pos st.camel.dir in 
-  let new_tile = Position.pixel_to_tile (Position.init_pos t) st.top_left_corner 
-  in 
-  match new_tile with 
-  | Valid (col, row) -> begin
-      match Maze.tile_type st.maze col row with 
-      | Power_Path Ice -> 
+  let (head, _) = find_head pos st.camel.dir in 
+  let (tail, _) = find_tail pos st.camel.dir in
+  let head_tile = Position.pixel_to_tile (Position.init_pos head) 
+      st.top_left_corner in
+  let tail_tile = Position.pixel_to_tile (Position.init_pos tail) 
+      st.top_left_corner in
+  match head_tile, tail_tile with 
+  | Valid (ch, rh), Valid (ct, rt) -> begin
+      match (Maze.tile_type st.maze ch rh), (Maze.tile_type st.maze ct rt) with 
+      | Power_Path Ice, _ -> 
         Graphics.moveto (fst st.top_left_corner + 50) (snd st.top_left_corner + 30);
         Graphics.set_color Graphics.black; 
         Graphics.fill_rect (fst st.top_left_corner + 50) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "Ice!"; 
         handle_hit_ice st st.camel 
-      | Power_Path Mud -> 
+      | Power_Path Mud, _ | _, Power_Path Mud -> 
         Graphics.moveto (fst st.top_left_corner + 100) (snd st.top_left_corner + 30);
         Graphics.set_color Graphics.black; 
         Graphics.fill_rect (fst st.top_left_corner + 100) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "Mud!";  
         handle_hit_mud st.camel
-      | Power_Path Portal -> 
+      | Power_Path Portal, _ | _ , Power_Path Portal -> 
         Graphics.moveto (fst st.top_left_corner + 150) (snd st.top_left_corner + 30);
         Graphics.set_color Graphics.black; 
         Graphics.fill_rect (fst st.top_left_corner + 150) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
-        Graphics.draw_string "Portal!";   
+        Graphics.draw_string "Portal!";  
         handle_hit_portal st st.camel
       | _ -> 
         Graphics.moveto (fst st.top_left_corner - 50) (snd st.top_left_corner + 30);
@@ -183,7 +220,8 @@ let hit_power_tile (st : t) (pos : Position.t) =
         Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "None!"; 
-        {st.camel with speed = Constant.camel_speed; shoot = true}
+        {st.camel with speed = Constant.camel_speed; shoot = true; 
+                       last_tile = Maze.Path; teleport = false}
     end
   | _ -> failwith "impossible"
 
@@ -208,10 +246,15 @@ let rec random_valid_tile_enemy mz =
 (** [random_valid_tile_enemy mz] is a random valid (non-wall and
     non-portal) tile in [mz] *)
 let rec random_valid_tile_portal mz = 
-  let (col, row) = random_valid_tile mz in 
-  if Maze.tile_type mz col row = Power_Path Portal then 
-    random_valid_tile_portal mz 
+  let (col, row) = (2,0)in 
+  if not (Maze.tile_type mz col row = Maze.Path) then 
+    (1,1) 
   else (col, row) 
+(* let (col, row) = random_valid_tile mz in 
+   if not (Maze.tile_type mz col row = Maze.Path) then 
+   random_valid_tile_portal mz 
+   else (col, row)  *)
+
 
 let near_enemy (camel : Camel.t) (st : t) = 
   let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 

@@ -10,7 +10,9 @@ type t = {
   lasthealthlost : float; 
   coins : int;
   speed : int;
-  shoot : bool
+  shoot : bool;
+  last_tile : Maze.t;
+  teleport : bool
 }
 
 (** [init x y] is a new camel at position ([x],[y]) *)

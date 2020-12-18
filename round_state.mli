@@ -10,7 +10,7 @@ type t = {
   coins : Coin.t array;
   projectiles : Projectile.t list;
   top_left_corner: int * int;
-  portals : Position.t list
+  portals : Position.t list;
 }
 
 (** [on_coin camel maze] detects if [camel]'s position is on a coin in [maze]. *)
