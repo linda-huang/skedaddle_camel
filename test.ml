@@ -354,7 +354,7 @@ let genie_tests = [
 (** [string_of_tile_type tile] is the string representation of [tile] *)
 let string_of_tile_type tile = 
   match tile with 
-  | Wall -> "wall"
+  | Wall _ -> "wall"
   | Path -> "path"
   | Exit -> "exit"
   | Start -> "start"
