@@ -17,28 +17,29 @@ let rec input (gs : Game_state.game_state) (timer : Timer.timer)
       (* return to level play upon 'x' input *)
       match Graphics.read_key () with 
       | '0' -> exit 0  
-      | 'x' -> {gs with current_state = InPlay},
-               {timer with elapsedtime = i}
-      | _ -> gs, {timer with elapsedtime = i}
+      | 'x' -> let pause_dur = Unix.gettimeofday () -. i in 
+        {gs with current_state = InPlay},
+        {timer with totalpaused = timer.totalpaused +. pause_dur}
+      | _ -> gs, timer
     end 
   | _ -> begin 
       let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
         Unix.sleepf 0.001;
         if not (Graphics.key_pressed ()) then  
-          let timer = Timer.update_timer timer 0. in 
+          let timer = Timer.update_timer timer in 
           let gs' = Game_state.update_game_state gs timer in 
           Draw.draw_game_state gs' timer;
           wait_kp gs' timer
         else gs
       in 
       let gs = wait_kp gs timer in  
-      let timer = Timer.update_timer timer 0. in
+      let timer = Timer.update_timer timer in
       let camel = gs.round_state.camel in 
       let st = gs.round_state in 
       let gs' = 
         match Graphics.read_key () with 
         | '0' -> exit 0  
-        | 'i' -> {gs with current_state = Instructions (timer.elapsedtime)}
+        | 'i' -> {gs with current_state = Instructions (Unix.gettimeofday ())}
         | 'w' -> {gs with round_state = 
                             {st with camel = (Camel.move_vert camel 1 'w')}}
         | 'a' -> {gs with round_state = 
@@ -57,13 +58,13 @@ let rec input (gs : Game_state.game_state) (timer : Timer.timer)
                           {st with camel = camel}} 
       in
       match gs'.current_state with 
-      | Instructions i -> gs', {timer with elapsedtime = i}
+      | Instructions i -> gs', timer
       | _ -> begin 
           let st' = gs'.round_state in 
           let st'' = if Round_state.hit_wall st' st'.camel.pos st'.camel.dir
             then st else st' in 
           let finst = st'' |> update_round_state in 
-          {gs' with round_state = finst}, Timer.update_timer timer 0.
+          {gs' with round_state = finst}, Timer.update_timer timer
         end 
     end 
 
@@ -112,13 +113,7 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
         | _ -> go_to_nextlvl () in 
       go_to_nextlvl ()
     end 
-    else 
-      let timer = 
-        match newgs.current_state with
-        | Instructions i -> {timer with elapsedtime = i}
-        | _ -> timer
-      in  
-      run newgs timer 
+    else run newgs timer 
 
 (** [init ()] creates a new Round_state and runs the game *)
 let init () = 

@@ -2,7 +2,8 @@ open Unix
 
 type timer = {
   starttime : float;
-  elapsedtime : int 
+  elapsedtime : int; 
+  totalpaused : float;
 } 
 
 let time_left (curr_round : Constant.round_info)
@@ -23,14 +24,15 @@ let out_of_time (curr_round : Constant.round_info)
     | None -> max_int in 
   if time_left <= 0 then true else false 
 
-let update_timer (timer : timer) (paused : float) = 
-  let time = Unix.gettimeofday () -. paused in 
+let update_timer (timer : timer) = 
+  let time = Unix.gettimeofday () -. timer.totalpaused in 
   {timer with elapsedtime = 
                 time -. timer.starttime |> int_of_float}
 
 let init_timer () = {
   starttime = Unix.gettimeofday ();
-  elapsedtime = 0
+  elapsedtime = 0;
+  totalpaused = 0.;
 }
 
 let string_of_timer timer = 

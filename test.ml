@@ -349,6 +349,41 @@ let genie_tests = [
  *********************************************************************)
 
 (*******************************************************************
+   tests from Maze.ml
+ *********************************************************************)
+(** [string_of_tile_type tile] is the string representation of [tile] *)
+let string_of_tile_type tile = 
+  match tile with 
+  | Wall -> "wall"
+  | Path -> "path"
+  | Exit -> "exit"
+  | Start -> "start"
+
+(** [tile_type_test name r c tilex tiley exp_type] constructs 
+    an OUnit test named [name] that asserts the quality of 
+    [Maze.tile_type] applied to a maze with [r] rows and [c] columns 
+    and the tile at position [tilex] [tiley] with [exp_type] *)
+let tile_type_test  
+    (name : string) 
+    (r : int)
+    (c : int)
+    (tiler : int)
+    (tilec : int)
+    (exp_type : Maze.t) : test = 
+  name >:: (fun _ -> 
+      let maze = Maze.populate c r (0,0) in 
+      assert_equal exp_type (tile_type maze tilec tiler) 
+        ~printer:string_of_tile_type)
+
+let maze_tests = [
+  tile_type_test "start" 11 13 0 0 Start;
+  tile_type_test "exit" 11 13 10 12 Exit 
+]
+(*******************************************************************
+   end tests from Maze.ml
+ *********************************************************************)
+
+(*******************************************************************
    tests from Potion.ml
  *********************************************************************)
 (** [potion_arr pos] is a Potion.potion array of potions 
@@ -506,21 +541,21 @@ let projectile_tests = [
    tests from Round_State.ml
  *********************************************************************)
 (** [enemy_arr pos] is a Enemy.t array of enemies with positions in [pos] *)
-let enemy_arr pos = 
-  Array.map (fun (px, py) -> 
-      Enemy.init (90 * Random.int 4) (Position.init_pos (px, py))) pos
+(* let enemy_arr pos = 
+   Array.map (fun (px, py) -> 
+      Enemy.init (90 * Random.int 4) (Position.init_pos (px, py))) pos *)
 
 (** [near_enemy_test name (cx, cy) (ex, ey) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
     [State.near_enemy] applied to a Camel at the position represented 
     by [(cx, cy)] and a State with enemy at position indicated by [(ex, ey)] 
     with [exp_val]. *)
-let near_enemy_test 
+(* let near_enemy_test 
     (name : string) 
     ((cx, cy) : int * int)
     (epos : (int * int) array)
     (exp_val : bool) : test = 
-  name >:: (fun _ -> 
+   name >:: (fun _ -> 
       let camel = Camel.init cx cy in                 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
@@ -533,19 +568,19 @@ let near_enemy_test
                 hourglass = None;
                 top_left_corner = startpos} in 
       assert_equal exp_val (near_enemy camel st)
-        ~printer:string_of_bool)
+        ~printer:string_of_bool) *)
 
 (** [on_coin_test name (cx, cy) (x, y) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
     [Round_state.on_coin] applied to a Camel at the position represented 
     by [(cx, cy)] and a Round_state with a coin at position indicated by [(x, y)] 
     with [exp_val]. *)
-let on_coin_test 
+(* let on_coin_test 
     (name : string) 
     ((cx, cy) : int * int)
     (pos : (int * int) array)
     (exp_val : bool) : test = 
-  name >:: (fun _ -> 
+   name >:: (fun _ -> 
       let camel = Camel.init cx cy in 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
@@ -557,8 +592,8 @@ let on_coin_test
                 genie = None;
                 hourglass = None;
                 top_left_corner = startpos} in 
-      assert_equal exp_val (on_coin st) 
-        ~printer:string_of_bool)
+      assert_equal exp_val (Round_state.on_coin st) 
+        ~printer:string_of_bool) *)
 
 (** [rem_coin_test name (cx, cy) pos exp_exn] constructs an OUnit test named [name] 
     that asserts that [Round_state.find_coin] raises [exp_exn]. *)
@@ -575,20 +610,25 @@ let on_coin_test
                 enemies = [||];
                 coins = coin_arr pos;
                 projectiles = [];
-                top_left_corner = (43, 43)} in  
-      assert_raises exp_exn (fun _ -> ((rem_coin (find_coin camel.pos st) st).coins ))) *)
+                potions = [||];
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos} in  
+      assert_raises exp_exn (fun _ -> 
+          ((Round_state.remove_coin 
+              (Coin.find_coin camel.pos (coin_arr pos)) st).coins ))) *)
 
 (** [remove_coin_test name getcoin pos exp_val] constructs an OUnit
     test named [name] that asserts the quality of  
     [Round_state.remove_coin] applied to a coin at the position represented 
     by [getcoin] and a Round_state.t with coins at positions indicated by [pos] 
     against [exp_val]. *)
-let remove_coin_test 
+(* let remove_coin_test 
     (name : string) 
     (getcoin : (int * int))
     (pos : (int * int) array)
     (exp_val : (int * int) array) : test = 
-  name >:: (fun _ -> 
+   name >:: (fun _ -> 
       let st = {camel = Camel.init 0 0;
                 maze = Maze.populate 100 100 (0,0);
                 cols = 100; rows = 100;
@@ -603,42 +643,29 @@ let remove_coin_test
       assert_equal ~cmp:cmp_set_like_arrs exp_coin 
         (Round_state.remove_coin 
            (Coin.init (Position.init_pos getcoin) 1) st).coins 
-        ~printer:string_of_coinarr)
-
-
-(* let proj_test name cx cy pos exp_val =
-   name >:: (fun _ ->
-   let camel = Camel.init cx cy in 
-   let st = {camel = camel;
-             maze = Maze.populate 100 100 (0,0);
-             cols = 100; rows = 100;
-             enemies = [||];
-             coins = coin_arr pos;
-             projectiles = []} in 
-   shoot camel st |> 
-   ) *)
+        ~printer:string_of_coinarr) *)
 
 let round_state_tests = [
   (* todo *)
 
   (* near_enemy *)
-  near_enemy_test "same position, single enemy (5,5)" 
-    (5, 5)[|(5, 5)|] true;
-  near_enemy_test "multiple close enemies (5,5)" 
-    (5, 5)[|(15, 15); (5, 5); (50, 50)|] true;
-  near_enemy_test "single far enemy (50,50)" 
-    (0, 0)[|(110, 110)|] false;
-  near_enemy_test "multiple far enemies" 
-    (0, 0)[|(150, 150); (250, 100); (90, 75)|] false;
-  near_enemy_test "multiple enemies, single close" 
-    (0, 0)[|(150, 150); (250, 100); (0, 4)|] true;
-  (* on_coin *)
-  on_coin_test "same position, single coin"
-    (5, 5)[|(5, 5)|] true;
-  on_coin_test "multiple coins, one close"
-    (5, 5)[|(250, 100); (50, 55); (7, 5)|] true;
-  on_coin_test "multiple coins, none on same tile"
-    (5, 5)[|(250, 100); (50, 55); (50, 5)|] false;
+  (* near_enemy_test "same position, single enemy (5,5)" 
+     (5, 5)[|(5, 5)|] true;
+     near_enemy_test "multiple close enemies (5,5)" 
+     (5, 5)[|(15, 15); (5, 5); (50, 50)|] true;
+     near_enemy_test "single far enemy (50,50)" 
+     (0, 0)[|(110, 110)|] false;
+     near_enemy_test "multiple far enemies" 
+     (0, 0)[|(150, 150); (250, 100); (90, 75)|] false;
+     near_enemy_test "multiple enemies, single close" 
+     (0, 0)[|(150, 150); (250, 100); (0, 4)|] true;
+     (* on_coin *)
+     on_coin_test "same position, single coin"
+     (5, 5)[|(5, 5)|] true;
+     on_coin_test "multiple coins, one close"
+     (5, 5)[|(250, 100); (50, 55); (7, 5)|] true;
+     on_coin_test "multiple coins, none on same tile"
+     (5, 5)[|(250, 100); (50, 55); (50, 5)|] false; *)
   (* find_coin and rem_coin *)
   (* rem_coin_test "on only coin in maze" 
      (5, 5)[|(5, 5)|] [||];
@@ -658,6 +685,7 @@ let suite = "test suite" >::: List.flatten [
     coin_tests;
     enemy_tests;
     genie_tests;
+    maze_tests;
     potion_tests;
     position_tests;
     projectile_tests;

@@ -266,7 +266,7 @@ let draw_instructions (gs : Game_state.game_state) timer i : unit =
   Graphics.moveto x y;
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.blue;
-  Graphics.draw_string ("instructions. called at " ^ (string_of_int i));
+  Graphics.draw_string ("instructions. ");
   let y = y - 25 in Graphics.moveto x y;
   Graphics.draw_string "(Press `x` to return to the game)";
   let _ = match gs.game_difficulty with 
@@ -276,8 +276,6 @@ let draw_instructions (gs : Game_state.game_state) timer i : unit =
         Graphics.draw_string "hard features only";
       end
   in 
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string (Timer.string_of_timer timer);
   Graphics.synchronize () 
 
 let draw_gameover (gs : Game_state.game_state) (over : Game_state.game_end) = 

@@ -9,7 +9,7 @@ type state =
   | Won 
   | InPlay
   | Transition of int 
-  | Instructions of int
+  | Instructions of float 
 
 type difficulty = Easy | Hard 
 
