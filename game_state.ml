@@ -4,6 +4,7 @@ open Constant
 type game_end = Time | Health 
 
 type state = 
+  | PreWelcome
   | Welcome 
   | GameOver of game_end
   | Won 
@@ -31,6 +32,7 @@ let int_of_difficulty diff =
 
 let new_level (gs : game_state) : game_state = 
   match gs.current_state with 
+  | PreWelcome -> {gs with current_state = Welcome}
   | Welcome -> begin 
       {gs with current_state = Transition 0; 
                round_state = Round_state.init 
@@ -93,12 +95,13 @@ let update_difficulty gs diff =
 
 let init (st : Round_state.t) : game_state = 
   {score = Scorer.init (); 
-   current_state = Welcome; 
+   current_state = PreWelcome; 
    round_state = st;
    game_difficulty = Easy}
 
 let string_of_game_state (gs : game_state) : string = 
   let msg = match get_game_state gs with 
+    | PreWelcome -> "SkedaddleCamel"
     | Welcome -> "Welcome!"
     | InPlay -> "Game in progress"
     | GameOver overmsg -> begin 

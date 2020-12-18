@@ -78,7 +78,6 @@ let rec flush_keypress () =
 
 (** [run gs timer] runs the game across levels *)
 let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) = 
-  Graphics.moveto 50 10;
   let newgs, timer = input gs oldtimer in 
   Draw.draw_game_state newgs timer;
   let coord_mapping = Position.pixel_to_tile gs.round_state.camel.pos 
@@ -118,24 +117,29 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
 
 (** [init ()] creates a new Round_state and runs the game *)
 let init () = 
+  (* prewelcome screen *)
   let st = Round_state.init 21 21 5 1 in 
-  let gs = Game_state.init st in 
+  let prewelcome_gs = Game_state.init st in 
   let timer = Timer.init_timer () in 
-  Draw.draw_game_state gs timer; 
+  Draw.draw_game_state prewelcome_gs timer; 
   Graphics.moveto 20 700;
   Graphics.synchronize ();
+  (* move to welcome screen upon keypress *)
+  let gs = match Graphics.read_key () with 
+    | _ -> Game_state.new_level prewelcome_gs in 
+  Draw.draw_game_state gs timer;
+  (* move to transition 1 screen upon keypress *)
   let gs = 
     match Graphics.read_key () with 
     | '0' -> exit 0  
     | '1' -> gs
-    | '2' -> update_difficulty gs Hard 
+    | '2' -> Game_state.update_difficulty gs Hard 
     | _ -> gs
   in
-  (* let gs' = Game_state.new_level gs in  *)
   let timer = Timer.init_timer () in 
-  let transition_gs = Game_state.new_level gs 
-  in 
+  let transition_gs = Game_state.new_level gs in 
   Draw.draw_game_state transition_gs timer; 
+  (* move to first level upon keypress *)
   let levelup_gs = 
     match Graphics.read_key () with 
     | _ -> Game_state.new_level transition_gs
@@ -143,16 +147,10 @@ let init () =
   let timer = Timer.init_timer () in 
   Draw.draw_game_state levelup_gs timer; 
   run levelup_gs timer 
-(* run gs' timer  *)
 
 let main () = 
   Graphics.open_graph " ";
   Graphics.auto_synchronize false;
-  Graphics.set_window_title "Skedaddle Camel";
-  Graphics.set_text_size 300;
-  Graphics.moveto 20 700;
-  Graphics.draw_string "press any key to start";
-  Graphics.synchronize ();
   init ()
 
 let () = main ()

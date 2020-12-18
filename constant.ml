@@ -56,6 +56,8 @@ let tile_width = 40
 let tile_radius = tile_width / 2
 let near = 15 
 
+let wall_health = 5
+
 let path_color = Graphics.rgb 255 248 220
 let path_pic = 
   [|[|0x31322D;

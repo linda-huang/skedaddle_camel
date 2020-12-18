@@ -5,6 +5,7 @@ type game_end = Time | Health
 
 (** The variant type of the game state *)
 type state = 
+  | PreWelcome
   | Welcome 
   | GameOver of game_end 
   | Won 

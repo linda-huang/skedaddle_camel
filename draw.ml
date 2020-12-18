@@ -159,25 +159,38 @@ let draw_round_state (st : Round_state.t) =
   draw_hourglass st.hourglass;
   Graphics.synchronize ()
 
-let draw_welcome () = 
+let draw_prewelcome () = 
   Graphics.set_window_title "Skedaddle Camel";
   Graphics.set_text_size 300;
   Graphics.moveto 20 700;
   Graphics.draw_string "Welcome to Skedaddle Camel!";
-  Graphics.moveto 20 650; 
+  Graphics.moveto 20 500;
+  Graphics.draw_string "press any key to enter the game";
+  Graphics.synchronize ()
+
+let draw_welcome () = 
+  Graphics.clear_graph ();
+  Graphics.set_window_title "Skedaddle Camel";
+  Graphics.set_text_size 300;
+  let x, y = 20, 650 in 
+  Graphics.moveto x y;
   Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
-  Graphics.moveto 20 635;
-  Graphics.draw_string "The beginning of the maze is the blue square in the upper left corner; exit is the bottom right.";
-  Graphics.moveto 20 600; 
+  let y = y - 15 in Graphics.moveto x y; 
+  Graphics.draw_string "The beginning of the maze is in the upper left corner; exit is the bottom right.";
+  let y = y - 15 in Graphics.moveto x y; 
   Graphics.draw_string "Use WASD to move and press space to shoot projectiles.";
-  Graphics.moveto 20 585;
+  let y = y - 15 in Graphics.moveto x y; 
   Graphics.draw_string "The projectiles will be shot in the same direction you are going.";
-  Graphics.moveto 20 550; 
+  let y = y - 15 in Graphics.moveto x y; 
   Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
-  Graphics.moveto 20 500; 
+  let y = y - 15 in Graphics.moveto x y; 
+  Graphics.draw_string "Each level will have new elements and obstacles.";
+  let y = y - 15 in Graphics.moveto x y; 
+  Graphics.draw_string "If you need help at any time, press `i` for instructions";
+  let y = y - 35 in Graphics.moveto x y; 
   Graphics.set_color Graphics.red; 
   Graphics.draw_string "Choose your level of difficulty to start playing! (default: easy)";
-  Graphics.moveto 20 485; 
+  let y = y - 15 in Graphics.moveto x y; 
   Graphics.draw_string "Press `1` for easy, press `2` for hard";
   Graphics.set_color Graphics.black;
   Graphics.synchronize ()
@@ -386,6 +399,7 @@ let draw_level_num gs =
 
 let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) = 
   match gs.current_state with 
+  | PreWelcome -> draw_prewelcome ()
   | Welcome -> draw_welcome ()
   | InPlay -> draw_round_state gs.round_state; 
     draw_level_num gs; 

@@ -99,6 +99,10 @@ val path_color : Graphics.color
     for a path tile in the maze *)
 val path_pic : Graphics.color array array
 
+(** [wall_health] is the amount of shots it takes to remove a wall 
+    (convert a wall tile to a path tile) *)
+val wall_health : int 
+
 (** [wall_color] is the Graphics color code for a solid wall tile *)
 val wall_color : Graphics.color
 

@@ -66,7 +66,7 @@ let rec dfs maze row col =
   done
 
 let populate cols rows start_pos = 
-  let maze = Array.make_matrix rows cols (Wall 5) in
+  let maze = Array.make_matrix rows cols (Wall Constant.wall_health) in
   let start_row, start_col = start_pos in
   dfs maze start_row start_col;
   maze.(start_row).(start_col) <- Path;
