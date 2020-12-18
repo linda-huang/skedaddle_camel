@@ -29,7 +29,7 @@ val near_enemy : Camel.t -> t -> bool
 
 (** [near_genie camel maze] detects if [camel]'s position is near 
     a genie *)
-val near_genie : Camel.t -> t -> bool 
+(* val near_genie : Camel.t -> t -> bool  *)
 
 (** [on_coin st] detects if the position of [camel] in [st] 
     is on a coin. *)

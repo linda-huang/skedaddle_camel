@@ -9,6 +9,7 @@ type state =
   | Won 
   | InPlay
   | Transition of int 
+  | Instructions of float 
 
 type difficulty = Easy | Hard 
 
@@ -106,7 +107,8 @@ let string_of_game_state (gs : game_state) : string =
         | Health -> "Game over: health" 
       end 
     | Won -> "You've won!"
-    | Transition t -> "Transition " ^ string_of_int t 
+    | Transition t -> "Transition " ^ string_of_int t
+    | Instructions i -> "Instructions" 
   in 
   let score = match gs.game_difficulty with 
     | Easy -> Scorer.string_of_score gs.score gs.round_state.camel false

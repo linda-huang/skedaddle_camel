@@ -3,7 +3,8 @@
 (** The type of a timer *)
 type timer = {
   starttime : float;
-  elapsedtime : int 
+  elapsedtime : int; 
+  totalpaused : float;
 } 
 
 (** [time_left curr_round st timer] is the time remaining in [round].
@@ -19,5 +20,8 @@ val out_of_time : Constant.round_info -> Round_state.t -> timer -> bool
 val init_timer : unit -> timer 
 
 (** [update_timer timer] updates [timer] to refer
-    to the current time *)
+    to the current time, accounting for any time the game is paused *)
 val update_timer : timer -> timer 
+
+(** [string_of_timer timer] is the string representation of [timer] *)
+val string_of_timer : timer -> string 
