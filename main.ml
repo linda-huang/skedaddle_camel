@@ -87,7 +87,7 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
   | Valid (col, row) -> 
     let extract_wall_type maze col row = 
       match Maze.tile_type maze col row with
-      | Wall -> "wall"
+      | Wall _ -> "wall"
       | Path -> "path"
       | Exit -> "exit"
       | Start -> "start" in

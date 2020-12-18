@@ -60,16 +60,19 @@ let hit_corner (st : t) (pos : Position.t) =
   let coord_mapping = Position.pixel_to_tile pos st.top_left_corner in 
   match coord_mapping with 
   | Position.Out_of_bounds -> true
-  | Position.Valid (col, row) -> col < 0 || row < 0 
-                                 || row >= Array.length st.maze 
-                                 || col >= Array.length st.maze.(0) 
-                                 || (Maze.tile_type st.maze col row = Wall)
+  | Position.Valid (col, row) -> 
+    col < 0 || row < 0 
+    || row >= Array.length st.maze 
+    || col >= Array.length st.maze.(0) 
+    || (match (Maze.tile_type st.maze col row) with
+        | Wall x when x > 0 -> true
+        | _ -> false)
 
-let hit_wall (st : t) (pos : Position.t) (dir : int) = 
-  let tl = (pos.x - Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let tr = (pos.x + Constant.camel_radius, pos.y + Constant.camel_radius) in
-  let bl = (pos.x - Constant.camel_radius, pos.y - Constant.camel_radius) in
-  let br = (pos.x + Constant.camel_radius, pos.y - Constant.camel_radius) in
+let hit_wall (st : t) (pos : Position.t) (dir : int) (radius : int) = 
+  let tl = (pos.x - radius, pos.y + radius) in
+  let tr = (pos.x + radius, pos.y + radius) in
+  let bl = (pos.x - radius, pos.y - radius) in
+  let br = (pos.x + radius, pos.y - radius) in
   let two_corners =
     match dir with 
     | 0 -> (tr, br)
@@ -98,11 +101,15 @@ let get_start_pos r c =
 
 (** [random_valid_tile mz] is a random valid (non-wall) tile in [mz] *)
 (* TODO make sure can access xsize and ysize of maze.*)
-let rec random_valid_tile mz = 
+let rec random_valid_tile mz : int * int = 
   let row = Random.int (Array.length mz - 1) in
   let col = Random.int (Array.length mz.(0) - 1) in 
-  if Path <> Maze.tile_type mz col row 
-  then random_valid_tile mz else (col, row)
+  match Maze.tile_type mz col row with 
+  | Wall 0 
+  | Path 
+  | Exit 
+  | Start -> (col, row)
+  | _ -> random_valid_tile mz
 
 (** [random_valid_tile_potion mz start_pos coins] makes sure the tile 
     a new potion is generated on does not already have a coin on it *)
@@ -158,13 +165,50 @@ let shoot (camel : Camel.t) (st : t) =
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
+(** st.maze with the (col, row) tile reduced by 1 hp 
+    requires (col, row) is a valid position**)
+let reduce_wall_hp col row st = 
+  try (
+    if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
+    else if st.maze.(row).(col) = Wall 4 then st.maze.(row).(col) <- Wall 3
+    else if st.maze.(row).(col) = Wall 3 then st.maze.(row).(col) <- Wall 2
+    else if st.maze.(row).(col) = Wall 2 then st.maze.(row).(col) <- Wall 1
+    else if st.maze.(row).(col) = Wall 1 then st.maze.(row).(col) <- Path;
+    st
+  ) 
+  with 
+  | x -> st
+
+(** returns st without projectiles that have hit walls, and with wall HP reduced
+    appropriately **)
+let proj_hit_wall (st : t) = 
+  let rec proj_hit_wall_helper 
+      (remproj : Projectile.t list) 
+      (accproj : Projectile.t list) 
+      (st : t) : t = 
+    match remproj with
+    | h::t -> 
+      (*if the projectile hits a wall/is out of bounds then remove it*)
+      if hit_wall st h.pos h.dir 0
+      then
+        let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in  
+        (* if the projectile hits a wall then make the wall lose hp or 
+           turn into a path *)
+        match coord_mapping with
+        | Position.Valid (col, row) -> begin 
+            let st' = reduce_wall_hp col row st in
+            proj_hit_wall_helper t accproj st'
+          end
+        | Position.Out_of_bounds -> proj_hit_wall_helper t accproj st
+      else proj_hit_wall_helper t (h :: accproj) st
+    | [] -> {st with projectiles = accproj}
+  in 
+  proj_hit_wall_helper st.projectiles [] st
+
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
-                       List.map Projectile.move_proj st.projectiles} in 
-  {st' with projectiles = 
-              List.filter (fun (p : Projectile.t) -> 
-                  not (hit_wall st' p.pos p.dir)) 
-                st'.projectiles}
+                       List.map Projectile.move_proj st.projectiles} in
+  proj_hit_wall st'
 
 (** [hit_enemy st] checks if any projectiles in [st] have hit an enemy. 
     If a projectile has hit an enemy, both the projectile and enemy 
@@ -211,7 +255,8 @@ let move_genie (st : t) (genie : Genie.genie) : Genie.genie =
     else genie in 
   (* automate regular movement of genie *)
   let future_pos = (Genie.move genie).pos in 
-  if not (hit_wall st future_pos genie.dir) then Genie.move genie
+  if not (hit_wall st future_pos genie.dir Constant.genie_radius) 
+  then Genie.move genie
   else 
     let next_move_l = Genie.change_dir genie 180 in
     let next_move_r = Genie.change_dir genie 0 in
@@ -220,7 +265,8 @@ let move_genie (st : t) (genie : Genie.genie) : Genie.genie =
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
     let valid_moves = 
       List.filter (fun (next_move : Genie.genie) -> 
-          not (hit_wall st (Genie.move next_move).pos next_move.dir)) 
+          not (hit_wall st (Genie.move next_move).pos next_move.dir 
+                 Constant.genie_radius)) 
         all_moves in 
     let random_turn_genie =  
       List.nth valid_moves (Random.int (List.length valid_moves))
@@ -242,17 +288,18 @@ let update_genie_in_maze (st : t) : t =
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
   let future_pos = (Enemy.move enemy).pos in 
-  if not (hit_wall st future_pos enemy.dir) then Enemy.move enemy
+  if not (hit_wall st future_pos enemy.dir Constant.camel_radius) 
+  then Enemy.move enemy
   else 
     let next_move_l = Enemy.change_dir enemy 180 in
     let next_move_r = Enemy.change_dir enemy 0 in
     let next_move_up = Enemy.change_dir enemy 90 in
     let next_move_down = Enemy.change_dir enemy 270 in 
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-    let valid_moves = 
-      List.filter (fun (next_move : Enemy.t) -> 
-          not (hit_wall st (Enemy.move next_move).pos next_move.dir)) 
-        all_moves in 
+    let valid_moves = List.filter 
+        (fun next_move -> not (hit_wall st (Enemy.move next_move).pos 
+                                 next_move.dir Constant.camel_radius)) all_moves 
+    in 
     let random_turn_enemy =  
       List.nth valid_moves (Random.int (List.length valid_moves))
     in 

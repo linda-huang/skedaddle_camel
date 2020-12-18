@@ -18,9 +18,10 @@ type t = {
 (** [at_exit state] detects if camel's position is on the Exit tile of maze. *)
 val at_exit : t -> bool
 
-(** [hit_wall pos maze] detect if the position [pos] is a valid
-    move in [maze] *)
-val hit_wall : t -> Position.t -> int -> bool
+(** [hit_wall pos maze rad] detects if the position [pos] is a valid
+    move in [maze] for a specific character, depending on the [rad] of the 
+    character in question*)
+val hit_wall : t -> Position.t -> int -> int -> bool
 
 (** [near_enemy camel maze] detects if [camel]'s position is near 
     an enemy camel *)
