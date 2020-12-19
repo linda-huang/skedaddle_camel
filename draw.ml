@@ -179,15 +179,15 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
         draw_image end_tile 
           (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       | Power_Path Ice ->
-        let ice_tile = make_image sand_pic in
+        let ice_tile = make_image grass_pic in
         draw_image ice_tile 
           (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       | Power_Path Mud -> 
-        let mud_tile = make_image sand_pic in 
+        let mud_tile = make_image stone_pic in 
         draw_image mud_tile 
           (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       | Power_Path Portal -> 
-        let portal_tile = make_image sand_pic in 
+        let portal_tile = make_image portal_tile in 
         draw_image portal_tile 
           (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       | _ -> failwith "impossible"
