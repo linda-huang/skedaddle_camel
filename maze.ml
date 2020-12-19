@@ -6,9 +6,9 @@ type power_tile = Portal | Mud | Ice
 
 (* denotes whether the position is a wall, a path, or an exit, or start*)
 type t = 
-  | Wall
   | Power_Path of power_tile
-  | Path
+  | Wall of int
+  | Path 
   | Exit
   | Start
 
@@ -41,7 +41,7 @@ let rand_power_len () =
 
 (** [visited maze row col] is if the tile at [row] x [col] is a Wall *)
 let visited maze row col = 
-  if maze.(row).(col) = Wall then false else true
+  if maze.(row).(col) = Wall 5 then false else true
 
 (** [exchange arr i j] swaps the values at [arr.(i)] and [arr.(j)] *)
 let exchange arr i j = 
@@ -99,7 +99,7 @@ let rec dfs maze row col prev counter =
   done
 
 let populate cols rows start_pos = 
-  let maze = Array.make_matrix rows cols Wall in
+  let maze = Array.make_matrix rows cols (Wall Constant.wall_health) in
   let start_row, start_col = start_pos in
   dfs maze start_row start_col Path 0;
   maze.(start_row).(start_col) <- Path;
@@ -111,6 +111,6 @@ let tile_type maze col row =
   match maze.(row).(col) with
   | Exit -> Exit
   | Start -> Start
-  | Wall -> Wall
-  | Path -> Path
   | Power_Path x -> Power_Path x 
+  | Wall x -> Wall x
+  | Path -> Path

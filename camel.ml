@@ -1,6 +1,7 @@
 open Position 
 open Constant
 open Maze
+open Hourglass
 
 type t = {
   pos : Position.t; 
@@ -11,7 +12,8 @@ type t = {
   speed : int;
   shoot : bool;
   last_tile : Maze.t;
-  teleport : bool
+  teleport : bool;
+  hourglasses : hourglass_power option; 
 }
 
 let init x y = 
@@ -23,7 +25,8 @@ let init x y =
    speed = Constant.camel_speed;
    shoot = true;
    last_tile = Start;
-   teleport = false}
+   teleport = false;
+   hourglasses = None}
 
 let rotate camel key =
   match key with 

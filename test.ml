@@ -2,7 +2,10 @@ open OUnit2
 open Camel 
 open Coin 
 open Enemy
+open Genie
+open Hourglass 
 open Maze
+open Potion
 open Position 
 open Projectile
 open Round_state 
@@ -11,13 +14,11 @@ open Random
 (*******************************************************************
    testing constants
    *********************************************************************)
-let startpos = (0,0)
-
-let maze_1 = 
-  [| [|Wall; Wall; Wall |];
-     [|Wall; Start; Wall |];
-     [|Wall; Wall; Wall |];
-  |]
+(* pixel start positions corresponding to level 1
+   r = 9, c = 13 *)
+let startposx = 100
+let startposy = 460
+let startpos = startposx, startposy
 
 (*******************************************************************
    helper functions
@@ -30,11 +31,12 @@ let string_of_tuple (x, y) =
 let string_of_tuple2 (x, y) = 
   "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
 
+(** [string_of_valid_tuple (x,y)] is [(x,y)] if it is not Out of Bounds *)
 let string_of_valid_tuple = function 
   | Valid (x,y) ->  "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
   | Out_of_bounds -> "OB"
 
-(* stolen from a2 *)
+(* from A2 *)
 (** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
     they are equivalent set-like lists.  That means checking two things.
     First, they must both be {i set-like}, meaning that they do not
@@ -64,12 +66,374 @@ let pp_list pp_elt lst =
     in loop 0 "" lst
   in "[" ^ pp_elts lst ^ "]"
 
+(** [string_of_coinarr] is the string representation of an 
+    array of coins *)
 let string_of_coinarr (arr : Coin.t array) = 
   Array.to_list arr |> pp_list (fun (x : Coin.t) -> string_of_pos x.pos)
 
+(*******************************************************************
+   tests from Caeml.ml
+ *********************************************************************)
+(** [camel_turn_right_test name camel_pos num_turns 
+    exp_camel_pos exp_camel_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [Camel.turn_right] applied to a camel with 
+    position [camel_pos] and dir 0 turned right [num_turns] times 
+    with [exp_camel_pos] and [exp_camel_dir] *)
+let camel_turn_right_test  
+    (name : string) 
+    (camel_pos_x, camel_pos_y : int * int)
+    (num_turns : int)
+    (exp_camel_pos : int * int)
+    (exp_camel_dir : int) : test = 
+  name >:: (fun _ -> 
+      let rec rep_turns i camel = 
+        if i > 0 then rep_turns (i - 1) (Camel.turn_right camel)
+        else camel in 
+      let newcamel = rep_turns num_turns 
+          (Camel.init camel_pos_x camel_pos_y) in 
+      assert_equal (Position.init_pos exp_camel_pos)
+        newcamel.pos ~printer:string_of_pos;
+      assert_equal exp_camel_dir
+        newcamel.dir ~printer:string_of_int)
+
+(** [camel_turn_left_test name camel_pos num_turns 
+    exp_camel_pos exp_camel_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [Camel.turn_left] applied to a camel with 
+    position [camel_pos] and dir 0 turned left [num_turns] times 
+    with [exp_camel_pos] and [exp_camel_dir] *)
+let camel_turn_left_test  
+    (name : string) 
+    (camel_pos_x, camel_pos_y : int * int)
+    (num_turns : int)
+    (exp_camel_pos : int * int)
+    (exp_camel_dir : int) : test = 
+  name >:: (fun _ -> 
+      let rec rep_turns i camel = 
+        if i > 0 then rep_turns (i - 1) (Camel.turn_left camel)
+        else camel in 
+      let newcamel = rep_turns num_turns 
+          (Camel.init camel_pos_x camel_pos_y) in 
+      assert_equal (Position.init_pos exp_camel_pos)
+        newcamel.pos ~printer:string_of_pos;
+      assert_equal exp_camel_dir
+        newcamel.dir ~printer:string_of_int)
+
+(** [camel_move_horiz_test name camel_pos dir key 
+    exp_camel_pos exp_camel_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [Camel.move_horiz] applied to a camel with 
+    position [camel_pos] towards direction corresponding to [dir] and [key]
+    with [exp_camel_pos] and [exp_camel_dir] *)
+let camel_move_horiz_test  
+    (name : string) 
+    (camel_pos_x, camel_pos_y : int * int)
+    (pos : int)
+    (key : char)
+    (exp_camel_pos : int * int)
+    (exp_camel_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newcamel = Camel.move_horiz 
+          (Camel.init camel_pos_x camel_pos_y) pos key in 
+      assert_equal (Position.init_pos exp_camel_pos)
+        newcamel.pos ~printer:string_of_pos;
+      assert_equal exp_camel_dir
+        newcamel.dir ~printer:string_of_int)
+
+(** [camel_move_vert_test name camel_pos dir key 
+    exp_camel_pos exp_camel_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [Camel.move_vert] applied to a camel with 
+    position [camel_pos] towards direction corresponding to [dir] and [key]
+    with [exp_camel_pos] and [exp_camel_dir] *)
+let camel_move_vert_test  
+    (name : string) 
+    (camel_pos_x, camel_pos_y : int * int)
+    (pos : int)
+    (key : char)
+    (exp_camel_pos : int * int)
+    (exp_camel_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newcamel = Camel.move_vert 
+          (Camel.init camel_pos_x camel_pos_y) pos key in 
+      assert_equal (Position.init_pos exp_camel_pos)
+        newcamel.pos ~printer:string_of_pos;
+      assert_equal exp_camel_dir
+        newcamel.dir ~printer:string_of_int)
+
+let camel_tests = [
+  camel_turn_right_test "turn R 1" startpos 1 startpos ~-90;
+  camel_turn_right_test "turn R 2" startpos 2 startpos ~-180;
+  camel_turn_right_test "turn R 3" startpos 3 startpos ~-270;
+  camel_turn_right_test "turn R 4" startpos 4 startpos 0;
+  camel_turn_right_test "turn R 5" startpos 5 startpos ~-90;
+  camel_turn_left_test "turn L 1" startpos 1 startpos 90;
+  camel_turn_left_test "turn L 2" startpos 2 startpos 180;
+  camel_turn_left_test "turn L 3" startpos 3 startpos 270;
+  camel_turn_left_test "turn L 4" startpos 4 startpos 0;
+  camel_turn_left_test "turn L 5" startpos 5 startpos 90;
+  camel_move_horiz_test "move right d" startpos 1 'd' 
+    (startposx+Constant.camel_speed, startposy) 0;
+  camel_move_horiz_test "move left a" (300, 300) ~-1 'a'
+    (300-Constant.camel_speed, 300) 180;
+  camel_move_vert_test "move up w" (300, 300) 1 'w'
+    (300, 300+Constant.camel_speed) 90;
+  camel_move_vert_test "move up s" (300, 300) ~-1 's'
+    (300, 300-Constant.camel_speed) 270;
+] 
+(*******************************************************************
+   end tests from Camel.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Coin.ml
+ *********************************************************************)
 (** [coin_arr pos] is a Coin.t array of coins with positions in [pos] *)
 let coin_arr pos = 
-  Array.map (fun (px, py) -> Coin.init (Position.init_pos (px, py)) 100) pos
+  Array.map (fun (px, py) -> Coin.init (Position.init_pos (px, py)) 10) pos
+
+(** [find_coin_test name (cx, cy) pos exp_val] constructs an OUnit
+    test named [name] that asserts the quality of 
+    [Coin.find_coin] applied to the position corresponding to [(cx, cy)] and 
+    Coin.t array with positions corresponding to [pos] 
+    against [exp_val] *)
+let find_coin_test 
+    (name : string) 
+    ((cx, cy) : int * int)
+    (pos : (int * int) array)
+    (exp_val : (int * int)) : test = 
+  name >:: (fun _ -> 
+      let exp_coin = Coin.init (Position.init_pos exp_val) 10 in  
+      assert_equal exp_coin 
+        (Coin.find_coin (Position.init_pos (cx, cy)) (coin_arr pos)) 
+        ~printer:string_of_coin)
+
+(** [find_coin_exn_test name curr_pos pos_arr exp_exn] constructs 
+    an OUnit test named [name] that asserts that [coin.find_coin] 
+    raises [exp_exn]. *)
+let find_coin_exn_test
+    (name : string) 
+    (curr_pos : int * int)
+    (pos_arr : (int * int) array)
+    (exp_exn : exn) : test = 
+  name >:: (fun _ -> 
+      let coins = coin_arr pos_arr in  
+      assert_raises exp_exn (fun _ -> 
+          (Coin.find_coin (Position.init_pos curr_pos) coins)))
+
+let coin_tests = [
+  find_coin_test "first coin" (300, 325) 
+    [|(300, 322); (200, 425); (1000, 60)|] (300, 322);
+  find_coin_test "middle coin" (1000, 525) 
+    [|(300, 322); (1000, 527); (200, 425)|] (1000, 527);
+  find_coin_test "last coin" (1000, 525) 
+    [|(300, 322); (200, 425); (1000, 527)|] (1000, 527);
+  find_coin_exn_test "no such coin" (1000, 525) 
+    [|(300, 322); (200, 425)|] (Invalid_argument "No coin here");
+]
+(*******************************************************************
+   end tests from Coin.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Enemy.ml
+ *********************************************************************)
+(** [enemy_move_test name enemy_pos enemy_dir exp_enemy_pos exp_enemy_dir] 
+    constructs an OUnit test named [name] that asserts the quality of 
+    [enemy.move] applied to a enemy with direction [enemy_dir] and [enemy_pos] 
+    with [exp_enemy_pos] and [exp_enemy_dir]. *)
+let enemy_move_test  
+    (name : string) 
+    (enemy_pos : int * int)
+    (enemy_dir : int)
+    (exp_enemy_pos : int * int)
+    (exp_enemy_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newenemy = Enemy.move 
+          (Enemy.init enemy_dir (Position.init_pos enemy_pos)) in 
+      assert_equal (Position.init_pos exp_enemy_pos) 
+        newenemy.pos ~printer:string_of_pos;
+      assert_equal exp_enemy_dir
+        newenemy.dir ~printer:string_of_int)
+
+(** [enemy_change_dir_test name enemy_pos enemy_dir turn 
+    exp_enemy_pos exp_enemy_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [enemy.change_dir] applied to a enemy with 
+    direction [enemy_dir] and position [enemy_pos] to direction [turn] 
+    with [exp_enemy_pos] and [exp_enemy_dir] *)
+let enemy_change_dir_test  
+    (name : string) 
+    (enemy_pos : int * int)
+    (enemy_dir : int)
+    (turn : int) 
+    (exp_enemy_pos : int * int)
+    (exp_enemy_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newenemy = Enemy.change_dir 
+          (Enemy.init enemy_dir (Position.init_pos enemy_pos)) turn in 
+      assert_equal (Position.init_pos exp_enemy_pos)
+        newenemy.pos ~printer:string_of_pos;
+      assert_equal exp_enemy_dir
+        newenemy.dir ~printer:string_of_int)
+
+let enemy_tests = [
+  enemy_move_test "move dir 0" (300, 300) 0 
+    (300 + Constant.enemy_speed, 300) 0;
+  enemy_move_test "move dir 90" (250, 250) 90 
+    (250, 250 + Constant.enemy_speed) 90;
+  enemy_move_test "move dir 180" (275, 300) 180
+    (275 - Constant.enemy_speed, 300) 180;
+  enemy_move_test "move dir 270" (275, 275) 270
+    (275, 275 - Constant.enemy_speed) 270;
+  enemy_change_dir_test "turn 0 -> 180" startpos 0 180 startpos 180;
+  enemy_change_dir_test "turn 90 -> 180" (300, 300) 90 180 (300, 300) 180;
+  enemy_change_dir_test "turn 0 -> 270" (275, 275) 0 270 (275, 275) 270;
+]
+(*******************************************************************
+   end tests from Enemy.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Genie.ml
+ *********************************************************************)
+(** [genie_move_test name genie_pos genie_dir exp_genie_pos exp_genie_dir] 
+    constructs an OUnit test named [name] that asserts the quality of 
+    [Genie.move] applied to a genie with direction [genie_dir] and [genie_pos] 
+    with [exp_genie_pos] and [exp_genie_dir]. *)
+let genie_move_test  
+    (name : string) 
+    (genie_pos : int * int)
+    (genie_dir : int)
+    (exp_genie_pos : int * int)
+    (exp_genie_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newgenie = Genie.move 
+          (Genie.init genie_dir (Position.init_pos genie_pos)) in 
+      assert_equal (Position.init_pos exp_genie_pos) 
+        newgenie.pos ~printer:string_of_pos;
+      assert_equal exp_genie_dir
+        newgenie.dir ~printer:string_of_int)
+
+(** [genie_change_dir_test name genie_pos genie_dir turn 
+    exp_genie_pos exp_genie_dir] constructs an OUnit test named [name] 
+    that asserts the quality of [Genie.change_dir] applied to a genie with 
+    direction [genie_dir] and position [genie_pos] to direction [turn] 
+    with [exp_genie_pos] and [exp_genie_dir] *)
+let genie_change_dir_test  
+    (name : string) 
+    (genie_pos : int * int)
+    (genie_dir : int)
+    (turn : int) 
+    (exp_genie_pos : int * int)
+    (exp_genie_dir : int) : test = 
+  name >:: (fun _ -> 
+      let newgenie = Genie.change_dir 
+          (Genie.init genie_dir (Position.init_pos genie_pos)) turn in 
+      assert_equal (Position.init_pos exp_genie_pos)
+        newgenie.pos ~printer:string_of_pos;
+      assert_equal exp_genie_dir
+        newgenie.dir ~printer:string_of_int)
+
+let genie_tests = [
+  genie_move_test "move dir 0" (300, 300) 0 
+    (300+Constant.genie_speed, 300) 0;
+  genie_move_test "move dir 90" (250, 250) 90 
+    (250, 250+Constant.genie_speed) 90;
+  genie_move_test "move dir 180" (275, 300) 180
+    (275-Constant.genie_speed, 300) 180;
+  genie_move_test "move dir 270" (275, 275) 270
+    (275, 275-Constant.genie_speed) 270;
+  genie_change_dir_test "turn 0 -> 180" startpos 0 180 startpos 180;
+  genie_change_dir_test "turn 90 -> 180" (300, 300) 90 180 (300, 300) 180;
+  genie_change_dir_test "turn 0 -> 270" (275, 275) 0 270 (275, 275) 270;
+]
+(*******************************************************************
+   end tests from Genie.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Maze.ml
+ *********************************************************************)
+(** [string_of_tile_type tile] is the string representation of [tile] *)
+let string_of_tile_type tile = 
+  match tile with 
+  | Wall _ -> "wall"
+  | Path -> "path"
+  | Exit -> "exit"
+  | Start -> "start"
+
+(** [tile_type_test name r c tilex tiley exp_type] constructs 
+    an OUnit test named [name] that asserts the quality of 
+    [Maze.tile_type] applied to a maze with [r] rows and [c] columns 
+    and the tile at position [tilex] [tiley] with [exp_type] *)
+let tile_type_test  
+    (name : string) 
+    (r : int)
+    (c : int)
+    (tiler : int)
+    (tilec : int)
+    (exp_type : Maze.t) : test = 
+  name >:: (fun _ -> 
+      let maze = Maze.populate c r (0,0) in 
+      assert_equal exp_type (tile_type maze tilec tiler) 
+        ~printer:string_of_tile_type)
+
+let maze_tests = [
+  tile_type_test "start" 11 13 0 0 Start;
+  tile_type_test "exit" 11 13 10 12 Exit 
+]
+(*******************************************************************
+   end tests from Maze.ml
+ *********************************************************************)
+
+(*******************************************************************
+   tests from Potion.ml
+ *********************************************************************)
+(** [potion_arr pos] is a Potion.potion array of potions 
+    with positions in [pos] *)
+let potion_arr pos = 
+  Array.map (fun (px, py) -> 
+      Potion.init (Position.init_pos (px, py))) pos
+
+(** [find_potion_test name curr_pos pos_arr exp_potion_pos] constructs 
+    an OUnit test named [name] that asserts the quality of [find_potion] when 
+    applied to the position corresponding to [curr_pos] and the array of potions
+    with positions corresponding to those found in [pos_arr] 
+    to [exp_potion_pos] *)
+let find_potion_test 
+    (name : string) 
+    (curr_pos : int * int)
+    (pos_arr : (int * int) array)
+    (exp_potion_pos : int * int) : test = 
+  name >:: (fun _ -> 
+      let potions = potion_arr pos_arr in  
+      assert_equal (Position.init_pos exp_potion_pos)
+        (Potion.find_potion (Position.init_pos curr_pos) potions).pos 
+        ~printer:string_of_pos)
+
+(** [find_potion_exn_test name curr_pos pos_arr exp_exn] constructs 
+    an OUnit test named [name] that asserts that [Potion.find_potion] 
+    raises [exp_exn]. *)
+let find_potion_exn_test
+    (name : string) 
+    (curr_pos : int * int)
+    (pos_arr : (int * int) array)
+    (exp_exn : exn) : test = 
+  name >:: (fun _ -> 
+      let potions = potion_arr pos_arr in  
+      assert_raises exp_exn (fun _ -> 
+          (Potion.find_potion (Position.init_pos curr_pos) potions)))
+
+let potion_tests = [
+  find_potion_test "first potion" (300, 325) 
+    [|(300, 322); (200, 425); (1000, 60)|] (300, 322);
+  find_potion_test "middle potion" (1000, 525) 
+    [|(300, 322); (1000, 527); (200, 425)|] (1000, 527);
+  find_potion_test "last potion" (1000, 525) 
+    [|(300, 322); (200, 425); (1000, 527)|] (1000, 527);
+  find_potion_exn_test "no such potion" (1000, 525) 
+    [|(300, 322); (200, 425)|] (Invalid_argument "No potion here");
+]
+(*******************************************************************
+   end tests from Potion.ml
+ *********************************************************************)
 
 (*******************************************************************
    tests from Position.ml
@@ -118,132 +482,120 @@ let position_tests = [
   dist_test "origin" (0, 0) (0, 0) 0;
   dist_test "3, 4, 5" (0, 3) (4, 0) 5;
   (* tile_to_pixel *)
-  tile_to_pixel_test "origin" startpos (0, 0) (20, ~-20);
-  tile_to_pixel_test "(1,1)" startpos (1, 1) (60, ~-60);
-  tile_to_pixel_test "(0, 100)" startpos (0, 100) (20, ~-4020);
+  tile_to_pixel_test "origin" startpos (0, 0) (120, 440);
+  tile_to_pixel_test "(1,1)" startpos (1, 1) (160, 400);
+  tile_to_pixel_test "(0, 10)" startpos (0, 10) (120, 40);
   (* pixel_to_tile *)
-  pixel_to_tile_test "center origin (25, 25)" startpos (25, 25) Out_of_bounds;
-  pixel_to_tile_test "corner origin (0, 0)" startpos (0, 0) (Valid (0, 0));
-  pixel_to_tile_test "edge origin (50, 0)" startpos (50, 0) (Valid (1, 0));
-  pixel_to_tile_test "corner origin (50,50)" startpos (50, 50) Out_of_bounds;
+  pixel_to_tile_test "out of bounds" startpos (25, 25) Out_of_bounds;
+  pixel_to_tile_test "corner origin (0, 0)" startpos startpos (Valid (0, 0));
+  pixel_to_tile_test "edge origin (50, 0)" startpos 
+    (startposx + 3 * Constant.tile_width, startposy - 2 * Constant.tile_width)
+    (Valid (3, 2));
+  pixel_to_tile_test "corner origin" startpos 
+    (startposx + Constant.tile_width, startposy - Constant.tile_width) 
+    (Valid (1,1));
 ]
 (*******************************************************************
    end tests from Position.ml
  *********************************************************************)
 
 (*******************************************************************
-   tests from Maze.ml
+   tests from Projectile.ml
  *********************************************************************)
-let maze_tests = []
-(*******************************************************************
-   end tests from Maze.ml
- *********************************************************************)
-
-(*******************************************************************
-   tests from Coin.ml
- *********************************************************************)
-(** [find_coin_test name (cx, cy) pos exp_val] constructs an OUnit
-    test named [name] that asserts the quality of 
-    [Coin.find_coin] applied to the position corresponding to [(cx, cy)] and 
-    Coin.t array with positions corresponding to [pos] 
-    against [exp_val] *)
-let find_coin_test 
+(** [projectile_move_test name projectile_pos projectile_dir 
+    exp_projectile_pos exp_projectile_dir] 
+    constructs an OUnit test named [name] that asserts the quality of 
+    [Projectile.move] applied to a projectile with direction [projectile_dir] 
+    and position [projectile_pos] 
+    with [exp_projectile_pos] and [exp_projectile_dir]. *)
+let projectile_move_test  
     (name : string) 
-    ((cx, cy) : int * int)
-    (pos : (int * int) array)
-    (exp_val : (int * int)) : test = 
+    (projectile_pos : int * int)
+    (projectile_dir : int)
+    (exp_projectile_pos : int * int)
+    (exp_projectile_dir : int) : test = 
   name >:: (fun _ -> 
-      let exp_coin = Coin.init (Position.init_pos exp_val) 1 in  
-      assert_equal exp_coin 
-        (Coin.find_coin (Position.init_pos (cx, cy)) (coin_arr pos)) 
-        ~printer:string_of_coin)
+      let newprojectile = Projectile.move_proj 
+          (Projectile.init projectile_dir (Position.init_pos projectile_pos)) in 
+      assert_equal (Position.init_pos exp_projectile_pos) 
+        newprojectile.pos ~printer:string_of_pos;
+      assert_equal exp_projectile_dir
+        newprojectile.dir ~printer:string_of_int)
 
-let coin_tests = []
+let projectile_tests = [
+  projectile_move_test "move dir 0" (300, 300) 0 
+    (300 + Constant.projectile_speed, 300) 0;
+  projectile_move_test "move dir 90" (250, 250) 90 
+    (250, 250 + Constant.projectile_speed) 90;
+  projectile_move_test "move dir 180" (275, 300) 180
+    (275 - Constant.projectile_speed, 300) 180;
+  projectile_move_test "move dir 270" (275, 275) 270
+    (275, 275 - Constant.projectile_speed) 270;
+]
 (*******************************************************************
-   end tests from Coin.ml
+   end tests from Projectile.ml
  *********************************************************************)
 
-(*******************************************************************
-   tests from Caeml.ml
- *********************************************************************)
-
-let camel_tests = [
-  (* TODO *)
-  (* Camel.init *)
-  (* Camel.turn_right *)
-  (* Camel.turn_left *)
-  (* Camel.move_horiz *)
-  (* Camel.adj_health *)
-  (* Camel.adj_coin *)
-  (* Camel.is_dead *)
-] 
-(*******************************************************************
-   end tests from Camel.ml
- *********************************************************************)
-
-(*******************************************************************
-   tests from Enemy.ml
- *********************************************************************)
-
-let enemy_tests = []
-(*******************************************************************
-   end tests from Enemy.ml
- *********************************************************************)
 
 (*******************************************************************
    tests from Round_State.ml
  *********************************************************************)
-
 (** [enemy_arr pos] is a Enemy.t array of enemies with positions in [pos] *)
-let enemy_arr pos = 
-  Array.map (fun (px, py) -> 
-      Enemy.init (90 * Random.int 4) (Position.init_pos (px, py))) pos
+(* let enemy_arr pos = 
+   Array.map (fun (px, py) -> 
+      Enemy.init (90 * Random.int 4) (Position.init_pos (px, py))) pos *)
 
 (** [near_enemy_test name (cx, cy) (ex, ey) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
     [State.near_enemy] applied to a Camel at the position represented 
     by [(cx, cy)] and a State with enemy at position indicated by [(ex, ey)] 
     with [exp_val]. *)
-let near_enemy_test 
+(* let near_enemy_test 
     (name : string) 
     ((cx, cy) : int * int)
     (epos : (int * int) array)
     (exp_val : bool) : test = 
-  name >:: (fun _ -> 
-      let camel = Camel.init cx cy in 
+   name >:: (fun _ -> 
+      let camel = Camel.init cx cy in                 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
                 cols = 100; rows = 100;
                 enemies = enemy_arr epos;
                 coins = [||];
+                potions = [||];
                 projectiles = [];
-                top_left_corner = (43, 43);
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos;
                 portals = []} in 
       assert_equal exp_val (near_enemy camel st)
-        ~printer:string_of_bool)
+        ~printer:string_of_bool) *)
 
 (** [on_coin_test name (cx, cy) (x, y) exp_val] constructs an OUnit
     test named [name] that asserts the quality of 
     [Round_state.on_coin] applied to a Camel at the position represented 
     by [(cx, cy)] and a Round_state with a coin at position indicated by [(x, y)] 
     with [exp_val]. *)
-let on_coin_test 
+(* let on_coin_test 
     (name : string) 
     ((cx, cy) : int * int)
     (pos : (int * int) array)
     (exp_val : bool) : test = 
-  name >:: (fun _ -> 
+   name >:: (fun _ -> 
       let camel = Camel.init cx cy in 
       let st = {camel = camel;
                 maze = Maze.populate 100 100 (0,0);
                 cols = 100; rows = 100;
                 enemies = [||];
                 coins = coin_arr pos;
+                potions = [||];
                 projectiles = [];
-                top_left_corner = (43, 43);
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos;
                 portals = []} in 
-      assert_equal exp_val (on_coin st) 
-        ~printer:string_of_bool)
+      assert_equal exp_val (Round_state.on_coin st) 
+        ~printer:string_of_bool) *)
 
 (** [rem_coin_test name (cx, cy) pos exp_exn] constructs an OUnit test named [name] 
     that asserts that [Round_state.find_coin] raises [exp_exn]. *)
@@ -260,68 +612,63 @@ let on_coin_test
                 enemies = [||];
                 coins = coin_arr pos;
                 projectiles = [];
-                top_left_corner = (43, 43)} in  
-      assert_raises exp_exn (fun _ -> ((rem_coin (find_coin camel.pos st) st).coins ))) *)
+                potions = [||];
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos} in  
+      assert_raises exp_exn (fun _ -> 
+          ((Round_state.remove_coin 
+              (Coin.find_coin camel.pos (coin_arr pos)) st).coins ))) *)
 
 (** [remove_coin_test name getcoin pos exp_val] constructs an OUnit
     test named [name] that asserts the quality of  
     [Round_state.remove_coin] applied to a coin at the position represented 
     by [getcoin] and a Round_state.t with coins at positions indicated by [pos] 
     against [exp_val]. *)
-let remove_coin_test 
+(* let remove_coin_test 
     (name : string) 
     (getcoin : (int * int))
     (pos : (int * int) array)
     (exp_val : (int * int) array) : test = 
-  name >:: (fun _ -> 
+   name >:: (fun _ -> 
       let st = {camel = Camel.init 0 0;
                 maze = Maze.populate 100 100 (0,0);
                 cols = 100; rows = 100;
                 enemies = [||];
                 coins = coin_arr pos;
+                potions = [||];
                 projectiles = [];
-                top_left_corner = startpos; 
+                genie = None;
+                hourglass = None;
+                top_left_corner = startpos;
                 portals = []} in 
       let exp_coin = coin_arr exp_val in  
       assert_equal ~cmp:cmp_set_like_arrs exp_coin 
         (Round_state.remove_coin 
            (Coin.init (Position.init_pos getcoin) 1) st).coins 
-        ~printer:string_of_coinarr)
-
-
-(* let proj_test name cx cy pos exp_val =
-   name >:: (fun _ ->
-   let camel = Camel.init cx cy in 
-   let st = {camel = camel;
-             maze = Maze.populate 100 100 (0,0);
-             cols = 100; rows = 100;
-             enemies = [||];
-             coins = coin_arr pos;
-             projectiles = []} in 
-   shoot camel st |> 
-   ) *)
+        ~printer:string_of_coinarr) *)
 
 let round_state_tests = [
   (* todo *)
 
   (* near_enemy *)
-  near_enemy_test "same position, single enemy (5,5)" 
-    (5, 5)[|(5, 5)|] true;
-  near_enemy_test "multiple close enemies (5,5)" 
-    (5, 5)[|(15, 15); (5, 5); (50, 50)|] true;
-  near_enemy_test "single far enemy (50,50)" 
-    (0, 0)[|(110, 110)|] false;
-  near_enemy_test "multiple far enemies" 
-    (0, 0)[|(150, 150); (250, 100); (90, 75)|] false;
-  near_enemy_test "multiple enemies, single close" 
-    (0, 0)[|(150, 150); (250, 100); (0, 4)|] true;
-  (* on_coin *)
-  on_coin_test "same position, single coin"
-    (5, 5)[|(5, 5)|] true;
-  on_coin_test "multiple coins, one close"
-    (5, 5)[|(250, 100); (50, 55); (7, 5)|] true;
-  on_coin_test "multiple coins, none on same tile"
-    (5, 5)[|(250, 100); (50, 55); (50, 5)|] false;
+  (* near_enemy_test "same position, single enemy (5,5)" 
+     (5, 5)[|(5, 5)|] true;
+     near_enemy_test "multiple close enemies (5,5)" 
+     (5, 5)[|(15, 15); (5, 5); (50, 50)|] true;
+     near_enemy_test "single far enemy (50,50)" 
+     (0, 0)[|(110, 110)|] false;
+     near_enemy_test "multiple far enemies" 
+     (0, 0)[|(150, 150); (250, 100); (90, 75)|] false;
+     near_enemy_test "multiple enemies, single close" 
+     (0, 0)[|(150, 150); (250, 100); (0, 4)|] true;
+     (* on_coin *)
+     on_coin_test "same position, single coin"
+     (5, 5)[|(5, 5)|] true;
+     on_coin_test "multiple coins, one close"
+     (5, 5)[|(250, 100); (50, 55); (7, 5)|] true;
+     on_coin_test "multiple coins, none on same tile"
+     (5, 5)[|(250, 100); (50, 55); (50, 5)|] false; *)
   (* find_coin and rem_coin *)
   (* rem_coin_test "on only coin in maze" 
      (5, 5)[|(5, 5)|] [||];
@@ -338,10 +685,13 @@ let round_state_tests = [
 
 let suite = "test suite" >::: List.flatten [
     camel_tests;
-    position_tests;
-    maze_tests;
     coin_tests;
     enemy_tests;
+    genie_tests;
+    maze_tests;
+    potion_tests;
+    position_tests;
+    projectile_tests;
     round_state_tests;
   ]
 

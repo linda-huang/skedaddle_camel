@@ -34,6 +34,25 @@ let enemy_color = Graphics.rgb 179 27 27
 let health_delay = 1.
 
 (**********************************************************
+   Genie constants 
+ ***********************************************************)
+let genie_width = 10
+let genie_radius = genie_width / 2
+let genie_speed = 15
+let genie_power = 1000
+let genie_color = Graphics.rgb 253 168 255
+let genie_teleport_time = 3.5
+
+(**********************************************************
+   Hourglass constants 
+ ***********************************************************)
+let hourglass_width = 16
+let hourglass_radius = hourglass_width / 2
+let hourglass_add = 15
+let hourglass_add_color = Graphics.rgb 179 220 255 
+let hourglass_pause_color = Graphics.rgb 255 255 255 
+
+(**********************************************************
    Maze constants
  ***********************************************************)
 let tile_width = 40
@@ -45,6 +64,8 @@ let start_color = Graphics.rgb 146 168 209
 let ice_color = Graphics.rgb 0 64 255
 let mud_color = Graphics.rgb 76 36 20
 let portal_color = Graphics.rgb 221 160 221
+
+let wall_health = 5
 
 let path_color = Graphics.rgb 255 248 220
 let path_pic = 
@@ -3255,9 +3276,16 @@ let wall_pic =
 
 
 (**********************************************************
+   Potion constants 
+ ***********************************************************)
+let potion_width = 10
+let potion_radius = potion_width / 2
+let potion_color = Graphics.rgb 183 41 245
+
+(**********************************************************
    Coin constants
  ***********************************************************)
-let coin_width = 15
+let coin_width = 14
 let coin_radius = coin_width / 2
 let coin_color = Graphics.rgb 171 149 7
 

@@ -53,6 +53,44 @@ val enemy_color : Graphics.color
     camel loses one unit of health *)
 val health_delay : float 
 
+(** [genie_width] is the pixel width of the genie *)
+val genie_width : int
+
+(** [genie_radius] is half of [genie_width] *)
+val genie_radius : int
+
+(** [genie_speed] is the distance (in pixels) that a genie
+    travels on one unit of game time *)
+val genie_speed : int 
+
+(** [genie_power] is the amount that the genie increases the 
+    camel's coin count by *)
+val genie_power : int 
+
+(** [genie_color] is the Graphics color code for a solid Genie icon *)
+val genie_color : Graphics.color
+
+(** [genie_teleport_time] is how often (in seconds) a genie teleports *)
+val genie_teleport_time : float 
+
+(** [hourglass_width] is the pixel width of the hourglass *)
+val hourglass_width : int
+
+(** [hourglass_radius] is half of [hourglass_width] *)
+val hourglass_radius : int
+
+(** [hourglass_power] is the amount that the hourglass increases the 
+    remaining time by *)
+val hourglass_add : int 
+
+(** [hourglass_add_color] is the Graphics color code for a solid hourglass icon
+    that has the add time power *)
+val hourglass_add_color : Graphics.color
+
+(** [hourglass_pause_color] is the Graphics color code for a solid hourglass icon
+    that has the pause power *)
+val hourglass_pause_color : Graphics.color
+
 (** [tile_width] is the pixel width of a maze tile *)
 val tile_width : int
 
@@ -65,6 +103,10 @@ val path_color : Graphics.color
 (** [path_pic] is the Graphics representation of the image 
     for a path tile in the maze *)
 val path_pic : Graphics.color array array
+
+(** [wall_health] is the amount of shots it takes to remove a wall 
+    (convert a wall tile to a path tile) *)
+val wall_health : int 
 
 (** [wall_color] is the Graphics color code for a solid wall tile *)
 val wall_color : Graphics.color
@@ -91,6 +133,15 @@ val portal_color : Graphics.color
 (** [near] is how far two center points of agents must be to be 
     considered a hit *)
 val near : int
+
+(** [potion_width] is the pixel width of a potion *)
+val potion_width : int
+
+(** [potion_radius] is half of [potion_width] *)
+val potion_radius : int
+
+(** [potion_color] is the Graphics color code for a solid potion pixel icon *)
+val potion_color : Graphics.color
 
 (** [coin_width] is the pixel width of a coin *)
 val coin_width : int

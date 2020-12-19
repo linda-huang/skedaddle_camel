@@ -1,8 +1,12 @@
 (** The player camel movement and information updating *)
+open Position 
+open Constant
+open Hourglass
 
 (** The type of a player camel.
     [pos] is the center coordinates of the camel; 
-    [dir] is the direction in degrees *)
+    [dir] is the direction in degrees 
+    [hourglasses] is the power of any hourglass a camel may have collected *)
 type t = {
   pos : Position.t;
   dir : int; (* direction in degrees *)
@@ -12,7 +16,8 @@ type t = {
   speed : int;
   shoot : bool;
   last_tile : Maze.t;
-  teleport : bool
+  teleport : bool;
+  hourglasses : hourglass_power option;
 }
 
 (** [init x y] is a new camel at position ([x],[y]) *)

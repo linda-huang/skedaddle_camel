@@ -5,11 +5,13 @@ type game_end = Time | Health
 
 (** The variant type of the game state *)
 type state = 
+  | PreWelcome
   | Welcome 
   | GameOver of game_end 
   | Won 
   | InPlay
   | Transition of int 
+  | Instructions of float  
 
 (** The variant type of difficulty *)
 type difficulty = Easy | Hard 
@@ -21,6 +23,10 @@ type game_state = {
   round_state : Round_state.t;
   game_difficulty : difficulty;
 }
+
+(** [int_of_difficulty diff] is the number corresponding 
+    to [diff] chosen by the player *)
+val int_of_difficulty : difficulty -> int 
 
 (** [new_level gs] is a new game_state with the appropriate
     next round_state level and updated score. *)

@@ -10,9 +10,6 @@ type t = {
     Requires: [rot] must be a multiple of 90 *)
 val change_dir : t -> int -> t 
 
-(** [turn_around camel] is [camel] turned 180 degrees *)
-val turn_around : t -> t
-
 (** [move camel] is [camel] moved one step *)
 val move : t -> t
 
