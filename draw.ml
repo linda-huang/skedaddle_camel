@@ -12,8 +12,16 @@ open Background
 open Img_enemy_camel
 open Img_heart
 open Img_tile
+open Words
 
 let prev_health = ref num_lives
+
+let rec draw_words height (pos : Position.t) = function
+  | [] -> ()
+  | h :: t -> 
+    Graphics.moveto pos.x pos.y;
+    Graphics.draw_string h;
+    draw_words height (Position.init_pos (pos.x, pos.y-height)) t
 
 (* set_font "-sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1"; *)
 (* set_font "-adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-1"; *)
@@ -160,70 +168,25 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
       match tile with 
-      | Path -> 
-        (* draw_element (fst !curr_pos) (snd !curr_pos) Graphics.blue
-                    Constant.draw_tile_width; *)
-        let path_img = make_image sand_tile2 in 
+      | Path -> let path_img = make_image sand_tile2 in 
         draw_image path_img (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | (Wall hp) when hp > 0 -> 
-        (* draw_element (fst !curr_pos) (snd !curr_pos) Graphics.green
-           Constant.draw_tile_width; *)
-        let wall_img = make_image sand_wall in 
+      | (Wall hp) when hp > 0 -> let wall_img = make_image sand_wall in 
         draw_image wall_img (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | Start -> 
-        let start_tile = make_image portal_tile in 
-        draw_image start_tile 
-          (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | Exit -> 
-        let end_tile = make_image portal_tile2 in 
-        draw_image end_tile 
-          (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | Power_Path Ice ->
-        let ice_tile = make_image grass_pic in
-        draw_image ice_tile 
-          (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | Power_Path Mud -> 
-        let mud_tile = make_image stone_pic in 
-        draw_image mud_tile 
-          (fst !curr_pos - 1) (snd !curr_pos - tile_width);
-      | Power_Path Portal -> 
-        let portal_tile = make_image portal_tile in 
-        draw_image portal_tile 
-          (fst !curr_pos - 1) (snd !curr_pos - tile_width);
+      | Start -> let start_tile = make_image portal_tile in 
+        draw_image start_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
+      | Exit -> let end_tile = make_image portal_tile2 in 
+        draw_image end_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
+      | Power_Path Ice -> let ice_tile = make_image ice_path in
+        draw_image ice_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
+      | Power_Path Mud -> let mud_tile = make_image mud_path in 
+        draw_image mud_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
+      | Power_Path Portal -> let portal_tile = make_image portal_path in 
+        draw_image portal_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       | _ -> failwith "impossible"
     end
     done
   end
   done
-
-(* match tile with 
-   | Start -> draw_element (fst !curr_pos) (snd !curr_pos) 
-             Constant.start_color Constant.tile_width;
-   | Exit -> draw_element (fst !curr_pos) (snd !curr_pos) 
-            Constant.exit_color Constant.tile_width;
-   | Wall hp -> if hp > 0 then begin
-    let wall_img = make_image path_pic in 
-    draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
-   end 
-   | _ -> let path_img = make_image wall_pic in 
-   draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1); *)
-
-
-(* if tile = Wall then begin
-   let wall_img = make_image path_pic in 
-   draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
-   end 
-   else if tile = Start then begin 
-   draw_element (fst !curr_pos) (snd !curr_pos) Constant.start_color
-    Constant.tile_width;
-   end
-   else if tile = Exit then begin
-   draw_element (fst !curr_pos) (snd !curr_pos) Constant.exit_color
-    Constant.tile_width;
-   end
-   else
-   let path_img = make_image wall_pic in 
-   draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1); *)
 
 let draw_maze (st : Round_state.t) = 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner) in
@@ -265,12 +228,9 @@ let draw_coin (coin : Coin.t) =
 (** [draw_potion potion] draws a solid potion pixel icon
     by the position defined by [potion] *)
 let draw_potion (potion : Potion.potion) = 
-  let (x, y) = (potion.pos.x, potion.pos.y) in 
-  Graphics.set_color Constant.potion_color;
-  fill_poly [|(x-potion_radius, y+potion_radius); 
-              (x+potion_radius, y+potion_radius); 
-              (x+potion_radius, y-potion_radius); 
-              (x-potion_radius, y-potion_radius)|]
+  let (x, y) = (potion.pos.x - 10, potion.pos.y - 10) in 
+  let small_heart = make_image heart_small in 
+  draw_image small_heart x y
 
 (** [draw_projectile proj] draws a solid projectile pixel icon
     by the position defined by [proj] *)
@@ -288,12 +248,9 @@ let draw_genie (genie : Genie.genie option) =
   match genie with 
   | None -> ()
   | Some genie -> begin 
-      Graphics.set_color Constant.genie_color;
-      let x, y = (genie.pos.x, genie.pos.y) in 
-      fill_poly [|(x-genie_radius, y+genie_radius); 
-                  (x+genie_radius, y+genie_radius); 
-                  (x+genie_radius, y-genie_radius); 
-                  (x-genie_radius, y-genie_radius)|]
+      let x, y = (genie.pos.x - 15, genie.pos.y - 15) in 
+      let genie = make_image genie_pic in 
+      draw_image genie x y
     end 
 
 (** [draw_hourglass hourglass] draws a solid hourglass pixel icon
@@ -302,28 +259,29 @@ let draw_genie (genie : Genie.genie option) =
 let draw_hourglass (hourglass : Hourglass.hourglass option) = 
   match hourglass with 
   | None -> ()
-  | Some hourglass -> begin 
-      let _ = match hourglass.power with 
-        | Add -> Graphics.set_color Constant.hourglass_add_color; 
-        | Pause -> Graphics.set_color Constant.hourglass_pause_color; in 
-      let x, y = (hourglass.pos.x, hourglass.pos.y) in 
-      fill_poly [|(x-hourglass_radius, y+hourglass_radius); 
-                  (x+hourglass_radius, y+hourglass_radius); 
-                  (x+hourglass_radius, y-hourglass_radius); 
-                  (x-hourglass_radius, y-hourglass_radius)|]
-    end 
+  | Some hourglass -> begin
+      let x, y = (hourglass.pos.x - 10, hourglass.pos.y - 10) in 
+      match hourglass.power with 
+      | Add ->
+        let hourglass_img = make_image hourglass_small in 
+        draw_image hourglass_img x y
+      | Pause -> 
+        let magic_wand = make_image wand_pic in 
+        draw_image magic_wand x y
+    end
 
 (** [draw_hourglass_msg x y] is the message in the transition screen 
     printed at [x,y] to explain the hourglasses *)
 let draw_hourglass_msg x y  = 
-  let y = y - 15 in Graphics.moveto x y;
-  Graphics.set_color Constant.hourglass_add_color; 
+  draw_background ();
+  let y = y - 20  in Graphics.moveto (x - 5) y;
+  Graphics.set_color Graphics.black; 
   Graphics.draw_string "There is an hourglass you can collect!";
-  let y = y - 15 in Graphics.moveto x y;
+  let y = y - 15 in Graphics.moveto (x - 5) y;
   Graphics.draw_string "It will be this color if it gives you 15 more seconds to complete the level.";
-  let y = y - 15 in Graphics.moveto x y;
+  let y = y - 15 in Graphics.moveto (x - 5) y;
   Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
-  let y = y - 15 in Graphics.moveto x y;
+  let y = y - 15 in Graphics.moveto (x - 5) y;
   Graphics.draw_string "If it is this rare special hourglass, it will be white"
 
 let draw_round_state (st : Round_state.t) = 
@@ -341,36 +299,37 @@ let draw_prewelcome () =
   Graphics.set_window_title "Skedaddle Camel";
   draw_background ();
   Graphics.set_text_size 300;
-  Graphics.moveto 120 700;
-  Graphics.draw_string "Welcome to Skedaddle Camel!";
-  Graphics.moveto 120 500;
-  Graphics.draw_string "press any key to enter the game";
+  set_font "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
+  let title = make_image title_pic_transp in 
+  draw_image title 35 50;
+  Graphics.moveto 350 100;
   Graphics.synchronize ()
 
 let draw_welcome () = 
   Graphics.clear_graph ();
+  draw_background ();
   Graphics.set_window_title "Skedaddle Camel";
   Graphics.set_text_size 300;
   let x, y = 20, 650 in 
   Graphics.moveto x y;
   Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 30 in Graphics.moveto x y; 
   Graphics.draw_string "The beginning of the maze is in the upper left corner; exit is the bottom right.";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 20 in Graphics.moveto x y; 
   Graphics.draw_string "Use WASD to move and press space to shoot projectiles.";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 20 in Graphics.moveto x y; 
   Graphics.draw_string "The projectiles will be shot in the same direction you are going.";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 20 in Graphics.moveto x y; 
   Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 20 in Graphics.moveto x y; 
   Graphics.draw_string "There are 4 different tile types: regular, portal, mud, and ice.";
-  let y = y - 15 in Graphics.moveto (x + 25) y;
+  let y = y - 25 in Graphics.moveto (x + 25) y;
   Graphics.draw_string "Portal tiles will teleport you to a corresponding portal tile";
-  let y = y - 15 in Graphics.moveto (x + 25) y;
+  let y = y - 25 in Graphics.moveto (x + 25) y;
   Graphics.draw_string "Mud tiles will slow you down as you walk through them.";
-  let y = y - 15 in Graphics.moveto (x + 25) y;
+  let y = y - 25 in Graphics.moveto (x + 25) y;
   Graphics.draw_string "Ice tiles are slippery! You'll speed up as you walk through them.";
-  let y = y - 15 in Graphics.moveto x y; 
+  let y = y - 25 in Graphics.moveto x y; 
   Graphics.draw_string "Each level will have new elements and obstacles.";
   let y = y - 15 in Graphics.moveto x y; 
   Graphics.draw_string "If you need help at any time, press `i` for instructions";
@@ -415,6 +374,8 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
   draw_background ();
   let st = gs.round_state in 
   let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
+  Graphics.set_font 
+    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
   Graphics.moveto x y;
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.blue;
@@ -436,16 +397,13 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
     | 0 -> Graphics.draw_string "This level has 0 enemies";
     | 1 -> Graphics.draw_string "This level has 2 enemies";
       Graphics.moveto x (y - 25);
-      Graphics.set_color Constant.potion_color;
       Graphics.draw_string 
         "There are two potions you can collect to gain more health";
     | 2 -> Graphics.draw_string "This level has 10 enemies";
       Graphics.moveto x (y - 25);
-      Graphics.set_color Constant.potion_color;
       Graphics.draw_string 
         "There are two potions you can collect to gain more health";
       Graphics.moveto x (y - 50);
-      Graphics.set_color Constant.genie_color;
       Graphics.draw_string 
         "There is a speedy genie in this maze! Catch it for extra points.";
       Graphics.moveto x (y - 65);
@@ -575,13 +533,6 @@ let draw_time (gs : Game_state.game_state) (timer : Timer.timer) =
           update_time_left gs.round_state time;
         end 
     end
-
-let rec draw_words height (pos : Position.t) = function
-  | [] -> ()
-  | h :: t -> 
-    Graphics.moveto pos.x pos.y;
-    Graphics.draw_string h;
-    draw_words height (Position.init_pos (pos.x, pos.y-height)) t
 
 (** [draw_level_num gs] draws the number level the player is currently on *)
 let draw_level_num gs = 

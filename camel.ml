@@ -10,7 +10,6 @@ type t = {
   lasthealthlost : float; 
   coins : int;
   speed : int;
-  shoot : bool;
   last_tile : Maze.t;
   teleport : bool;
   hourglasses : hourglass_power option; 
@@ -24,7 +23,6 @@ let init x y =
    lasthealthlost = 0.; 
    coins = 0;
    speed = Constant.camel_speed;
-   shoot = true;
    last_tile = Start;
    teleport = false;
    hourglasses = None;

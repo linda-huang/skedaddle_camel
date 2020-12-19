@@ -1,6 +1,6 @@
 (** Graphically represent game elements *)
 
-(** [add_heart_img (x,y) lives] redraws the heart gained.*)
+(** [add_heart_img (x,y) lives] redraws the heart gained.*) 
 val add_heart_img: int * int -> int -> unit
 
 (** [draw_maze st] draws the maze corresponding to [st] *)

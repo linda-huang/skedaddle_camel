@@ -8,10 +8,6 @@ type t = {
   coins : int 
 }
 
-(** [time_mult] is the multiplier applied to the 
-     time taken to complete a maze *)
-val time_mult : float 
-
 (** [update_score scorer time camel] is [scorer] updated with the completion 
     time of a level and the coins collected by [camel] in that level*)
 val update_score : t -> float -> Camel.t -> t 

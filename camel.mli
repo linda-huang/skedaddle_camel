@@ -15,7 +15,6 @@ type t = {
   lasthealthlost : float; 
   coins : int;
   speed : int;
-  shoot : bool;
   last_tile : Maze.t;
   teleport : bool;
   hourglasses : hourglass_power option;

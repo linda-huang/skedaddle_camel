@@ -71,6 +71,16 @@ let clear_path maze row col new_row new_col tile_type tile_len =
   else if diffy = -2 then maze.(row).(col - 1) <- next_tile_type
   else if diffy = 2 then maze.(row).(col + 1) <- next_tile_type
 
+let gen_new_tile_type counter prev = 
+  if counter <= 0 then if power_or_not () = 0 then Path 
+    else Power_Path (rand_power_tile ()) 
+  else prev 
+
+let gen_new_tile_len counter = 
+  if counter <= 0 then if new_t = Path then 0 
+    else rand_power_len ()
+  else counter
+
 (** [dfs maze row col] traverses the maze using depth first search
     [row] indicates the row number of the tile that the traversal is currently 
     visiting, [col] indicates the tile's column number *)
@@ -79,19 +89,13 @@ let rec dfs maze row col prev counter =
                     (row, col - 2); (row, col + 2)|] in 
   shuffle direction;
   for i = 0 to Array.length direction - 1 do begin  
-    let new_tile_type = if counter <= 0 then if power_or_not () = 0 then Path 
-        else Power_Path (rand_power_tile ()) 
-      else prev 
-    in 
-    let new_tile_len = if counter <= 0 then if new_tile_type = Path then 0 
-        else rand_power_len ()
-      else counter
-    in 
+    let new_t = gen_new_tile_type counter prev in 
+    let new_tile_len = gen_new_tile_len counter in 
     let new_row, new_col = direction.(i) in
     if in_limit maze new_row new_col && not (visited maze new_row new_col) 
     then begin
-      clear_path maze row col new_row new_col new_tile_type new_tile_len;
-      dfs maze new_row new_col new_tile_type (new_tile_len-2)
+      clear_path maze row col new_row new_col new_t new_tile_len;
+      dfs maze new_row new_col new_t (new_tile_len-2)
     end
     else ()
   end

@@ -38,9 +38,9 @@ let heart_size = 30
 (**********************************************************
    Genie constants 
  ***********************************************************)
-let genie_width = 10
+let genie_width = 30
 let genie_radius = genie_width / 2
-let genie_speed = 15
+let genie_speed = 3
 let genie_power = 1000
 let genie_color = Graphics.rgb 253 168 255
 let genie_teleport_time = 3.5
@@ -55,6 +55,12 @@ let hourglass_add_color = Graphics.rgb 179 220 255
 let hourglass_pause_color = Graphics.black
 let hourglass_freq = 4
 
+(**********************************************************
+   Scoring constants 
+ ***********************************************************)
+let score_time_mult = 100. 
+let score_hit_bonus = 10 
+let score_health_bonus = 50
 (**********************************************************
    Maze constants
  ***********************************************************)

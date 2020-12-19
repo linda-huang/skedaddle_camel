@@ -23,6 +23,18 @@ val round3 : round_info
 (** [totrounds] is the total number of levels in the game *)
 val totrounds : int 
 
+(** [score_time_mult] is the multiplier applied to a player's score
+    based on how much time it took them to complete the levels *)
+val score_time_mult : float 
+
+(** [score_hit_bonus] is the multiplier applied to a player's score
+    based on how many enemies they were able to hit *)
+val score_hit_bonus : int 
+
+(** [score_health_bonus] is the multiplier applied to a player's score
+    based on how much health they have left at the end of a game *)
+val score_health_bonus : int 
+
 (** [camel_speed] is the distance (in pixels) camel travels on one key press *)
 val camel_speed : int
 

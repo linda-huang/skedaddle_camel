@@ -1,4 +1,5 @@
 open Camel
+open Constant 
 
 type t = {
   mazes : int;
@@ -6,10 +7,6 @@ type t = {
   hit : int; 
   coins : int
 }
-
-let time_mult = 100.
-let hit_bonus = 10
-let health_bonus = 50
 
 let update_score scr time (camel : Camel.t) =
   let newtimes = 
@@ -25,13 +22,14 @@ let score scr camel timed =
   let timecalc = 
     if timed && health <> 0 then List.fold_left 
         (fun acc x -> 
-           let x' = if x > time_mult then 0. else time_mult -. x in 
+           let x' = if x > Constant.score_time_mult then 0. 
+             else Constant.score_time_mult -. x in 
            acc +. x') 
         0. scr.time 
     else 0. in 
   scr.mazes * (1 + int_of_float timecalc) + 
-  scr.hit * hit_bonus + 
-  health * health_bonus + scr.coins + camel.coins 
+  scr.hit * Constant.score_hit_bonus + 
+  health * Constant.score_health_bonus + scr.coins + camel.coins 
 
 let string_of_score scr camel timed = 
   let num = score scr camel timed in 
