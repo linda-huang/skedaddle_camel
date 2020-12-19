@@ -1,6 +1,7 @@
 (** [Projectile] generation and movement *)
 
-(** The type of a projectile *)
+(** The type of a projectile
+    [dir] is direction in degrees *)
 type t = {
   pos : Position.t;
   dir : int;

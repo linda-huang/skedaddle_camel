@@ -6,10 +6,7 @@ To install:
 To launch the game, run: 
     `make main` 
 You are first taken to the welcome screen. 
-Press any key to start the first round. 
-In this, you control movements to navigate the maze with `w` `a` `s` `d` 
-    Shoot projectiles with the space key to remove enemies from the maze. 
-    Quit at any time with `0`. (Note: currently sometimes enemies are generated
-    right near the beginning, so you die immediately... sorry).
+Press any key and follow the instructions on the screen to play. 
+
 Once the game ends, either via you getting hit by an enemy or you completing 
 all of the mazes, you will see your final score. Press `0` to exit when done. 

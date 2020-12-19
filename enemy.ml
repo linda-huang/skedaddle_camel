@@ -6,16 +6,21 @@ type t = {
   pos : Position.t;
 }
 
-let change_dir camel dir = 
-  {camel with dir = dir} 
+let change_dir camel dir = {camel with dir = dir} 
 
+(** [turn_around camel] is [camel] facing a new random direction
+    that is a multiple of 90 *)
 let turn_around camel = 
   Random.self_init ();
   {camel with dir = (camel.dir + (Random.int 4) * 90) mod 360}
 
+(** [move_horiz pos sign] is a new postion stepped one step left or right, 
+    corresponding to [sign] *)
 let move_horiz pos sign = 
   {pos with x = pos.x + sign * Constant.enemy_speed}
 
+(** [move_vert pos sign] is a new postion stepped one step up or down, 
+    corresponding to [sign] *)
 let move_vert pos sign = 
   {pos with y = pos.y + sign * Constant.enemy_speed}
 

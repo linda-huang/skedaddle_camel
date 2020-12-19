@@ -8,6 +8,7 @@ type round_info = {
   dimy : int;
   enemies : int;
   timelim : int;
+  portals : int
 }
 
 (** [round1] is the information for the first level *)
@@ -24,6 +25,10 @@ val totrounds : int
 
 (** [camel_speed] is the distance (in pixels) camel travels on one key press *)
 val camel_speed : int
+
+(** [camel_mud_speed] is the distance (in pixels) camel travels on 
+    one key press on muddy tiles*)
+val camel_mud_speed : int
 
 (** [camel_rot] is the number of degrees the camel rotates on one key press *)
 val camel_rot : int
@@ -44,7 +49,7 @@ val enemy_speed : int
 (** [enemy_color] is the color of enemy camels *)
 val enemy_color : Graphics.color
 
-(** [num_hearts is the number of lives*)
+(** [num_hearts is the number of lives a player camel has *)
 val num_lives : int 
 
 (** [health_delay] is the time in ms that health cannot be decremented after 
@@ -54,8 +59,51 @@ val health_delay : float
 (** [health_size] is the width of heart image  display*)
 val heart_size: int
 
-(** [tile_width] is the pixel width of a maze tile *)
-val tile_width : int
+(** [genie_width] is the pixel width of the genie *)
+val genie_width : int
+
+(** [genie_radius] is half of [genie_width] *)
+val genie_radius : int
+
+(** [genie_speed] is the distance (in pixels) that a genie
+    travels on one unit of game time *)
+val genie_speed : int 
+
+(** [genie_power] is the amount that the genie increases the 
+    camel's coin count by *)
+val genie_power : int 
+
+(** [genie_color] is the Graphics color code for a solid Genie icon *)
+val genie_color : Graphics.color
+
+(** [genie_teleport_time] is how often (in seconds) a genie teleports *)
+val genie_teleport_time : float 
+
+(** [hourglass_width] is the pixel width of the hourglass *)
+val hourglass_width : int
+
+(** [hourglass_radius] is half of [hourglass_width] *)
+val hourglass_radius : int
+
+(** [hourglass_power] is the amount that the hourglass increases the 
+    remaining time by *)
+val hourglass_add : int 
+
+(** [hourglass_add_color] is the Graphics color code for a solid 
+    hourglass icon that has the add time power *)
+val hourglass_add_color : Graphics.color
+
+(** [hourglass_pause_color] is the Graphics color code for a solid 
+    hourglass icon that has the pause power *)
+val hourglass_pause_color : Graphics.color
+
+(** [hourglass_freq] is how often the special pause hourglass appears
+    It will appear evern 1 out of [hourglass_freq] rounds *)
+val hourglass_freq : int 
+
+(** [real_tile_width] is the actual number of pixels that is the width of the 
+    tile*)
+val tile_width : int 
 
 (** [tile_radius] is half of [tile_width] *)
 val tile_radius : int
@@ -71,6 +119,10 @@ val grass_pic : Graphics.color array array
     for a sand path tile in the maze *)
 val sand_pic : Graphics.color array array
 
+(** [wall_health] is the amount of shots it takes to remove a wall 
+    (convert a wall tile to a path tile) *)
+val wall_health : int 
+
 (** [wall_color] is the Graphics color code for a solid wall tile *)
 val wall_color : Graphics.color
 
@@ -84,9 +136,27 @@ val start_color : Graphics.color
 (** [exit_color] is the Graphics color code for a solid exit tile *)
 val exit_color : Graphics.color
 
+(** [ice_color] is the Graphics color code for a solid ice tile *)
+val ice_color : Graphics.color
+
+(** [mud_color] is the Graphics color code for a solid mud tile *)
+val mud_color : Graphics.color
+
+(** [portal_color] is the Graphics color code for a solid portal tile *)
+val portal_color : Graphics.color
+
 (** [near] is how far two center points of agents must be to be 
     considered a hit *)
 val near : int
+
+(** [potion_width] is the pixel width of a potion *)
+val potion_width : int
+
+(** [potion_radius] is half of [potion_width] *)
+val potion_radius : int
+
+(** [potion_color] is the Graphics color code for a solid potion pixel icon *)
+val potion_color : Graphics.color
 
 (** [coin_width] is the pixel width of a coin *)
 val coin_width : int

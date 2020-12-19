@@ -3,7 +3,7 @@ open Constant
 
 type t = {
   pos : Position.t;
-  dir : int;  (* direction in degrees *)
+  dir : int;  
 }
 
 let init d p = {
@@ -11,10 +11,14 @@ let init d p = {
   pos = p;
 }
 
+(** [move_vert proj sign] is [proj] moved one step left or right, 
+    corresponding to [sign] *)
 let move_horiz (proj : t) (sign : int) : t = 
   {proj with pos = {proj.pos with 
                     x = proj.pos.x + sign * Constant.projectile_speed}}
 
+(** [move_vert proj sign] is [proj] stepped one step up or down, 
+    corresponding to [sign] *)
 let move_vert (proj : t) (sign : int) : t = 
   {proj with pos = {proj.pos with 
                     y = proj.pos.y + sign * Constant.projectile_speed}}

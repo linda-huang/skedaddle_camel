@@ -10,10 +10,7 @@ type t = {
     Requires: [rot] must be a multiple of 90 *)
 val change_dir : t -> int -> t 
 
-(** [turn_around camel] is [camel] turned 180 degrees *)
-val turn_around : t -> t
-
-(** [move camel] is [camel] moved one step *)
+(** [move camel] is [camel] moved one step in the direction it is facing *)
 val move : t -> t
 
 (** [init d p] is a new Enemy with direction [d] and position [p] *)

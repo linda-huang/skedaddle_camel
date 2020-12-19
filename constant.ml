@@ -8,11 +8,12 @@ type round_info = {
   dimy : int;
   enemies : int;
   timelim : int;
+  portals : int
 }
 
-let round1 = {dimx = 13; dimy = 9; enemies = 4; timelim = max_int}
-let round2 = {dimx = 15; dimy = 13; enemies = 2; timelim = 100}
-let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60}
+let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int; portals = 2}
+let round2 = {dimx =15; dimy = 13; enemies = 2; timelim = 100; portals = 4}
+let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60; portals = 8}
 
 let totrounds = 3
 
@@ -20,6 +21,8 @@ let totrounds = 3
    Camel constants 
  ***********************************************************)
 let camel_speed = 20
+let camel_mud_speed = 3
+
 let camel_rot = 90 
 let camel_width = 30
 let camel_radius = camel_width / 2
@@ -33,11 +36,40 @@ let health_delay = 1.
 let heart_size = 30
 
 (**********************************************************
+   Genie constants 
+ ***********************************************************)
+let genie_width = 10
+let genie_radius = genie_width / 2
+let genie_speed = 15
+let genie_power = 1000
+let genie_color = Graphics.rgb 253 168 255
+let genie_teleport_time = 3.5
+
+(**********************************************************
+   Hourglass constants 
+ ***********************************************************)
+let hourglass_width = 16
+let hourglass_radius = hourglass_width / 2
+let hourglass_add = 15
+let hourglass_add_color = Graphics.rgb 179 220 255 
+let hourglass_pause_color = Graphics.black
+let hourglass_freq = 4
+
+(**********************************************************
    Maze constants
  ***********************************************************)
 let tile_width = 40
+(* let draw_tile_width = tile_width + 1 *)
 let tile_radius = tile_width / 2
 let near = 15 
+let exit_color = Graphics.rgb 146 168 209
+let start_color = Graphics.rgb 146 168 209
+
+let ice_color = Graphics.rgb 0 64 255
+let mud_color = Graphics.rgb 76 36 20
+let portal_color = Graphics.rgb 221 160 221
+
+let wall_health = 5
 
 let path_color = Graphics.rgb 255 248 220
 let stone_pic = 
@@ -4849,13 +4881,19 @@ let grass_pic =
       0x73A326;
       0x7AA92C|];
   |]
-let exit_color = Graphics.rgb 146 168 209
-let start_color = Graphics.rgb 146 168 209
+
+
+(**********************************************************
+   Potion constants 
+ ***********************************************************)
+let potion_width = 10
+let potion_radius = potion_width / 2
+let potion_color = Graphics.rgb 183 41 245
 
 (**********************************************************
    Coin constants
  ***********************************************************)
-let coin_width = 15
+let coin_width = 14
 let coin_radius = coin_width / 2
 let coin_color = Graphics.rgb 171 149 7
 
