@@ -6,8 +6,7 @@ type t = {
   pos : Position.t;
 }
 
-let change_dir camel dir = 
-  {camel with dir = dir} 
+let change_dir camel dir = {camel with dir = dir} 
 
 let turn_around camel = 
   Random.self_init ();

@@ -11,7 +11,7 @@ open Timer
 
 let draw_element x y color size= 
   set_color color;
-  fill_poly [|(x,y); (x+size,y); (x+size, y- size);(x, y-size)|]
+  fill_poly [|(x-1,y+1); (x+size,y+1); (x+size, y-size);(x-1, y-size)|]
 
 let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
@@ -22,11 +22,16 @@ let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col =
       let tile = tile_type gen_maze j i in
       match tile with 
       | Path -> 
+        (* draw_element (fst !curr_pos) (snd !curr_pos) Graphics.blue
+                    Constant.draw_tile_width; *)
         let path_img = make_image wall_pic in 
-        draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
-      | Wall hp -> if hp > 0 then begin
+        draw_image path_img ((fst !curr_pos)-1) (snd !curr_pos - Constant.tile_width +1);
+      | Wall hp ->
+        (* draw_element (fst !curr_pos) (snd !curr_pos) Graphics.green
+           Constant.draw_tile_width; *)
+        if hp > 0 then begin
           let wall_img = make_image path_pic in 
-          draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+          draw_image wall_img ((fst !curr_pos)-1) (snd !curr_pos - Constant.tile_width +1);
         end 
       | _ ->
         let tile_color = match tile with 

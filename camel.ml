@@ -14,6 +14,7 @@ type t = {
   last_tile : Maze.t;
   teleport : bool;
   hourglasses : hourglass_power option; 
+  ice_goal : (int * int * int) option
 }
 
 let init x y = 
@@ -26,7 +27,8 @@ let init x y =
    shoot = true;
    last_tile = Start;
    teleport = false;
-   hourglasses = None}
+   hourglasses = None;
+   ice_goal = None}
 
 let rotate camel key =
   match key with 

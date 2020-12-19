@@ -91,8 +91,12 @@ val hourglass_add_color : Graphics.color
     that has the pause power *)
 val hourglass_pause_color : Graphics.color
 
-(** [tile_width] is the pixel width of a maze tile *)
-val tile_width : int
+(* * [draw_tile_width] is the pixel width of a maze tile for drawing
+   val draw_tile_width : int *)
+
+(** [real_tile_width] is the actual number of pixels that is the width of the 
+    tile*)
+val tile_width : int 
 
 (** [tile_radius] is half of [tile_width] *)
 val tile_radius : int

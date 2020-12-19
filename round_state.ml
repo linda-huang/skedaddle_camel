@@ -113,36 +113,90 @@ let backwards_dir = function
   | 0 -> 180
   | _ -> failwith "impossible"
 
-let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =  
-  let og_dir = camel.dir in 
-  let back_dir = backwards_dir og_dir in
-  let next_move_l = Camel.change_dir camel 180 in
-  let next_move_r = Camel.change_dir camel 0 in
-  let next_move_up = Camel.change_dir camel 90 in
-  let next_move_down = Camel.change_dir camel 270 in 
-  let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-  let valid_moves = List.filter (fun next_move -> 
-      not (hit_wall st 
-             (Camel.move next_move).pos next_move.dir Constant.camel_radius)) 
-      all_moves 
-  in 
-  Graphics.moveto (fst st.top_left_corner + 3) (snd st.top_left_corner + 60);
+let pick_direction (st : t) (camel : Camel.t) = function
+  | Valid (ccol, crow) -> 
+    let four_tiles = 
+      [(ccol-1, crow, 180); (ccol+1, crow, 0); (ccol, crow-1, 90); 
+       (ccol, crow+1, 270)] in
+    let valid_tiles = List.filter (fun (c,r,d) -> (c >= 0 && c < st.cols) 
+                                                  && (r >= 0 && r < st.rows)
+                                                  && 
+                                                  (match (Maze.tile_type st.maze c r) with
+                                                   | Wall _ -> false
+                                                   | _ -> true)) 
+        four_tiles in
+    let final_valid_tiles = if List.length valid_tiles > 1 then 
+        List.filter (fun (c,r,d) -> d <> (backwards_dir camel.dir)) valid_tiles
+      else valid_tiles in
+    List.nth final_valid_tiles (Random.int (List.length final_valid_tiles))
+  | Out_of_bounds -> failwith "impossible"
+
+
+let move_camel_ice (st : t) (camel : Camel.t) : Camel.t = 
+  let (head, _) = find_head camel.pos st.camel.dir Constant.camel_radius in 
+  let (tail, _) = find_tail camel.pos st.camel.dir Constant.camel_radius in
+  let head_tile = Position.pixel_to_tile (Position.init_pos head) 
+      st.top_left_corner in
+  let tail_tile = Position.pixel_to_tile (Position.init_pos tail) 
+      st.top_left_corner in
+  let new_camel = if camel.ice_goal = None then 
+      (* let (ncol, nrow, ndir) = pick_direction st camel head_tile in  *)
+      {camel with ice_goal = Some (pick_direction st camel head_tile)}
+    else camel in 
+  let Some (ncol, nrow, ndir) = new_camel.ice_goal in 
+  Graphics.moveto (100) (60);
   Graphics.set_color Graphics.black; 
-  Graphics.fill_rect (fst st.top_left_corner + 3) (snd st.top_left_corner + 60) 600 20;  
-  Graphics.set_color Graphics.red;
-  Graphics.draw_string (" number of valid moves: " ^ 
+  Graphics.fill_rect (100) (60) 250 20; 
+  Graphics.set_color Graphics.white;
+  Graphics.draw_string (" ice goal " ^ (string_of_int ncol) ^ " " ^ string_of_int nrow);
+  match head_tile, tail_tile with 
+  | Valid (hc, hr), Valid (tc, tr) -> 
+    Graphics.draw_string (" curr head " ^ (string_of_int hc) ^ " " ^ string_of_int hr); 
+    Graphics.draw_string (" curr tail " ^ (string_of_int tc) ^ " " ^ string_of_int tr); 
+    if hc = tc && hr = tr then 
+      begin match new_camel.ice_goal with 
+        | None -> failwith "impossible"
+        | Some (nc, nr, nd) ->
+          if hc = nc && hr = nr then {new_camel with ice_goal = None}
+          else Camel.move (Camel.change_dir new_camel nd) 
+      end
+    else Camel.move new_camel
+  (* let new_camel = Camel.change_dir camel nd in 
+     Camel.move new_camel
+     else Camel.move camel *)
+  | _ -> failwith "impossible"
+
+
+(* let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =  
+   let og_dir = camel.dir in 
+   let back_dir = backwards_dir og_dir in
+   let next_move_l = Camel.change_dir camel 180 in
+   let next_move_r = Camel.change_dir camel 0 in
+   let next_move_up = Camel.change_dir camel 90 in
+   let next_move_down = Camel.change_dir camel 270 in 
+   let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
+   let valid_moves = List.filter (fun next_move -> 
+      not (hit_wall st 
+             (Camel.move {next_move with speed = Constant.tile_width/2}).pos next_move.dir Constant.camel_radius)) 
+      all_moves 
+   in 
+   Graphics.moveto (fst st.top_left_corner + 3) (snd st.top_left_corner + 60);
+   Graphics.set_color Graphics.black; 
+   Graphics.fill_rect (fst st.top_left_corner + 3) (snd st.top_left_corner + 60) 600 20;  
+   Graphics.set_color Graphics.red;
+   Graphics.draw_string (" number of valid moves: " ^ 
                         (string_of_int (List.length valid_moves)));
-  Graphics.draw_string ("  og dir " ^ 
+   Graphics.draw_string ("  og dir " ^ 
                         (string_of_int (og_dir)));
-  let final_valid_moves = if List.length valid_moves > 1 then 
+   let final_valid_moves = if List.length valid_moves > 1 then 
       List.filter (fun (next : Camel.t) -> next.dir <> back_dir) valid_moves
     else valid_moves
-  in 
-  Graphics.draw_string ("  number of valid moves that are not last move: " ^ 
+   in 
+   Graphics.draw_string ("  number of valid moves that are not last move: " ^ 
                         (string_of_int (List.length final_valid_moves)));
-  let random_turn_camel =  List.nth final_valid_moves 
+   let random_turn_camel =  List.nth final_valid_moves 
       (Random.int (List.length final_valid_moves)) in
-  Camel.move (random_turn_camel) 
+   Camel.move (random_turn_camel)  *)
 
 let restore_speed_camel camel = 
   if camel.speed <> Constant.camel_mud_speed then camel 
@@ -174,7 +228,7 @@ let handle_hit_mud (camel : Camel.t) =
 let in_tile (st : t) (camel : Camel.t) (col, row )= 
   let (cx, cy) = Position.tile_to_pixel (st.top_left_corner) (col, row) in 
   Graphics.draw_string ("abs " ^ (string_of_int (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy))));
-  (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy)) < 20
+  (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy)) <= 20
 
 let handle_hit_portal (st : t) (camel : Camel.t) (col, row)= 
   (* let curr_tile = Position.pixel_to_tile 
@@ -219,12 +273,12 @@ let hit_power_tile (st : t) (pos : Position.t) =
   Graphics.set_color Graphics.black; 
   Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 250 20;  
   let mid_tile = Position.pixel_to_tile (pos) st.top_left_corner in
-  let (head, _) = find_head pos st.camel.dir Constant.camel_radius in 
-  let (tail, _) = find_tail pos st.camel.dir Constant.camel_radius in
-  let head_tile = Position.pixel_to_tile (Position.init_pos head) 
+  (* let (head, _) = find_head pos st.camel.dir Constant.camel_radius in 
+     let (tail, _) = find_tail pos st.camel.dir Constant.camel_radius in
+     let head_tile = Position.pixel_to_tile (Position.init_pos head) 
       st.top_left_corner in
-  let tail_tile = Position.pixel_to_tile (Position.init_pos tail) 
-      st.top_left_corner in
+     let tail_tile = Position.pixel_to_tile (Position.init_pos tail) 
+      st.top_left_corner in *)
   match mid_tile with
   | Valid (cc, rc) -> begin
       match (Maze.tile_type st.maze cc rc) with 
@@ -246,7 +300,8 @@ let hit_power_tile (st : t) (pos : Position.t) =
         Graphics.fill_rect (fst st.top_left_corner + 100) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "Mud!";  
-        handle_hit_mud st.camel
+        if st.camel.ice_goal <> None then handle_hit_ice st st.camel
+        else handle_hit_mud st.camel
       | Power_Path Portal ->
         (* | Power_Path Portal, _ -> *)
         Graphics.moveto (fst st.top_left_corner + 150) (snd st.top_left_corner + 30);
@@ -254,7 +309,9 @@ let hit_power_tile (st : t) (pos : Position.t) =
         Graphics.fill_rect (fst st.top_left_corner + 150) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "Portal!";  
-        handle_hit_portal st st.camel (cc, rc)
+        if st.camel.ice_goal <> None then handle_hit_ice st st.camel
+        else 
+          handle_hit_portal st st.camel (cc, rc)
       (* handle_hit_portal st st.camel (ch, rh) *)
       (* | _ , Power_Path Portal -> handle_hit_portal st st.camel (ct, rt) *)
       | _ -> 
@@ -263,10 +320,12 @@ let hit_power_tile (st : t) (pos : Position.t) =
         Graphics.fill_rect (fst st.top_left_corner - 50) (snd st.top_left_corner + 30) 33 20;  
         Graphics.set_color Graphics.white;
         Graphics.draw_string "None!"; 
-        {st.camel with speed = Constant.camel_speed; shoot = true; 
-                       last_tile = Maze.Path; teleport = false}
+        if st.camel.ice_goal <> None then handle_hit_ice st st.camel 
+        else
+          {st.camel with speed = Constant.camel_speed; shoot = true; 
+                         last_tile = Maze.Path; teleport = false}
     end
-  | _ -> failwith "impossible"
+  | _ -> st.camel
 
 (**********************************************************
    helpers for updating round_state
@@ -389,13 +448,22 @@ let proj_hit_wall (st : t) =
     match remproj with
     | h::t -> 
       (*if the projectile hits a wall/is out of bounds then remove it*)
-      if hit_wall st h.pos h.dir 0
+      if hit_wall st h.pos h.dir Constant.projectile_radius 
       then
-        let coord_mapping = Position.pixel_to_tile h.pos st.top_left_corner in  
+        let coord_mapping = Position.pixel_to_tile 
+            (Position.init_pos (fst (find_head h.pos h.dir 
+                                       Constant.projectile_radius))) 
+            st.top_left_corner in  
+        Graphics.moveto (100) (60);
+        Graphics.set_color Graphics.black; 
+        Graphics.fill_rect (100) (60) 300 20; 
+        Graphics.set_color Graphics.white;
+        Graphics.draw_string (" wall " ^ (string_of_bool (hit_wall st h.pos h.dir Constant.projectile_radius )));
         (* if the projectile hits a wall then make the wall lose hp or 
            turn into a path *)
         match coord_mapping with
         | Position.Valid (col, row) -> begin 
+            Graphics.draw_string (" coord " ^ (string_of_int col) ^ " " ^ string_of_int row); 
             let st' = reduce_wall_hp col row st in
             proj_hit_wall_helper t accproj st'
           end

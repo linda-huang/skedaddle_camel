@@ -18,6 +18,7 @@ type t = {
   last_tile : Maze.t;
   teleport : bool;
   hourglasses : hourglass_power option;
+  ice_goal : (int * int * int) option
 }
 
 (** [init x y] is a new camel at position ([x],[y]) *)

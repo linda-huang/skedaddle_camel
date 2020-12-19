@@ -20,8 +20,8 @@ let totrounds = 3
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 10
-let camel_mud_speed = 5
+let camel_speed = 5
+let camel_mud_speed = 3
 
 let camel_rot = 90 
 let camel_width = 30
@@ -56,6 +56,7 @@ let hourglass_pause_color = Graphics.rgb 255 255 255
    Maze constants
  ***********************************************************)
 let tile_width = 40
+(* let draw_tile_width = tile_width + 1 *)
 let tile_radius = tile_width / 2
 let near = 15 
 let exit_color = Graphics.rgb 146 168 209

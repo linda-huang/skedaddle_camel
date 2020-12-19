@@ -26,4 +26,4 @@ let pixel_to_tile (pos : t) (start_pos : int * int) =
   let x_diff = pos.x - fst start_pos in
   let y_diff = snd start_pos - pos.y in
   if x_diff < 0 || y_diff < 0 then Out_of_bounds else
-    Valid (x_diff / tile_width, y_diff / tile_width) 
+    Valid (x_diff / Constant.tile_width, y_diff / Constant.tile_width) 
