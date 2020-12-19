@@ -61,8 +61,8 @@
 <a id="L38"></a><span > </span>
 <a id="L39"></a><span > </span>
 <a id="L40"></a><span > </span>
-<a id="L41"></a><span class="visited"> </span>
-<a id="L42"></a><span > </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span class="visited"> </span>
 <a id="L43"></a><span > </span>
 <a id="L44"></a><span > </span>
 <a id="L45"></a><span > </span>
@@ -3268,8 +3268,8 @@
 <a id="L3245"></a><span > </span>
 <a id="L3246"></a><span > </span>
 <a id="L3247"></a><span > </span>
-<a id="L3248"></a><span class="visited"> </span>
-<a id="L3249"></a><span > </span>
+<a id="L3248"></a><span > </span>
+<a id="L3249"></a><span class="visited"> </span>
 <a id="L3250"></a><span > </span>
 <a id="L3251"></a><span > </span>
 <a id="L3252"></a><span > </span>
@@ -4871,16 +4871,16 @@
 <a id="L4848"></a><span > </span>
 <a id="L4849"></a><span > </span>
 <a id="L4850"></a><span > </span>
-<a id="L4851"></a><span class="visited"> </span>
+<a id="L4851"></a><span > </span>
 <a id="L4852"></a><span class="visited"> </span>
-<a id="L4853"></a><span > </span>
+<a id="L4853"></a><span class="visited"> </span>
 <a id="L4854"></a><span > </span>
 <a id="L4855"></a><span > </span>
 <a id="L4856"></a><span > </span>
 <a id="L4857"></a><span > </span>
 <a id="L4858"></a><span > </span>
-<a id="L4859"></a><span class="visited"> </span>
-<a id="L4860"></a><span > </span>
+<a id="L4859"></a><span > </span>
+<a id="L4860"></a><span class="visited"> </span>
 <a id="L4861"></a><span > </span>
 <a id="L4862"></a><span > </span>
 <a id="L4863"></a><span > </span>
@@ -5114,8 +5114,8 @@
 <a id="L5091"></a><span > </span>
 <a id="L5092"></a><span > </span>
 <a id="L5093"></a><span > </span>
-<a id="L5094"></a><span class="visited"> </span>
-<a id="L5095"></a><span > </span>
+<a id="L5094"></a><span > </span>
+<a id="L5095"></a><span class="visited"> </span>
 <a id="L5096"></a><span > </span>
 <a id="L5097"></a><span > </span>
 <a id="L5098"></a><span > </span>
@@ -8732,6 +8732,7 @@
 <a id="L8709"></a><span > </span>
 <a id="L8710"></a><span > </span>
 <a id="L8711"></a><span > </span>
+<a id="L8712"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -17447,6 +17448,7 @@
 <a href="#L8709">8709</a>
 <a href="#L8710">8710</a>
 <a href="#L8711">8711</a>
+<a href="#L8712">8712</a>
 </pre>
 <pre><code class="ocaml">open Graphics
 
@@ -17469,7 +17471,7 @@ let totrounds = 3
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 10
+let camel_speed = 20
 let camel_rot = 90 
 let camel_width = 30
 let camel_radius = camel_width / 2
@@ -17478,6 +17480,7 @@ let camel_color = Graphics.rg<span data-count="1">b</span> 255 111 97
 let enemy_speed = 1
 let enemy_color = Graphics.rg<span data-count="1">b</span> 179 27 27
 
+let num_lives = 3
 let health_delay = 1.
 let heart_size = 30
 

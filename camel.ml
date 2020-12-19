@@ -12,7 +12,7 @@ type t = {
 let init x y = 
   {pos = {x = x; y = y}; 
    dir = 0; 
-   health = 3; 
+   health = num_lives; 
    lasthealthlost = 0.; 
    coins = 0}
 

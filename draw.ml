@@ -13,64 +13,163 @@ open Img_enemy_camel
 open Img_heart
 open Img_tile
 
+(* set_font "-sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1"; *)
+(* set_font "-adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-1"; *)
+(* set_font "-adobe-helvetica-bold-r-normal--0-0-0-0-p-0-iso8859-1"; *)
+
+(* [initialize_lives]  draws [num_lives] number of hearts at (x,y) as top
+   left corner of the first heart. *)
 let initialize_lives (x, y) num_lives = 
   let counter = ref 0 in
   let full_heart = Graphics.make_image Img_heart.full_heart in
   while !counter < num_lives do 
     Graphics.draw_image full_heart 
-      (x + !counter * (Constant.heart_size + (Constant.heart_size / 4)))
+      (x + heart_size / 2 + 
+       !counter * (Constant.heart_size + (Constant.heart_size / 4)))
       (y-Constant.heart_size);
     incr counter 
   done 
 
+(* [reduce_hearts_img (x,y) loss num_lives] draws black heart for every life
+   that is lost.
+   [(x,y)] is the top left corner of the maze
+   [loss] is the number of hearts lost
+   [num_lives] is the current number of lives camel has.*)
 let reduce_hearts_img (x, y) loss num_lives = 
   let empty_heart = Graphics.make_image Img_heart.empty_heart in 
   match loss with 
   | 0 -> ();
   | _ -> 
     Graphics.draw_image empty_heart 
-      (x + (num_lives) *
-           (Constant.heart_size + (Constant.heart_size / 4)))
+      (x + heart_size / 2 + (num_lives) *
+                            (Constant.heart_size + (Constant.heart_size / 4)))
       (y-Constant.heart_size)
 
-let draw_initial_round_state st =
-  initialize_lives 
-    (fst st.top_left_corner, snd st.top_left_corner - st.rows * tile_width)
-    3;
-  let coin_img = make_image coin_symbol in 
-  draw_image coin_img (fst st.top_left_corner) 
-    (snd st.top_left_corner - (st.rows + 2) * tile_width)
+(* [add_hearts_img (x,y) num_lives] draws red heart for every life
+   that is gained.
+   [(x,y)] is the top left corner of the maze
+   [num_lives] is the current number of lives camel has.*)
+let add_heart_img (x, y) num_lives = 
+  let full_heart = Graphics.make_image Img_heart.full_heart in 
+  Graphics.draw_image full_heart 
+    (x + heart_size / 2 + (num_lives) *
+                          (Constant.heart_size + (Constant.heart_size / 4)))
+    (y-Constant.heart_size)
 
 let draw_background ()= 
   let image = Graphics.make_image Background.background in 
   Graphics.draw_image image 0 0
 
+let update_coin_value st coin_val = 
+  let x,y = st.top_left_corner in 
+  let posx, posy = (x + tile_width + heart_size/2,
+                    y - (st.rows + 1) * tile_width + heart_size / 4) in 
+  set_color 0x026144;
+  fill_rect posx posy heart_size heart_size;
+  set_color 0xffe524;
+  moveto posx posy;
+  set_font 
+    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
+  let coin_string = string_of_int coin_val in
+  let coin_str = 
+    match String.length coin_string with 
+    | 1 -> "000" ^ coin_string
+    | 2 -> "00" ^ coin_string
+    | 3 -> "0" ^ coin_string
+    | 4 -> coin_string
+    | _ -> failwith "impossible"
+  in
+  draw_string coin_str
+
+let update_time_left st time_left= 
+  let x, y = st.top_left_corner in 
+  let posx, posy = (x + tile_width * 4 - heart_size/4, 
+                    y - (st.rows + 1) * tile_width + heart_size / 4) in 
+  moveto posx posy;
+  set_color 0x026144;
+  fill_rect posx posy (tile_width * 5) heart_size;
+  set_color 0xffe524;
+  set_font 
+    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
+  if time_left >= 0 then 
+    let sec = time_left mod 60 in
+    let min = time_left / 60 in 
+    draw_string  ((string_of_int min) ^ ":" ^ (string_of_int sec))
+  else 
+    draw_string "infinity"
+
+let update_time_lapsed st time = 
+  let x, y = st.top_left_corner in 
+  let posx, posy = (x + (st.cols / 2 * tile_width) + heart_size * 2, 
+                    y + heart_size/2) in
+  let hour = time / 3600 in 
+  let hour_str = if hour > 9 then string_of_int hour 
+    else "0" ^ string_of_int hour 
+  in 
+  let min = time / 60 in 
+  let min_str = if min > 9 then string_of_int min
+    else "0" ^ string_of_int min 
+  in 
+  let sec = time mod 60 in 
+  let sec_str = if sec > 9 then string_of_int sec 
+    else "0" ^ string_of_int sec 
+  in
+  set_color 0x026144;
+  fill_rect posx posy (tile_width * 3) heart_size;
+  set_color 0xffe524;
+  moveto posx posy;
+  draw_string (hour_str ^ ":" ^ min_str ^ ":" ^ sec_str)
+
+let draw_initial_round_state st coin_val =
+  draw_background ();
+  let x, y = st.top_left_corner in 
+  let posx, posy = (x, y - (st.rows + 1) * tile_width) in
+  let coin_img = make_image coin_symbol in 
+  set_color 0x026144;
+  fill_rect (x - 1) (y + 1) 
+    (tile_width * st.cols) (tile_width + heart_size / 3);
+  fill_rect (posx - 1) (posy - heart_size /3) 
+    (tile_width * st.cols) (tile_width + heart_size/3);
+  draw_image coin_img (posx + heart_size / 2) posy;
+  update_coin_value st coin_val;
+  draw_image (make_image hourglass) 
+    (posx + tile_width * 3) (posy);
+  update_time_left st (-1);
+  initialize_lives (x, y + heart_size + 10) num_lives;
+  moveto (x + (st.cols / 2 * tile_width) - 2 * tile_width) (y + heart_size/2);
+  set_color 0xffe524;
+  draw_string "TIME ELAPSED: ";
+  update_time_lapsed st 0
+
+
+
+
 let draw_element x y color size= 
   set_color color;
-  fill_poly [|(x,y); (x+size,y); (x+size, y- size);(x, y-size)|]
+  fill_poly [|(x-1,y+1); (x+size,y+1); (x+size, y-size);(x-1, y-size)|]
 
 let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
   for i = 0 to maze_row - 1 do begin
-    curr_pos := ((fst !curr_pos), (snd start_pos) - i*Constant.tile_width);
+    curr_pos := ((fst !curr_pos), (snd start_pos) - (i)*Constant.tile_width);
     for j = 0 to maze_col - 1 do begin  
       curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
       if tile = Wall then begin
         let wall_img = make_image sand_wall in 
-        draw_image wall_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        draw_image wall_img (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       end 
       else if tile = Start then begin 
         let start_tile = make_image portal_tile in 
-        draw_image start_tile (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        draw_image start_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       end
       else if tile = Exit then begin
         let end_tile = make_image portal_tile2 in 
-        draw_image end_tile (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        draw_image end_tile (fst !curr_pos - 1) (snd !curr_pos - tile_width);
       end
       else
         let path_img = make_image sand_tile2 in 
-        draw_image path_img (fst !curr_pos) (snd !curr_pos - tile_width + 1);
+        draw_image path_img (fst !curr_pos - 1) (snd !curr_pos - tile_width);
     end
     done
   end
@@ -241,7 +340,7 @@ let draw_gameover (gs : Game_state.game_state) (over : Game_state.game_end) =
   in exit_game () 
 
 let draw_won (gs : Game_state.game_state) : unit = 
-  Graphics.clear_graph ();
+  draw_background ();
   let x, y = (fst gs.round_state.top_left_corner, 
               snd gs.round_state.top_left_corner) in
   Graphics.moveto x y;
@@ -258,14 +357,15 @@ let draw_won (gs : Game_state.game_state) : unit =
     and time remaining, if the difficulty of [gs] is set to Hard *)
 let draw_time (gs : Game_state.game_state) (timer : Timer.timer) = 
   let st = gs.round_state in 
-  let x, y = (200 + fst st.top_left_corner, (snd st.top_left_corner)+10) in
-  Graphics.moveto x y;
-  Graphics.set_text_size 300; 
-  Graphics.set_color 0xB03F37;
-  Graphics.fill_rect (x-10) (y-5) 110 20;
-  Graphics.set_color Graphics.white; 
-  Graphics.draw_string ("TIME ELAPSED: " ^ 
-                        string_of_int (timer.elapsedtime));
+  update_time_lapsed st timer.elapsedtime;
+  (* let x, y = (200 + fst st.top_left_corner, (snd st.top_left_corner)+10) in
+     Graphics.moveto x y;
+     Graphics.set_text_size 300; 
+     Graphics.set_color 0xB03F37;
+     Graphics.fill_rect (x-10) (y-5) 110 20;
+     Graphics.set_color Graphics.white; 
+     Graphics.draw_string ("TIME ELAPSED: " ^ 
+                        string_of_int (timer.elapsedtime)); *)
   match gs.game_difficulty with 
   | Easy -> ()
   | Hard -> begin 
@@ -274,33 +374,24 @@ let draw_time (gs : Game_state.game_state) (timer : Timer.timer) =
         else if gs.score.mazes = 1 then Constant.round2 
         else Constant.round3 in 
       match Timer.time_left curr_round timer with 
-      | None -> begin
-          moveto (150 + x) (y);
-          Graphics.set_text_size 300; 
-          Graphics.set_color Graphics.white;
-          Graphics.fill_poly [|((150 + x),(y - 10)); 
-                               ((150 + x),(40 + y));
-                               ((800 + x),(y - 10)); 
-                               ((800 + x),(40 + y));|];
-          Graphics.set_color Graphics.blue; 
-          Graphics.draw_string ("This round has no time limit");
-        end 
+      | None -> () 
       | Some time -> begin 
-          moveto (150 + x) (y);
-          Graphics.set_text_size 300; 
-          Graphics.set_color Graphics.white;
-          Graphics.fill_rect (150 + x) (y - 10) 650 40;
-          Graphics.set_color Graphics.red; 
-          Graphics.draw_string ("TIME LEFT: " ^ 
-                                string_of_int time);
+          update_time_left gs.round_state time;
         end 
     end
+
+let rec draw_words height (pos : Position.t) = function
+  | [] -> ()
+  | h :: t -> 
+    Graphics.moveto pos.x pos.y;
+    Graphics.draw_string h;
+    draw_words height (Position.init_pos (pos.x, pos.y-height)) t
 
 (** [draw_level_num gs] draws the number level the player is currently on *)
 let draw_level_num gs = 
   let st = gs.round_state in 
   let start_pos = (fst st.top_left_corner, snd st.top_left_corner + 10) in
-  Graphics.moveto (fst start_pos) (snd start_pos);
+  Graphics.moveto (fst start_pos) (snd start_pos + 50);
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.black;
 
@@ -311,20 +402,17 @@ let draw_level_num gs =
 let draw_game_state (gs : Game_state.game_state) (timer : Timer.timer) = 
   let st = gs.round_state in 
   match gs.current_state with 
-  | Welcome -> draw_welcome ()
+  | Welcome -> draw_welcome ();
   | InPlay -> draw_round_state gs.round_state; 
     draw_level_num gs; 
     let x = fst st.top_left_corner in 
     Graphics.moveto (x + 10) 10;
     Graphics.set_text_size 50;
     Graphics.set_color 0xB03F37;
-    Graphics.fill_rect x 0 160 30; 
-    Graphics.set_color Graphics.white;
-    Graphics.draw_string ("COINS: " ^ string_of_int 
-                            (gs.score.coins + gs.round_state.camel.coins));
+    update_coin_value st (gs.score.coins + gs.round_state.camel.coins);
     Graphics.set_color 0xFCF25D;
-    reduce_hearts_img (x, snd st.top_left_corner - st.rows * tile_width) 
-      (3 - st.camel.health) st.camel.health;
+    reduce_hearts_img (x, snd st.top_left_corner + heart_size + 10) 
+      (num_lives - st.camel.health) st.camel.health;
     draw_time gs timer
   | Transition t -> draw_transition t gs 
   | Won -> draw_won gs

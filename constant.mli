@@ -44,10 +44,14 @@ val enemy_speed : int
 (** [enemy_color] is the color of enemy camels *)
 val enemy_color : Graphics.color
 
+(** [num_hearts is the number of lives*)
+val num_lives : int 
+
 (** [health_delay] is the time in ms that health cannot be decremented after 
     camel loses one unit of health *)
 val health_delay : float 
 
+(** [health_size] is the width of heart image  display*)
 val heart_size: int
 
 (** [tile_width] is the pixel width of a maze tile *)

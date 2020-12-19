@@ -21,6 +21,10 @@ val draw_round_state : Round_state.t -> unit
 (** [draw_game_state gs] is the Graphics representation of [gs]. *)
 val draw_game_state : Game_state.game_state -> Timer.timer -> unit 
 
+(** [draw_words height pos str_lst] draws a list of strings out onto the screen
+    with each line of the array [height] apart, starting at [pos] *)
+val draw_words : int -> Position.t -> string list -> unit
+
 (** [draw_initial_round_state gs] draws components that will mainly stay the
     same. *)
-val draw_initial_round_state : Round_state.t -> unit
+val draw_initial_round_state : Round_state.t -> int -> unit

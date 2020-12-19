@@ -19,7 +19,7 @@ let totrounds = 3
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 10
+let camel_speed = 20
 let camel_rot = 90 
 let camel_width = 30
 let camel_radius = camel_width / 2
@@ -28,6 +28,7 @@ let camel_color = Graphics.rgb 255 111 97
 let enemy_speed = 1
 let enemy_color = Graphics.rgb 179 27 27
 
+let num_lives = 3
 let health_delay = 1.
 let heart_size = 30
 

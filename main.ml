@@ -9,6 +9,7 @@ open Game_state
 open Unix
 open Timer 
 
+
 let input (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
   let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) : Game_state.game_state = 
     Unix.sleepf 0.001;
@@ -76,7 +77,7 @@ let rec run (gs : Game_state.game_state) (timer : Timer.timer) =
             let levelup_gs = Game_state.new_level transition_gs in 
             let timer = Timer.init_timer () in 
             Draw.draw_game_state levelup_gs timer; 
-            draw_initial_round_state transition_gs.round_state;
+            draw_initial_round_state transition_gs.round_state 0;
             Unix.sleep 1;
             match Graphics.read_key () with 
             | _ -> let timer = Timer.init_timer () in  
@@ -113,9 +114,11 @@ let init () =
     | _ -> Game_state.new_level transition_gs
   in
   let timer = Timer.init_timer () in 
+  draw_initial_round_state levelup_gs.round_state 0;
   Draw.draw_game_state levelup_gs timer; 
-  Draw.draw_initial_round_state gs.round_state;
-  run levelup_gs timer 
+  Graphics.synchronize ();
+  run levelup_gs timer
+
 (* run gs' timer  *)
 
 let main () = 
