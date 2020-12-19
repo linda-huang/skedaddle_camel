@@ -33,8 +33,6 @@ let on_coin (st : t)  =
        (Constant.camel_radius + Constant.coin_radius)) || acc)
     false st.coins
 
-(** [on_potion st] detects if the position of [camel] in [st] 
-    is on a potion.*)
 let on_potion (st : t) = 
   Array.fold_left (fun acc (potion : Potion.potion) -> 
       (Position.dist st.camel.pos potion.pos < 
@@ -85,7 +83,7 @@ let find_head (pos : Position.t) (dir : int) (radius : int) =
   | 90 -> (tl, tr)
   | 180 -> (tl, bl)
   | 270 -> (bl, br)
-  | _ -> (tr, br)
+  | _ -> failwith "impossible"
 
 let find_tail (pos : Position.t) (dir : int) (radius : int) = 
   let (tl, tr, br, bl) = find_four_corners pos dir radius in
@@ -94,10 +92,10 @@ let find_tail (pos : Position.t) (dir : int) (radius : int) =
   | 90 -> (bl, br)
   | 180 -> (tr, br)
   | 270 -> (tl, tr)
-  | _ -> (tl, bl)
+  | _ -> failwith "impossible"
 
 let hit_wall (st : t) (pos : Position.t) (dir : int) (radius : int) = 
-  let two_corners = find_head pos dir radius in
+  let two_corners = find_head pos dir radius in                   
   hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
     (Position.init_pos (snd two_corners))
 
@@ -106,7 +104,7 @@ let backwards_dir = function
   | 180 -> 0
   | 270 -> 90
   | 0 -> 180
-  | _ -> 0
+  | _ -> failwith "impossible"
 
 let pick_direction (st : t) (camel : Camel.t) = function
   | Valid (ccol, crow) -> 
@@ -236,7 +234,6 @@ let hit_power_tile (st : t) (pos : Position.t) =
     end
   | _ -> st.camel
 
-
 (**********************************************************
    helpers for updating round_state
  ***********************************************************)
@@ -305,6 +302,10 @@ let rec random_valid_tile_enemy mz =
 (** [random_valid_tile_enemy mz] is a random valid (non-wall and
     non-portal) tile in [mz] *)
 let rec random_valid_tile_portal mz = 
+  (* let (col, row) = (2,0)in 
+     if not (Maze.tile_type mz col row = Maze.Path) then 
+     (1,1) 
+     else (col, row)  *)
   let (col, row) = random_valid_tile mz in 
   if not (Maze.tile_type mz col row = Maze.Path) then 
     random_valid_tile_portal mz 
@@ -314,8 +315,6 @@ let near_enemy (camel : Camel.t) (st : t) =
   let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
-(** [near_genie camel maze] detects if [camel]'s position is near 
-    a genie *)
 let near_genie (camel : Camel.t) (st : t) = 
   match st.genie with 
   | None -> false
@@ -327,6 +326,7 @@ let near_genie (camel : Camel.t) (st : t) =
 let shoot (camel : Camel.t) (st : t) = 
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
+
 
 (** st.maze with the (col, row) tile reduced by 1 hp 
     requires (col, row) is a valid position**)
@@ -345,19 +345,32 @@ let reduce_wall_hp col row st =
 (** returns st without projectiles that have hit walls, and with wall HP reduced
     appropriately **)
 let proj_hit_wall (st : t) = 
-  let rec proj_hit_wall_helper (remproj : Projectile.t list) 
+  let rec proj_hit_wall_helper 
+      (remproj : Projectile.t list) 
       (accproj : Projectile.t list) 
       (st : t) : t = 
     match remproj with
     | h::t -> 
+      (*if the projectile hits a wall/is out of bounds then remove it*)
       if hit_wall st h.pos h.dir Constant.projectile_radius 
       then
         let coord_mapping = Position.pixel_to_tile 
-            (Position.init_pos 
-               (fst (find_head h.pos h.dir Constant.projectile_radius))) 
-            st.top_left_corner in 
+            (Position.init_pos (fst (find_head h.pos h.dir 
+                                       Constant.projectile_radius))) 
+            st.top_left_corner in  
+        (* Graphics.moveto (100) (60);
+           Graphics.set_color Graphics.black; 
+           Graphics.fill_rect (100) (60) 300 20; 
+           Graphics.set_color Graphics.white; *)
+        (* Graphics.draw_string (" wall " ^ 
+                              (string_of_bool (hit_wall st h.pos h.dir 
+                                                 Constant.projectile_radius))); *)
+        (* if the projectile hits a wall then make the wall lose hp or 
+           turn into a path *)
         match coord_mapping with
         | Position.Valid (col, row) -> begin 
+            (* Graphics.draw_string (" coord " ^ (string_of_int col) 
+                                  ^ " " ^ string_of_int row);  *)
             let st' = reduce_wall_hp col row st in
             proj_hit_wall_helper t accproj st'
           end
@@ -367,9 +380,6 @@ let proj_hit_wall (st : t) =
   in 
   proj_hit_wall_helper st.projectiles [] st
 
-(** [move_proj st] is the state with all active projectiles moved one step 
-    (e.g. in a straight line according to their direction). If a projectile runs
-    into a wall, it stops and is removed from the game. *)
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
                        List.map Projectile.move_proj st.projectiles} in
@@ -428,9 +438,11 @@ let move_genie (st : t) (genie : Genie.genie) : Genie.genie =
     let next_move_up = Genie.change_dir genie 90 in
     let next_move_down = Genie.change_dir genie 270 in 
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-    let valid_moves = List.filter (fun (next_move : Genie.genie) -> 
-        not (hit_wall st (Genie.move next_move).pos next_move.dir 
-               Constant.genie_radius)) all_moves in 
+    let valid_moves = 
+      List.filter (fun (next_move : Genie.genie) -> 
+          not (hit_wall st (Genie.move next_move).pos next_move.dir 
+                 Constant.genie_radius)) 
+        all_moves in 
     let random_turn_genie =  
       List.nth valid_moves (Random.int (List.length valid_moves)) in 
     Genie.move random_turn_genie
@@ -450,22 +462,6 @@ let update_genie_in_maze (st : t) : t =
     keeps moving in the same direction. *)
 let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
   let future_pos = (Enemy.move enemy).pos in 
-
-  (** [update_genie_in_maze st] is [st] with the genie updated, 
-      if there is one in it *)
-  let update_genie_in_maze (st : t) : t = 
-    match st.genie with 
-    | None -> st
-    | Some genie -> begin 
-        let genie' = move_genie st genie in 
-        {st with genie = Some genie'}
-      end 
-
-(** [move_enemy enemy st] is [enemy] with updated position or direction.
-    if [enemy] will hit a wall then it turns around, otherwise it
-    keeps moving in the same direction. *)
-let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-  let future_pos = (Enemy.move enemy).pos in 
   if not (hit_wall st future_pos enemy.dir Constant.camel_radius) 
   then Enemy.move enemy
   else 
@@ -476,219 +472,202 @@ let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t =
     let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
     let valid_moves = List.filter 
         (fun next_move -> 
+           not (hit_wall st (Enemy.move next_move).pos 
+                  next_move.dir Constant.camel_radius)) all_moves 
+    in 
+    let random_turn_enemy =  
+      List.nth valid_moves (Random.int (List.length valid_moves)) in 
+    Enemy.move (random_turn_enemy) 
 
-           (** [move_enemy enemy st] is [enemy] with updated position or direction.
-               if [enemy] will hit a wall then it turns around, otherwise it
-               keeps moving in the same direction. *)
-           let move_enemy (st : t) (enemy : Enemy.t) : Enemy.t = 
-             let future_pos = (Enemy.move enemy).pos in 
-             if not (hit_wall st future_pos enemy.dir Constant.camel_radius) 
-             then Enemy.move enemy
-             else 
-               let next_move_l = Enemy.change_dir enemy 180 in
-               let next_move_r = Enemy.change_dir enemy 0 in
-               let next_move_up = Enemy.change_dir enemy 90 in
-               let next_move_down = Enemy.change_dir enemy 270 in 
-               let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
-               let valid_moves = List.filter 
-                   (fun next_move -> 
-                      not (hit_wall st (Enemy.move next_move).pos 
-                             next_move.dir Constant.camel_radius)) all_moves 
-               in 
-               let random_turn_enemy =  
-                 List.nth valid_moves (Random.int (List.length valid_moves)) in 
-               Enemy.move (random_turn_enemy) 
+(** [move_enemies st] is the round_state 
+    after updating the position of all enemy camels. 
+    If the camel has collected the hourglass that freezes enenmies, 
+    then it is the original [st] *)
+let move_enemies (st : t) : t =
+  match st.camel.hourglasses with 
+  | None | Some Add -> 
+    {st with enemies = Array.map (move_enemy st) st.enemies}
+  | Some Pause -> st 
 
-         (** [move_enemies st] is the round_state 
-             after updating the position of all enemy camels. 
-             If the camel has collected the hourglass that freezes enenmies, 
-             then it is the original [st] *)
-         let move_enemies (st : t) : t =
-           match st.camel.hourglasses with 
-           | None | Some Add -> 
-             {st with enemies = Array.map (move_enemy st) st.enemies}
-           | Some Pause -> st 
+(** [update_camel st] is the round_with the camel's health updated *)
+let update_camel (st : t) : t = 
+  let camel = st.camel in 
+  (* update if near any enemies *)
+  let camel = if (near_enemy camel st) 
+              && (Unix.gettimeofday ()) -. camel.lasthealthlost 
+                 > Constant.health_delay 
+    then {camel with health = camel.health - 1; 
+                     lasthealthlost = Unix.gettimeofday ()} 
+    else camel in 
+  (* update if near a genie *)
+  let camel, st = if near_genie camel st 
+    then {camel with coins = camel.coins + Constant.genie_power}, 
+         {st with genie = None}
+    else camel, st in 
+  (* update if on an hourglass *)
+  let camel, st = if on_hourglass camel st 
+    then {camel with hourglasses = 
+                       match st.hourglass with 
+                       | Some hg -> Some hg.power
+                       | None -> None},
+         {st with hourglass = None}
+    else camel, st in 
+  {st with camel = camel}  
 
-         (** [update_camel st] is the round_with the camel's health updated *)
-         let update_camel (st : t) : t = 
-           let camel = st.camel in 
-           (* update if near any enemies *)
-           let camel = if (near_enemy camel st) 
-                       && (Unix.gettimeofday ()) -. camel.lasthealthlost 
-                          > Constant.health_delay 
-             then {camel with health = camel.health - 1; 
-                              lasthealthlost = Unix.gettimeofday ()} 
-             else camel in 
-           (* update if near a genie *)
-           let camel, st = if near_genie camel st 
-             then {camel with coins = camel.coins + Constant.genie_power}, 
-                  {st with genie = None}
-             else camel, st in 
-           (* update if on an hourglass *)
-           let camel, st = if on_hourglass camel st 
-             then {camel with hourglasses = 
-                                match st.hourglass with 
-                                | Some hg -> Some hg.power
-                                | None -> None},
-                  {st with hourglass = None}
-             else camel, st in 
-           {st with camel = camel}  
+let remove_coin (c : Coin.t) (st : t) = 
+  let coinlst = Array.fold_left 
+      (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
+  {st with coins = Array.of_list coinlst}
 
-         let remove_coin (c : Coin.t) (st : t) = 
-           let coinlst = Array.fold_left 
-               (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
-           {st with coins = Array.of_list coinlst}
+(** [get_coin st] is [st] with the coin the camel is currently on removed 
+    and [camel]'s coin value count updated accordingly *)
+let get_coin (st : t) : t = 
+  let c = Coin.find_coin st.camel.pos st.coins in 
+  let st' = remove_coin c st in 
+  {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
-         (** [get_coin st] is [st] with the coin the camel is currently on removed 
-             and [camel]'s coin value count updated accordingly *)
-         let get_coin (st : t) : t = 
-           let c = Coin.find_coin st.camel.pos st.coins in 
-           let st' = remove_coin c st in 
-           {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
+let remove_potion (p : Potion.potion) (st : t) = 
+  let potlst = Array.fold_left 
+      (fun acc x -> if x = p then acc else x :: acc) [] st.potions in 
+  {st with potions = Array.of_list potlst}
 
-         (** [remove_potion pot st] is [st] with [pot] removed *)
-         let remove_potion (p : Potion.potion) (st : t) = 
-           let potlst = Array.fold_left 
-               (fun acc x -> if x = p then acc else x :: acc) [] st.potions in 
-           {st with potions = Array.of_list potlst}
+(** [get_potion st] is [st] with the potion the camel is currently on removed
+    and [camel]'s health updated accordingly. 
+    Health cannot exceed 3. *)
+let get_potion (st : t) : t = 
+  let potion = Potion.find_potion st.camel.pos st.potions in 
+  let st' = remove_potion potion st in 
+  let health' = if st.camel.health = 3 then 3 else st.camel.health + 1 in 
+  {st' with camel = {st'.camel with health = health'}}
 
-         (** [get_potion st] is [st] with the potion the camel is currently on removed
-             and [camel]'s health updated accordingly. 
-             Health cannot exceed 3. *)
-         let get_potion (st : t) : t = 
-           let potion = Potion.find_potion st.camel.pos st.potions in 
-           let st' = remove_potion potion st in 
-           let health' = if st.camel.health = 3 then 3 else st.camel.health + 1 in 
-           {st' with camel = {st'.camel with health = health'}}
+let update_round_state (st : t) : t = 
+  let st' = update_camel st |> move_proj 
+            |> move_enemies |> hit_enemy
+            |> update_genie_in_maze in 
+  let st'' = if on_coin st' then get_coin st' else st' in 
+  if on_potion st'' then get_potion st'' else st''
 
-         let update_round_state (st : t) : t = 
-           let st' = update_camel st |> move_proj 
-                     |> move_enemies |> hit_enemy
-                     |> update_genie_in_maze in 
-           let st'' = if on_coin st' then get_coin st' else st' in 
-           if on_potion st'' then get_potion st'' else st''
+(************************************************************
+   initialization
+ ***********************************************************)
+(** [init_portals n mz acc] is an Array of [n] portals with valid positions, 
+    followed by a list of positions where the portals are located *)
+let rec init_portals (start_pos : int * int)
+    (nportals : int) (mz : Maze.maze) (acc : (Position.t list)) 
+  : (Maze.maze * Position.t list) = 
+  let (col, row) = random_valid_tile_portal mz in 
+  mz.(row).(col) <- Power_Path Portal; 
+  let (x, y) = Position.tile_to_pixel start_pos (col, row) in
+  if nportals > 1 then begin
+    init_portals start_pos (nportals - 1) mz 
+      ((Position.init_pos (x, y)) :: acc)
+  end
+  else (mz, ((Position.init_pos (x, y)) :: acc))
 
-         (************************************************************
-            initialization
-          ***********************************************************)
-         (** [init_portals n mz acc] is an Array of [n] portals with valid positions, 
-             followed by a list of positions where the portals are located *)
-         let rec init_portals (start_pos : int * int)
-             (nportals : int) (mz : Maze.maze) (acc : (Position.t list)) 
-           : (Maze.maze * Position.t list) = 
-           let (col, row) = random_valid_tile_portal mz in 
-           mz.(row).(col) <- Power_Path Portal; 
-           let (x, y) = Position.tile_to_pixel start_pos (col, row) in
-           if nportals > 1 then begin
-             init_portals start_pos (nportals - 1) mz 
-               ((Position.init_pos (x, y)) :: acc)
-           end
-           else (mz, ((Position.init_pos (x, y)) :: acc))
+(** [tile_close_to_start (x,y)] is if the tile [(x,y)] is 
+    within 8 tiles of the start tile (0,0) *)
+let tile_close_to_start (x,y) = 
+  if x < 9 || y < 9 then false else true 
 
-         (** [tile_close_to_start (x,y)] is if the tile [(x,y)] is 
-             within 8 tiles of the start tile (0,0) *)
-         let tile_close_to_start (x,y) = 
-           if x < 9 || y < 9 then false else true 
+(** [init_enemy_lst n mz] is an Array of [n] enemy camels 
+    with valid positions in [mz] *)
+let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
+  Array.init n (fun i -> 
+      (Enemy.init (90 * Random.int 4) 
+         (random_valid_tile mz 
+          |> Position.tile_to_pixel start_pos 
+          |> Position.init_pos)))
 
-         (** [init_enemy_lst n mz] is an Array of [n] enemy camels 
-             with valid positions in [mz] *)
-         let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
-           Array.init n (fun i -> 
-               (Enemy.init (90 * Random.int 4) 
-                  (random_valid_tile mz 
-                   |> Position.tile_to_pixel start_pos 
-                   |> Position.init_pos)))
+(** [init_coin_lst n mz] is an Array of [n] coins 
+    with valid positions in [mz]. *)
+let init_coin_lst n mz start_pos=
+  Array.init n (fun i -> 
+      (Coin.init 
+         (random_valid_tile mz 
+          |> Position.tile_to_pixel start_pos 
+          |> Position.init_pos) (10 * Random.int 4 + 10)))
 
-         (** [init_coin_lst n mz] is an Array of [n] coins 
-             with valid positions in [mz]. *)
-         let init_coin_lst n mz start_pos=
-           Array.init n (fun i -> 
-               (Coin.init 
-                  (random_valid_tile mz 
-                   |> Position.tile_to_pixel start_pos 
-                   |> Position.init_pos) (10 * Random.int 4 + 10)))
+(** [init_potion_lst n mz start_pos coins] is an Array of [n] potions 
+    with valid positions in [mz] (one that is not a wall 
+    or already occupied by a coin). *)
+let init_potion_lst n mz start_pos coins =
+  Array.init n (fun i -> 
+      (Potion.init 
+         (random_valid_tile_potion mz start_pos coins
+          |> Position.tile_to_pixel start_pos 
+          |> Position.init_pos)))
 
-         (** [init_potion_lst n mz start_pos coins] is an Array of [n] potions 
-             with valid positions in [mz] (one that is not a wall 
-             or already occupied by a coin). *)
-         let init_potion_lst n mz start_pos coins =
-           Array.init n (fun i -> 
-               (Potion.init 
-                  (random_valid_tile_potion mz start_pos coins
-                   |> Position.tile_to_pixel start_pos 
-                   |> Position.init_pos)))
+(** [init_genie mz start_pos] is a genie with a valid position in [mz]. 
+    It does not generate the genie within 10 tiles of the start of [mz] *)
+let rec init_genie mz start_pos = 
+  let (tilex, tiley) = random_valid_tile mz in 
+  if tilex < 10 || tiley < 10 then init_genie mz start_pos 
+  else Some (Genie.init
+               (90 * Random.int 4) 
+               ((tilex, tiley) 
+                |> Position.tile_to_pixel start_pos 
+                |> Position.init_pos))
 
-         (** [init_genie mz start_pos] is a genie with a valid position in [mz]. 
-             It does not generate the genie within 10 tiles of the start of [mz] *)
-         let rec init_genie mz start_pos = 
-           let (tilex, tiley) = random_valid_tile mz in 
-           if tilex < 10 || tiley < 10 then init_genie mz start_pos 
-           else Some (Genie.init
-                        (90 * Random.int 4) 
-                        ((tilex, tiley) 
-                         |> Position.tile_to_pixel start_pos 
-                         |> Position.init_pos))
+(** [init_hourglass mz start_pos coins potions] is an hourglass with
+    a valid position in [mz], one that is not a tile
+    or already occupied by a coin or a potion *)
+let init_hourglass mz start_pos coins potions = 
+  Hourglass.init
+    (random_valid_tile_hourglass mz start_pos coins potions 
+     |> Position.tile_to_pixel start_pos 
+     |> Position.init_pos)    
 
-         (** [init_hourglass mz start_pos coins potions] is an hourglass with
-             a valid position in [mz], one that is not a tile
-             or already occupied by a coin or a potion *)
-         let init_hourglass mz start_pos coins potions = 
-           Hourglass.init
-             (random_valid_tile_hourglass mz start_pos coins potions 
-              |> Position.tile_to_pixel start_pos 
-              |> Position.init_pos)    
+let init cols rows numenemy difficulty portals = 
+  let mz = Maze.populate cols rows (0,0) in 
+  let maze_row = rows in
+  let maze_col = cols in
+  let window_height = maze_row * Constant.tile_width + 200 in 
+  let window_width = maze_col * Constant.tile_width + 200 in
+  let start_y = 
+    window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
+  let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
+  let start_pos = (start_x, start_y) in
+  let camel = Camel.init ((fst start_pos) + camel_radius) 
+      ((snd start_pos) - camel_radius) in
+  let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
+  let numpotions = if numenemy = 0 then 0 else 2 in 
+  let genie = if numenemy = 10 then init_genie mz start_pos 
+    else None in 
+  let coinarr = init_coin_lst 20 mz start_pos in 
+  let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
+  let hourglass = if difficulty = 1 then None else 
+    if numenemy <> 0 then Some (init_hourglass mz start_pos coinarr potionarr)
+    else None in 
+  Graphics.resize_window window_width window_height;
+  {camel = camel; 
+   maze = mz_w_portals;
+   cols = cols;
+   rows = rows;
+   enemies = init_enemy_lst numenemy mz start_pos;
+   coins = coinarr;
+   potions = potionarr;
+   projectiles = [];
+   genie = genie;
+   hourglass = hourglass;
+   top_left_corner = start_pos;
+   portals = portal_lst}
 
-         let init cols rows numenemy difficulty portals = 
-           let mz = Maze.populate cols rows (0,0) in 
-           let maze_row = rows in
-           let maze_col = cols in
-           let window_height = maze_row * Constant.tile_width + 200 in 
-           let window_width = maze_col * Constant.tile_width + 200 in
-           let start_y = 
-             window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
-           let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
-           let start_pos = (start_x, start_y) in
-           let camel = Camel.init ((fst start_pos) + camel_radius) 
-               ((snd start_pos) - camel_radius) in
-           let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
-           let numpotions = if numenemy = 0 then 0 else 2 in 
-           let genie = if numenemy = 10 then init_genie mz start_pos 
-             else None in 
-           let coinarr = init_coin_lst 20 mz start_pos in 
-           let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
-           let hourglass = if difficulty = 1 then None else 
-             if numenemy <> 0 then Some (init_hourglass mz start_pos coinarr potionarr)
-             else None in 
-           Graphics.resize_window window_width window_height;
-           {camel = camel; 
-            maze = mz_w_portals;
-            cols = cols;
-            rows = rows;
-            enemies = init_enemy_lst numenemy mz start_pos;
-            coins = coinarr;
-            potions = potionarr;
-            projectiles = [];
-            genie = genie;
-            hourglass = hourglass;
-            top_left_corner = start_pos;
-            portals = portal_lst}
+(**********************************************************
+   pretty printing things
+ ***********************************************************)
+(** [pp_array arr f] is a nicely formatted string of [arr] with 
+    each elementn formatted according to [f]. * *)
+let pp_array arr f = 
+  Array.fold_left (fun acc x -> f x ^ ", " ^ acc) "" arr 
 
-         (**********************************************************
-            pretty printing things
-          ***********************************************************)
-         (** [pp_array arr f] is a nicely formatted string of [arr] with 
-             each elementn formatted according to [f]. * *)
-         let pp_array arr f = 
-           Array.fold_left (fun acc x -> f x ^ ", " ^ acc) "" arr 
+(** [pp_lst lst f] is a nicely formatted string of [lst] with 
+    each elementn formatted according to [f]. *)
+let pp_lst lst f = 
+  List.fold_left (fun acc x -> f x ^ ", " ^ acc) "" lst 
 
-         (** [pp_lst lst f] is a nicely formatted string of [lst] with 
-             each elementn formatted according to [f]. *)
-         let pp_lst lst f = 
-           List.fold_left (fun acc x -> f x ^ ", " ^ acc) "" lst 
-
-         let string_of_round_state st = 
-           "Camel: " ^ Camel.string_of_camel st.camel ^ 
-           "\n" ^ "Enemies: " ^ pp_array st.enemies Enemy.string_of_enemy ^ 
-           "\n" ^  "Coins: " ^ pp_array st.coins Coin.string_of_coin ^ 
-           "\n" ^ "Potions: " ^ pp_array st.potions Potion.string_of_potion ^ 
-           "\n" ^  "Projectiles: " ^ pp_lst st.projectiles Projectile.string_of_proj
+let string_of_round_state st = 
+  "Camel: " ^ Camel.string_of_camel st.camel ^ 
+  "\n" ^ "Enemies: " ^ pp_array st.enemies Enemy.string_of_enemy ^ 
+  "\n" ^  "Coins: " ^ pp_array st.coins Coin.string_of_coin ^ 
+  "\n" ^ "Potions: " ^ pp_array st.potions Potion.string_of_potion ^ 
+  "\n" ^  "Projectiles: " ^ pp_lst st.projectiles Projectile.string_of_proj

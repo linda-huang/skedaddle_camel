@@ -119,16 +119,13 @@ let update_time_lapsed st time =
                     y + heart_size/2) in
   let hour = time / 3600 in 
   let hour_str = if hour > 9 then string_of_int hour 
-    else "0" ^ string_of_int hour 
-  in 
+    else "0" ^ string_of_int hour in 
   let min = time / 60 in 
   let min_str = if min > 9 then string_of_int min
-    else "0" ^ string_of_int min 
-  in 
+    else "0" ^ string_of_int min in 
   let sec = time mod 60 in 
   let sec_str = if sec > 9 then string_of_int sec 
-    else "0" ^ string_of_int sec 
-  in
+    else "0" ^ string_of_int sec in
   set_color 0x026144;
   fill_rect posx posy (tile_width * 3) heart_size;
   set_color 0xffe524;

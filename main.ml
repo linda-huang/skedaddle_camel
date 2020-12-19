@@ -9,66 +9,55 @@ open Game_state
 open Unix
 open Timer 
 
-(** [respond_keypress kp gs camel] is [camel] in [gs] 
-    responded to [kp] appropriately *)
-let respond_keypress kp gs camel = 
-  match kp with 
-  | '0' -> exit 0  
-  | 'i' -> {gs with current_state = 
-                      Instructions (Unix.gettimeofday ())}
-  | 'w' -> {gs with round_state = 
-                      {st with camel = (Camel.move_vert camel 1 'w')}}
-  | 'a' -> {gs with round_state = 
-                      {st with camel = 
-                                 (Camel.move_horiz camel ~-1 'a')}}
-  | 's' -> {gs with round_state = 
-                      {st with camel = 
-                                 (Camel.move_vert camel ~-1 's')}}
-  | 'd' -> {gs with round_state = 
-                      {st with camel = (Camel.move_horiz camel 1 'd')}}
-  | 'e' -> {gs with round_state = 
-                      {st with camel = (Camel.turn_right camel)}}
-  | 'q' -> {gs with round_state = 
-                      {st with camel = (Camel.turn_left camel)}}
-  | ' ' -> {gs with round_state = 
-                      shoot camel st}
-  | _ -> {gs with round_state = {st with camel = camel}} 
-
-(** [wait_kp gs timer] updates [gs] and [timer] automatically until 
-         a key is pressed by the user *)
-let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) = 
-  Unix.sleepf 0.001;
-  if not (Graphics.key_pressed ()) then  
-    let timer = Timer.update_timer timer in 
-    let gs' = Game_state.update_game_state gs timer in 
-    Draw.draw_game_state gs' timer;
-    wait_kp gs' timer
-  else gs
-
-(** [transition_from_instruction kp gs timer] returns to 
-    level play upon 'x' input *)
-let transition_from_instruction kp gs timer = 
-  match kp with 
-  | '0' -> exit 0  
-  | 'x' -> let pause_dur = Unix.gettimeofday () -. i in 
-    {gs with current_state = InPlay},
-    {timer with totalpaused = timer.totalpaused +. pause_dur}
-  | _ -> gs, timer
-
 (** [input gs timer] updates [gs] in response to user key presses *)
 let rec input (gs : Game_state.game_state) (timer : Timer.timer) 
   : (Game_state.game_state * Timer.timer) = 
   match gs.current_state with 
-  | Instructions i -> 
-    transition_from_instruction (Graphics.read_key ()) gs timer 
+  | Instructions i -> begin 
+      (* return to level play upon 'x' input *)
+      match Graphics.read_key () with 
+      | '0' -> exit 0  
+      | 'x' -> let pause_dur = Unix.gettimeofday () -. i in 
+        {gs with current_state = InPlay},
+        {timer with totalpaused = timer.totalpaused +. pause_dur}
+      | _ -> gs, timer
+    end 
   | _ -> begin 
+      let rec wait_kp (gs : Game_state.game_state) (timer : Timer.timer) = 
+        Unix.sleepf 0.001;
+        if not (Graphics.key_pressed ()) then  
+          let timer = Timer.update_timer timer in 
+          let gs' = Game_state.update_game_state gs timer in 
+          Draw.draw_game_state gs' timer;
+          wait_kp gs' timer
+        else gs
+      in 
       let gs = wait_kp gs timer in  
       let timer = Timer.update_timer timer in
       let camel = gs.round_state.camel in 
       let st = gs.round_state in 
       let gs' = 
-        if camel.last_tile <> Maze.Power_Path Ice 
-        then respond_keypress (Graphics.read_key ()) camel gs  
+        if camel.last_tile <> Maze.Power_Path Ice then begin
+          match Graphics.read_key () with 
+          | '0' -> exit 0  
+          | 'i' -> {gs with current_state = Instructions (Unix.gettimeofday ())}
+          | 'w' -> {gs with round_state = 
+                              {st with camel = (Camel.move_vert camel 1 'w')}}
+          | 'a' -> {gs with round_state = 
+                              {st with camel = (Camel.move_horiz camel ~-1 'a')}}
+          | 's' -> {gs with round_state = 
+                              {st with camel = (Camel.move_vert camel ~-1 's')}}
+          | 'd' -> {gs with round_state = 
+                              {st with camel = (Camel.move_horiz camel 1 'd')}}
+          | 'e' -> {gs with round_state = 
+                              {st with camel = (Camel.turn_right camel)}}
+          | 'q' -> {gs with round_state = 
+                              {st with camel = (Camel.turn_left camel)}}
+          | ' ' -> {gs with round_state = 
+                              shoot camel st}
+          | _ -> {gs with round_state = 
+                            {st with camel = camel}} 
+        end
         else {gs with round_state = 
                         {st with camel = Round_state.move_camel_ice st camel}}
       in
@@ -80,8 +69,8 @@ let rec input (gs : Game_state.game_state) (timer : Timer.timer)
               st'.camel.dir Constant.camel_radius
             then st 
             else 
-              let updated_camel = 
-                Round_state.hit_power_tile st' st'.camel.pos in 
+              let updated_camel = Round_state.hit_power_tile st' st'.camel.pos 
+              in 
               {st' with camel = updated_camel}
           in 
           let finst = st'' |> update_round_state in 
@@ -96,32 +85,6 @@ let rec flush_keypress () =
   then (ignore (read_key ()); flush_keypress ();)
   else () 
 
-(** [go_to_nextlvl] waits until user presses [x] to go to next level *)
-let rec go_to_nextlvl () = 
-  match Graphics.read_key () with 
-  | 'x' -> begin 
-      let levelup_gs = Game_state.new_level transition_gs in 
-      let timer = Timer.init_timer () in 
-      Draw.draw_game_state levelup_gs timer; 
-      draw_initial_round_state transition_gs.round_state 0;
-      match Graphics.read_key () with 
-      | _ -> let timer = Timer.init_timer () in  
-        run levelup_gs timer
-    end 
-  | _ -> go_to_nextlvl () in 
-
-(** [extract_wall_type maze col row] is the string representation of 
-    the tile at column [col] and row [row] in [maze] *)
-let extract_wall_type maze col row = 
-  match Maze.tile_type maze col row with
-  | Wall _ -> "wall"
-  | Path -> "path"
-  | Exit -> "exit"
-  | Start -> "start" 
-  | Power_Path Ice -> "ice path"
-  | Power_Path Mud -> "mud path"
-  | Power_Path Portal -> "portal path"
-
 (** [run gs timer] runs the game across levels *)
 let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) = 
   let newgs, timer = input gs oldtimer in 
@@ -131,12 +94,37 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
   match coord_mapping with 
   | Position.Out_of_bounds -> Graphics.draw_string "out of bounds";
   | Valid (col, row) -> 
+    let extract_wall_type maze col row = 
+      match Maze.tile_type maze col row with
+      | Wall _ -> "wall"
+      | Path -> "path"
+      | Exit -> "exit"
+      | Start -> "start" 
+      | Power_Path Ice -> "ice path"
+      | Power_Path Mud -> "mud path"
+      | Power_Path Portal -> "portal path"
+    in
     Graphics.set_color Graphics.black;
     if extract_wall_type gs.round_state.maze col row = "exit" 
     then begin 
       flush_keypress (); 
+      (* draw transition *)
       let transition_gs = Game_state.new_level gs in 
       Draw.draw_game_state transition_gs timer; 
+      (* wait until use presses [x] to go to next level *)
+      let rec go_to_nextlvl () = 
+        match Graphics.read_key () with 
+        | 'x' -> begin 
+            let levelup_gs = Game_state.new_level transition_gs in 
+            let timer = Timer.init_timer () in 
+            draw_initial_round_state levelup_gs.round_state 0;
+            Draw.draw_game_state levelup_gs timer; 
+            (* Unix.sleep 1; *)
+            match Graphics.read_key () with 
+            | _ -> let timer = Timer.init_timer () in  
+              run levelup_gs timer
+          end 
+        | _ -> go_to_nextlvl () in 
       go_to_nextlvl ()
     end 
     else run newgs timer 
@@ -158,6 +146,7 @@ let init () =
   let gs = 
     match Graphics.read_key () with 
     | '0' -> exit 0  
+    | '1' -> gs
     | '2' -> Game_state.update_difficulty gs Hard 
     | _ -> gs
   in
@@ -167,15 +156,15 @@ let init () =
   (* move to first level upon keypress *)
   let levelup_gs = 
     match Graphics.read_key () with 
-    | _ -> Game_state.new_level transition_gs in
+    | _ -> Game_state.new_level transition_gs
+  in
   let timer = Timer.init_timer () in 
   draw_initial_round_state levelup_gs.round_state 0;
   Draw.draw_game_state levelup_gs timer; 
-  Graphics.synchronize ();
-  run levelup_gs timer
+  run levelup_gs timer 
 
 let main () = 
-  Graphics.open_graph " 1600x800";
+  Graphics.open_graph " ";
   Graphics.auto_synchronize false;
   init ()
 

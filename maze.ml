@@ -76,7 +76,7 @@ let gen_new_tile_type counter prev =
     else Power_Path (rand_power_tile ()) 
   else prev 
 
-let gen_new_tile_len counter = 
+let gen_new_tile_len counter new_t = 
   if counter <= 0 then if new_t = Path then 0 
     else rand_power_len ()
   else counter
@@ -90,7 +90,7 @@ let rec dfs maze row col prev counter =
   shuffle direction;
   for i = 0 to Array.length direction - 1 do begin  
     let new_t = gen_new_tile_type counter prev in 
-    let new_tile_len = gen_new_tile_len counter in 
+    let new_tile_len = gen_new_tile_len counter new_t in 
     let new_row, new_col = direction.(i) in
     if in_limit maze new_row new_col && not (visited maze new_row new_col) 
     then begin
