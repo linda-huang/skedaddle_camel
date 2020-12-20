@@ -84,6 +84,9 @@ let update_coin_value st coin_val =
   fill_rect posx posy heart_size heart_size;
   set_color 0xffe524;
   moveto posx posy;
+  (* set_font 
+     "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1"; *)
+  (* set_font "lucidasans-bold-14"; *)
   let coin_string = string_of_int coin_val in
   let coin_str = 
     match String.length coin_string with 
@@ -289,6 +292,8 @@ let draw_prewelcome () =
   Graphics.set_window_title "Skedaddle Camel";
   draw_background ();
   Graphics.set_text_size 300;
+  (* set_font "lucidasans-bold-14"; *)
+
   let title = make_image title_pic_transp in 
   draw_image title 35 50;
   Graphics.moveto 350 100;
@@ -337,8 +342,7 @@ let draw_finscore (gs : Game_state.game_state) =
   Graphics.synchronize ()
 
 let helper_draw_transition_welcome x y t = 
-  (* Graphics.set_font 
-     "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1"; *)
+  (* set_font "lucidasans-bold-14"; *)
   Graphics.moveto x y;
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.blue;
