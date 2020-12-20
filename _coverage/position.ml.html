@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="coverage.css" />
+    <script src="highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="index.html">
+          <span class="dirname"></span>position.ml
+        </a>
+      </h1>
+      <h2>86.67%</h2>
+    </div>
+    <div id="navbar">
+      <span class="some-visited" style="bottom:25.00%"></span>
+      <span class="some-visited" style="bottom:3.12%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span class="visited"> </span>
+<a id="L13"></a><span class="visited"> </span>
+<a id="L14"></a><span class="visited"> </span>
+<a id="L15"></a><span class="visited"> </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span class="visited"> </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span class="some-visited"> </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="some-visited"> </span>
+<a id="L32"></a><span class="visited"> </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1"> 1</a>
+<a href="#L2"> 2</a>
+<a href="#L3"> 3</a>
+<a href="#L4"> 4</a>
+<a href="#L5"> 5</a>
+<a href="#L6"> 6</a>
+<a href="#L7"> 7</a>
+<a href="#L8"> 8</a>
+<a href="#L9"> 9</a>
+<a href="#L10">10</a>
+<a href="#L11">11</a>
+<a href="#L12">12</a>
+<a href="#L13">13</a>
+<a href="#L14">14</a>
+<a href="#L15">15</a>
+<a href="#L16">16</a>
+<a href="#L17">17</a>
+<a href="#L18">18</a>
+<a href="#L19">19</a>
+<a href="#L20">20</a>
+<a href="#L21">21</a>
+<a href="#L22">22</a>
+<a href="#L23">23</a>
+<a href="#L24">24</a>
+<a href="#L25">25</a>
+<a href="#L26">26</a>
+<a href="#L27">27</a>
+<a href="#L28">28</a>
+<a href="#L29">29</a>
+<a href="#L30">30</a>
+<a href="#L31">31</a>
+<a href="#L32">32</a>
+</pre>
+<pre><code class="ocaml">open Constant 
+
+type t = {
+  x : int; 
+  y : int}
+
+type v = 
+  | Valid of int * int 
+  | Out_of_bounds
+
+let dist p1 p2 = 
+  <span data-count="24">l</span>et sqr n = <span data-count="48">n</span> * n in 
+  int_of_float ((float_of_in<span data-count="24">t</span> (sq<span data-count="24">r</span> (p1.x - p2.x)) +. 
+                 float_of_in<span data-count="24">t</span> (sq<span data-count="24">r</span> (p1.y - p2.y))
+                 |&gt; sqr<span data-count="24">t</span> ))
+
+let init_pos tuple = 
+  <span data-count="94">{</span>x = fs<span data-count="94">t</span> tuple; y = sn<span data-count="94">d</span> tuple}
+
+let string_of_pos p = 
+  <span data-count="76">"</span>("  ^ string_of_in<span data-count="76">t</span> p.x ^ ", " ^ string_of_in<span data-count="76">t</span> p.y ^ ")"
+
+let tile_to_pixel start_pos (col, row)  = 
+  <span data-count="3">i</span>f col &lt; <span data-count="0">0</span> || row &lt; <span data-count="0">0</span> then <span data-count="0">r</span>aise (Invalid_argument "negative") else 
+    <span data-count="3">l</span>et f p = <span data-count="6">C</span>onstant.tile_width * p + Constant.tile_radius in 
+    (fs<span data-count="3">t</span> start_pos + <span data-count="3">f</span> col, sn<span data-count="3">d</span> start_pos - <span data-count="3">f</span> row)
+
+let pixel_to_tile (pos : t) (start_pos : int * int) =
+  <span data-count="4">l</span>et x_diff = pos.x - fs<span data-count="4">t</span> start_pos in
+  let y_diff = sn<span data-count="4">d</span> start_pos - pos.y in
+  if x_diff &lt; <span data-count="1">0</span> || y_diff &lt; <span data-count="0">0</span> then <span data-count="1">O</span>ut_of_bounds else
+    <span data-count="3">V</span>alid (x_diff / Constant.tile_width, y_diff / Constant.tile_width) 
+</code></pre>
+      </div>
+    </div>
+    <script src="coverage.js"></script>
+  </body>
+</html>

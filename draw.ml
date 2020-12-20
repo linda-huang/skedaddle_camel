@@ -26,16 +26,24 @@ let rec draw_words height (pos : Position.t) = function
 
 (** [initialize_lives]  draws [num_lives] number of hearts at (x,y) as top
     left corner of the first heart. *)
-let initialize_lives (x, y) num_lives = 
+let initialize_lives (x, y) health = 
   let counter = ref 0 in
   let full_heart = Graphics.make_image Img_heart.full_heart in
-  while !counter < num_lives do 
+  let empty_heart = Graphics.make_image Img_heart.empty_heart in 
+  while !counter < health do 
     Graphics.draw_image full_heart 
       (x + heart_size / 2 + 
        !counter * (Constant.heart_size + (Constant.heart_size / 4)))
       (y - Constant.heart_size);
     incr counter 
-  done 
+  done;
+  while !counter < Constant.num_lives do
+    Graphics.draw_image empty_heart
+      (x + heart_size / 2 + 
+       !counter * (Constant.heart_size + (Constant.heart_size / 4))) 
+      (y - Constant.heart_size);
+    incr counter;
+  done
 
 (** [reduce_hearts_img (x,y) loss num_lives] draws black heart for every life
     that is lost.
@@ -147,7 +155,7 @@ let draw_initial_round_state st coin_val =
   draw_image (make_image hourglass) 
     (posx + tile_width * 3) (posy);
   update_time_left st (-1);
-  initialize_lives (x, y + heart_size + 10) num_lives;
+  initialize_lives (x, y + heart_size + 10) st.camel.health;
   moveto (x + (st.cols / 2 * tile_width) - 2 * tile_width) (y + heart_size / 2);
   set_color 0xffe524;
   draw_string "TIME ELAPSED: ";
