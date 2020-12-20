@@ -61,7 +61,7 @@ val enemy_speed : int
 (** [enemy_color] is the color of enemy camels *)
 val enemy_color : Graphics.color
 
-(** [num_hearts is the number of lives a player camel has *)
+(** [num_hearts] is the number of lives a player camel has *)
 val num_lives : int 
 
 (** [health_delay] is the time in ms that health cannot be decremented after 
