@@ -563,7 +563,7 @@ let tile_close_to_start (x,y) =
 let init_enemy_lst (n : int) (mz : Maze.maze) (start_pos): Enemy.t array = 
   Array.init n (fun i -> 
       (Enemy.init (90 * Random.int 4) 
-         (random_valid_tile mz 
+         (random_valid_tile_enemy mz 
           |> Position.tile_to_pixel start_pos 
           |> Position.init_pos)))
 
