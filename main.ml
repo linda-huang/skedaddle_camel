@@ -114,11 +114,12 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
     then transition_level gs timer 
     else run newgs timer 
 
+(** [transition_level gs timer] goes to the next transition screen and then 
+    waits until user presses [x] to go to next level after [gs] *)
 and transition_level gs timer = 
   flush_keypress ();
   let transition_gs = Game_state.new_level gs in 
   Draw.draw_game_state transition_gs timer; 
-  (* wait until user presses [x] to go to next level *)
   let rec go_to_nextlvl () = 
     match Graphics.read_key () with 
     | 'x' -> begin 
@@ -132,6 +133,13 @@ and transition_level gs timer =
     | _ -> go_to_nextlvl () in 
   go_to_nextlvl ()
 
+(** [firstlevelup transition_gs] is the next level only 
+    after the user inputs 'x' *)
+let rec firstlevelup transition_gs = 
+  match Graphics.read_key () with 
+  | 'x' -> Game_state.new_level transition_gs
+  | _ -> firstlevelup transition_gs 
+
 (** [init ()] runs the main game past the intro page *)
 let init prewelcome_gs = 
   let timer = Timer.init_timer () in 
@@ -144,13 +152,10 @@ let init prewelcome_gs =
     | '2' -> Game_state.update_difficulty gs Hard 
     | _ -> gs
   in
-  (* let timer = Timer.init_timer () in  *)
   let transition_gs = Game_state.new_level gs in 
   Draw.draw_game_state transition_gs timer; 
   (* move to first level upon keypress *)
-  let levelup_gs = match Graphics.read_key () with 
-    | _ -> Game_state.new_level transition_gs
-  in
+  let levelup_gs = firstlevelup transition_gs in
   let timer = Timer.init_timer () in 
   draw_initial_round_state levelup_gs.round_state 0;
   Draw.draw_game_state levelup_gs timer; 

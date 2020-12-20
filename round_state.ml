@@ -321,7 +321,7 @@ let rec random_valid_tile_hourglass mz start_pos coins potions =
       (Position.dist hourglasspos potion.pos < 
        (Constant.hourglass_radius + Constant.potion_radius)) || acc)
       false potions in 
-  if coin_occupied || potion_occupied 
+  if coin_occupied || potion_occupied || (c < 2 && r < 2)  
   then random_valid_tile_hourglass mz start_pos coins potions 
   else c, r
 

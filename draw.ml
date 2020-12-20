@@ -362,7 +362,7 @@ let helper_num_enemies x y = function
   | 0 -> Graphics.draw_string "This level has 0 enemies"
   | 1 -> Graphics.draw_string "This level has 2 enemies";
     let y = y - 15 in Graphics.moveto x (y - 15);
-    Graphics.draw_string "There are two potions you can collect to gain more health";
+    Graphics.draw_string "There are two hearts you can collect to gain more health";
   | 2 -> Graphics.draw_string "This level has 8 enemies";
     draw_words 30 (Position.init_pos (x, (y - 15))) genie_txt
   | _ -> ()

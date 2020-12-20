@@ -568,8 +568,8 @@ let projectile_move_test
     (exp_projectile_dir : int) : test = 
   name >:: (fun _ -> 
       let newprojectile = Projectile.move_proj 
-          (Projectile.init projectile_dir (Position.init_pos projectile_pos)) in 
-      assert_equal (Position.init_pos exp_projectile_pos) 
+          (Projectile.init projectile_dir (Position.init_pos projectile_pos)) 
+      in assert_equal (Position.init_pos exp_projectile_pos) 
         newprojectile.pos ~printer:string_of_pos;
       assert_equal exp_projectile_dir
         newprojectile.dir ~printer:string_of_int)

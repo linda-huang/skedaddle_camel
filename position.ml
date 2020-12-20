@@ -2,7 +2,8 @@ open Constant
 
 type t = {
   x : int; 
-  y : int}
+  y : int
+}
 
 type v = 
   | Valid of int * int 

@@ -25,7 +25,7 @@ let instructions_txt =
    "Mud tiles will slow you down as you walk through them.";
    "Ice tiles are slippery!";
    "You'll speed up as you walk through them.";
-   "Collect potions to regain health";
+   "Collect hearts to regain health";
    "Collect coins to earn points";
    "Some levels contain a genie.";
    "Catch it if you can to earn extra points."]
@@ -37,6 +37,6 @@ let hourglass_txt =
    "If it is this rare special hourglass, it will be a little magic wand"]
 
 let genie_txt =  
-  ["There are two potions you can collect to gain more health";
+  ["There are two hearts you can collect to gain more health";
    "There is a speedy genie in this maze! Catch it for extra points.";
    "The genie teleports sometimes :)"]

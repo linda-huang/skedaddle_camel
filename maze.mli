@@ -18,8 +18,7 @@ type maze = t array array
     columns and [rows] rows. [(x, y)] is the index of the starting position.
     Requires:
     [m] >= 1
-    [n] >= 1
-*)
+    [n] >= 1 *)
 val populate : int -> int -> (int * int) -> maze
 
 (** [tile_type maze x y] is the type of tile in [maze] at 

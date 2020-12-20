@@ -3,7 +3,7 @@ To install:
 `opam install Graphics`
 `make build` 
 Since the files containing the images are so large, this may take a 
-while to load. Please wait at least 3 minutes on the first run of `make build`. 
+while to load. Please allow at least 5 minutes on the first run of `make build` 
 On subsequent runs, the cache will make it run much faster. 
 
 To launch the game, run: 
