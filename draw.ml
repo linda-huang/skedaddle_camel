@@ -22,7 +22,7 @@ let rec draw_words height (pos : Position.t) = function
   | h :: t -> 
     Graphics.moveto pos.x pos.y;
     Graphics.draw_string h;
-    draw_words height (Position.init_pos (pos.x, pos.y-height)) t
+    draw_words height (Position.init_pos (pos.x, pos.y - height)) t
 
 (** [initialize_lives]  draws [num_lives] number of hearts at (x,y) as top
     left corner of the first heart. *)
@@ -33,7 +33,7 @@ let initialize_lives (x, y) num_lives =
     Graphics.draw_image full_heart 
       (x + heart_size / 2 + 
        !counter * (Constant.heart_size + (Constant.heart_size / 4)))
-      (y-Constant.heart_size);
+      (y - Constant.heart_size);
     incr counter 
   done 
 
@@ -64,9 +64,9 @@ let add_heart_img (x, y) num_lives =
     hearts drawn appropriately *)
 let update_hearts (x, y) prev_h curr_health = 
   if curr_health < prev_h then 
-    reduce_hearts_img (x,y) curr_health
+    reduce_hearts_img (x, y) curr_health
   else if curr_health > prev_h then 
-    add_heart_img (x,y) curr_health
+    add_heart_img (x, y) curr_health
   else ();
   prev_health := curr_health
 
@@ -78,7 +78,7 @@ let draw_background ()=
 (** [update_coin_value st coin_val] draws the coin value appropriately *)
 let update_coin_value st coin_val = 
   let x,y = st.top_left_corner in 
-  let posx, posy = (x + tile_width + heart_size/2,
+  let posx, posy = (x + tile_width + heart_size / 2,
                     y - (st.rows + 1) * tile_width + heart_size / 4) in 
   set_color 0x026144;
   fill_rect posx posy heart_size heart_size;
@@ -140,15 +140,15 @@ let draw_initial_round_state st coin_val =
   set_color 0x026144;
   fill_rect (x - 1) (y + 1) 
     (tile_width * st.cols) (tile_width + heart_size / 3);
-  fill_rect (posx - 1) (posy - heart_size /3) 
-    (tile_width * st.cols) (tile_width + heart_size/3);
+  fill_rect (posx - 1) (posy - heart_size / 3) 
+    (tile_width * st.cols) (tile_width + heart_size/ 3);
   draw_image coin_img (posx + heart_size / 2) posy;
   update_coin_value st coin_val;
   draw_image (make_image hourglass) 
     (posx + tile_width * 3) (posy);
   update_time_left st (-1);
   initialize_lives (x, y + heart_size + 10) num_lives;
-  moveto (x + (st.cols / 2 * tile_width) - 2 * tile_width) (y + heart_size/2);
+  moveto (x + (st.cols / 2 * tile_width) - 2 * tile_width) (y + heart_size / 2);
   set_color 0xffe524;
   draw_string "TIME ELAPSED: ";
   update_time_lapsed st 0
@@ -160,9 +160,9 @@ let draw_element x y color size=
 let draw_walls (gen_maze : Maze.maze) start_pos maze_row maze_col = 
   let curr_pos = ref start_pos in
   for i = 0 to maze_row - 1 do begin
-    curr_pos := ((fst !curr_pos), (snd start_pos) - (i)*Constant.tile_width);
+    curr_pos := ((fst !curr_pos), (snd start_pos) - i * Constant.tile_width);
     for j = 0 to maze_col - 1 do begin  
-      curr_pos := ((fst start_pos) + (j)*Constant.tile_width, snd !curr_pos);
+      curr_pos := ((fst start_pos) + j * Constant.tile_width, snd !curr_pos);
       let tile = tile_type gen_maze j i in
       match tile with 
       | Path -> let path_img = make_image sand_tile2 in 
@@ -258,11 +258,9 @@ let draw_hourglass (hourglass : Hourglass.hourglass option) =
   | Some hourglass -> begin
       let x, y = (hourglass.pos.x - 10, hourglass.pos.y - 10) in 
       match hourglass.power with 
-      | Add ->
-        let hourglass_img = make_image hourglass_small in 
+      | Add -> let hourglass_img = make_image hourglass_small in 
         draw_image hourglass_img x y
-      | Pause -> 
-        let magic_wand = make_image wand_pic in 
+      | Pause -> let magic_wand = make_image wand_pic in 
         draw_image magic_wand x y
     end
 
@@ -418,8 +416,7 @@ let draw_instructions (gs : Game_state.game_state) timer i : unit =
 
 let draw_gameover (gs : Game_state.game_state) (over : Game_state.game_end) = 
   draw_background ();
-  let msg = 
-    match over with 
+  let msg = match over with 
     | Time -> "You ran out of time!"
     | Health -> "You ran out of lives!"
   in 

@@ -377,23 +377,17 @@ let reduce_wall_hp col row st =
 (** [proj_hit_wall st] is [st] without projectiles that have hit walls, 
     and with wall HP reduced appropriately **)
 let proj_hit_wall (st : t) = 
-  let rec proj_hit_wall_helper 
-      (remproj : Projectile.t list) 
-      (accproj : Projectile.t list) 
-      (st : t) : t = 
+  let rec proj_hit_wall_helper (remproj : Projectile.t list) 
+      (accproj : Projectile.t list) (st : t) : t = 
     match remproj with
-    | h :: t -> 
-      if hit_wall st h.pos h.dir Constant.projectile_radius 
-      then begin
-        let coord_mapping = Position.pixel_to_tile 
-            (Position.init_pos (fst (find_head h.pos h.dir 
-                                       Constant.projectile_radius))) 
-            st.top_left_corner in    
+    | h :: t -> if hit_wall st h.pos h.dir Constant.projectile_radius 
+      then begin let coord_mapping = Position.pixel_to_tile 
+                     (Position.init_pos (fst (find_head h.pos h.dir 
+                                                Constant.projectile_radius))) 
+                     st.top_left_corner in    
         match coord_mapping with
-        | Position.Valid (col, row) -> begin 
-            let st' = reduce_wall_hp col row st in
-            proj_hit_wall_helper t accproj st'
-          end
+        | Position.Valid (col, row) -> proj_hit_wall_helper t accproj 
+                                         (reduce_wall_hp col row st)
         | Position.Out_of_bounds -> proj_hit_wall_helper t accproj st
       end else proj_hit_wall_helper t (h :: accproj) st
     | [] -> {st with projectiles = accproj}
