@@ -20,7 +20,7 @@ let totrounds = 3
 (**********************************************************
    Camel constants 
  ***********************************************************)
-let camel_speed = 20
+let camel_speed = 7
 let camel_mud_speed = 3
 
 let camel_rot = 90 

@@ -13,6 +13,7 @@ open Img_enemy_camel
 open Img_heart
 open Img_tile
 open Words
+open Instructions
 
 let prev_health = ref num_lives
 
@@ -273,13 +274,14 @@ let draw_hourglass_msg x y  =
   draw_background ();
   let y = y - 20  in Graphics.moveto (x - 5) y;
   Graphics.set_color Graphics.black; 
-  Graphics.draw_string "There is an hourglass you can collect!";
-  let y = y - 15 in Graphics.moveto (x - 5) y;
-  Graphics.draw_string "It will be this color if it gives you 15 more seconds to complete the level.";
-  let y = y - 15 in Graphics.moveto (x - 5) y;
-  Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
-  let y = y - 15 in Graphics.moveto (x - 5) y;
-  Graphics.draw_string "If it is this rare special hourglass, it will be white"
+  draw_words 15 (Position.init_pos (x, y)) hourglass_txt
+(* Graphics.draw_string "There is an hourglass you can collect!";
+   let y = y - 15 in Graphics.moveto (x - 5) y;
+   Graphics.draw_string "It will be this color if it gives you 15 more seconds to complete the level.";
+   let y = y - 15 in Graphics.moveto (x - 5) y;
+   Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
+   let y = y - 15 in Graphics.moveto (x - 5) y;
+   Graphics.draw_string "If it is this rare special hourglass, it will be white" *)
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
@@ -309,34 +311,18 @@ let draw_welcome () =
   Graphics.set_text_size 300;
   let x, y = 20, 650 in 
   Graphics.moveto x y;
-  Graphics.draw_string "The goal of the game is to navigate a series of mazes.";
-  let y = y - 30 in Graphics.moveto x y; 
-  Graphics.draw_string "The beginning of the maze is in the upper left corner; exit is the bottom right.";
-  let y = y - 20 in Graphics.moveto x y; 
-  Graphics.draw_string "Use WASD to move and press space to shoot projectiles.";
-  let y = y - 20 in Graphics.moveto x y; 
-  Graphics.draw_string "The projectiles will be shot in the same direction you are going.";
-  let y = y - 20 in Graphics.moveto x y; 
-  Graphics.draw_string "Avoid enemies! If you get too close, you die :( ";
-  let y = y - 20 in Graphics.moveto x y; 
-  Graphics.draw_string "There are 4 different tile types: regular, portal, mud, and ice.";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Portal tiles will teleport you to a corresponding portal tile";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Mud tiles will slow you down as you walk through them.";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Ice tiles are slippery! You'll speed up as you walk through them.";
-  let y = y - 25 in Graphics.moveto x y; 
-  Graphics.draw_string "Each level will have new elements and obstacles.";
-  let y = y - 15 in Graphics.moveto x y; 
-  Graphics.draw_string "If you need help at any time, press `i` for instructions";
-  let y = y - 35 in Graphics.moveto x y; 
-  Graphics.set_color Graphics.red; 
-  Graphics.draw_string "Choose your level of difficulty to start playing! (default: easy)";
-  let y = y - 15 in Graphics.moveto x y; 
-  Graphics.draw_string "Press `1` for easy, press `2` for hard";
+  draw_words 30 (Position.init_pos (x,y)) welcome_txt;
   Graphics.set_color Graphics.black;
   Graphics.synchronize ()
+
+let helper_stats x y difficulty scr coins = 
+  Graphics.moveto x y;
+  Graphics.draw_string ("Game difficulty: " ^ difficulty);
+  Graphics.moveto x (y - 25);
+  Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
+  Graphics.moveto x (y - 50);
+  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
+  Graphics.moveto x (y - 75)
 
 (** [draw_finscore gs] draws the score corresponding to [gs] *)
 let draw_finscore (gs : Game_state.game_state) = 
@@ -348,29 +334,18 @@ let draw_finscore (gs : Game_state.game_state) =
     | Easy -> "Easy"
     | Hard -> "Hard"
   in 
-  let x, y = (fst st.top_left_corner, 
-              snd st.top_left_corner - 25) in
-  Graphics.moveto x y;
-  Graphics.draw_string ("Game difficulty: " ^ difficulty);
-  Graphics.moveto x (y - 25);
-  Graphics.draw_string ("Enemies killed: " ^ string_of_int scr.hit);
-  Graphics.moveto x (y - 50);
-  Graphics.draw_string ("Coins collected: " ^ string_of_int coins);
-  Graphics.moveto x (y - 75);
+  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 25) in
+  helper_stats x y difficulty scr coins;
   let calculated_score = 
     match gs.game_difficulty with 
     | Easy -> Scorer.score scr st.camel false
     | Hard -> Scorer.score scr st.camel true 
   in 
   Graphics.set_color Graphics.red;
-  Graphics.draw_string ("Final score: " ^ 
-                        string_of_int calculated_score);
+  Graphics.draw_string ("Final score: " ^ string_of_int calculated_score);
   Graphics.synchronize ()
 
-let draw_transition (t : int) (gs : Game_state.game_state) : unit = 
-  draw_background ();
-  let st = gs.round_state in 
-  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
+let helper_draw_transition_welcome x y t = 
   Graphics.set_font 
     "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
   Graphics.moveto x y;
@@ -379,82 +354,63 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
   Graphics.draw_string ("Welcome to level " ^ string_of_int (t + 1));
   let y = y - 25 in Graphics.moveto x y;
   Graphics.draw_string "(Press `x` to start the next level)";
-  Graphics.set_color Graphics.black;
+  Graphics.set_color Graphics.black
+
+let helper_game_difficulty x y = function
+  | 0 -> Graphics.draw_string "There is no time limit"
+  | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";
+    draw_hourglass_msg x y
+  | 2 -> Graphics.draw_string "You have 60 seconds to escape this level!";
+    draw_hourglass_msg x y
+  | _ -> ()
+
+let helper_num_enemies x y = function
+  | 0 -> Graphics.draw_string "This level has 0 enemies"
+  | 1 -> Graphics.draw_string "This level has 2 enemies";
+    draw_words 30 (Position.init_pos (x, y)) genie_txt
+  | _ -> ()
+
+let helper_calc_score gs st = function
+  | Easy -> Scorer.score gs.score st.camel false
+  | Hard -> Scorer.score gs.score st.camel true 
+
+let draw_transition (t : int) (gs : Game_state.game_state) : unit = 
+  draw_background ();
+  let st = gs.round_state in 
+  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
+  helper_draw_transition_welcome x y t;
   let calculated_score = if t = 0 then 0 else 
-      match gs.game_difficulty with 
-      | Easy -> Scorer.score gs.score st.camel false
-      | Hard -> Scorer.score gs.score st.camel true 
+      helper_calc_score gs st gs.game_difficulty
   in 
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string ("Score so far: " ^ 
-                        string_of_int calculated_score);
-  (* Graphics.synchronize (); *)
+  let y = y - 50 in Graphics.moveto (x + 25) y;
+  Graphics.draw_string ("Score so far: " ^ string_of_int calculated_score);
   let y = y - 25 in Graphics.moveto x y;
-  let _ = match t with 
-    | 0 -> Graphics.draw_string "This level has 0 enemies";
-    | 1 -> Graphics.draw_string "This level has 2 enemies";
-      Graphics.moveto x (y - 25);
-      Graphics.draw_string 
-        "There are two potions you can collect to gain more health";
-    | 2 -> Graphics.draw_string "This level has 10 enemies";
-      Graphics.moveto x (y - 25);
-      Graphics.draw_string 
-        "There are two potions you can collect to gain more health";
-      Graphics.moveto x (y - 50);
-      Graphics.draw_string 
-        "There is a speedy genie in this maze! Catch it for extra points.";
-      Graphics.moveto x (y - 65);
-      Graphics.draw_string "The genie teleports sometimes :)";
-    | _ -> ();
-  in 
+  let _ = helper_num_enemies x (y-100) t in 
   Graphics.set_color Graphics.black; 
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
         let y = y - 75 in Graphics.moveto x y;
-        match t with 
-        | 0 -> Graphics.draw_string "There is no time limit";
-        | 1 -> Graphics.draw_string "You have 100 seconds to escape this level!";
-          draw_hourglass_msg x y;
-        | 2 -> Graphics.draw_string "You have 60 seconds to escape this level!";
-          draw_hourglass_msg x y;
-        | _ -> ();
+        helper_game_difficulty x y t
       end 
   in Graphics.synchronize () 
+
+let helper_draw_instructions x y = 
+  Graphics.moveto x y; Graphics.set_text_size 300; 
+  Graphics.set_color Graphics.blue; Graphics.draw_string ("INSTRUCTIONS. ");
+  Graphics.set_color Graphics.red; 
+  Graphics.moveto x (y-25);
+  Graphics.draw_string "(Press `x` to return to the game)";
+  Graphics.set_color Graphics.black
 
 (** [draw_instructions gs] draws the instructions of the game
     during game play, if requested *)
 let draw_instructions (gs : Game_state.game_state) timer i : unit = 
   Graphics.clear_graph ();
   let st = gs.round_state in 
-  let x, y = (fst st.top_left_corner, snd st.top_left_corner - 10) in
-  Graphics.moveto x y;
-  Graphics.set_text_size 300; 
-  Graphics.set_color Graphics.blue;
-  Graphics.draw_string ("INSTRUCTIONS. ");
-  Graphics.set_color Graphics.red; 
-  Graphics.draw_string "(Press `x` to return to the game)";
-  Graphics.set_color Graphics.black; 
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "Use WASD to control movement. Press space to shoot.";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "If you get too close to an enemy, you will lose a life";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "You can shoot walls (multiple times) to make a new path";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "There are 4 different tile types: regular, portal, mud, and ice.";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Portal tiles will teleport you to a corresponding portal tile";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Mud tiles will slow you down as you walk through them.";
-  let y = y - 25 in Graphics.moveto (x + 25) y;
-  Graphics.draw_string "Ice tiles are slippery! You'll speed up as you walk through them.";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "Collect potions to regain health";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "Collect coins to earn points";
-  let y = y - 25 in Graphics.moveto x y;
-  Graphics.draw_string "Some levels contain a genie. Catch it if you can to earn extra points.";
+  let x, y = (fst st.top_left_corner, snd st.top_left_corner) in
+  helper_draw_instructions x y;
+  draw_words 30 (Position.init_pos (x, y-40)) instructions_txt;
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
@@ -509,14 +465,6 @@ let draw_won (gs : Game_state.game_state) : unit =
 let draw_time (gs : Game_state.game_state) (timer : Timer.timer) = 
   let st = gs.round_state in 
   update_time_lapsed st timer.elapsedtime;
-  (* let x, y = (200 + fst st.top_left_corner, (snd st.top_left_corner)+10) in
-     Graphics.moveto x y;
-     Graphics.set_text_size 300; 
-     Graphics.set_color 0xB03F37;
-     Graphics.fill_rect (x-10) (y-5) 110 20;
-     Graphics.set_color Graphics.white; 
-     Graphics.draw_string ("TIME ELAPSED: " ^ 
-                        string_of_int (timer.elapsedtime)); *)
   match gs.game_difficulty with 
   | Easy -> ()
   | Hard -> begin 
