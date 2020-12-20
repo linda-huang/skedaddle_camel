@@ -20,8 +20,7 @@ let instructions_txt =
   ["Use WASD to control movement. Press space to shoot.";
    "If you get too close to an enemy, you will lose a life";
    "You can shoot walls (multiple times) to make a new path";
-   "There are 4 different tile types: regular, portal, mud";
-   "and ice.";
+   "There are 4 different tile types: regular, portal, mud and ice.";
    "Portal tiles will teleport you to a corresponding portal tile";
    "Mud tiles will slow you down as you walk through them.";
    "Ice tiles are slippery!";

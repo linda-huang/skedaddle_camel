@@ -12,8 +12,8 @@ type round_info = {
 }
 
 let round1 = {dimx = 13; dimy = 9; enemies = 0; timelim = max_int; portals = 2}
-let round2 = {dimx =15; dimy = 13; enemies = 2; timelim = 100; portals = 4}
-let round3 = {dimx = 19; dimy = 13; enemies = 10; timelim = 60; portals = 8}
+let round2 = {dimx =15; dimy = 13; enemies = 2; timelim = 100; portals = 2}
+let round3 = {dimx = 19; dimy = 13; enemies = 8; timelim = 60; portals = 4}
 
 let totrounds = 3
 

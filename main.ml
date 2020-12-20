@@ -50,6 +50,7 @@ let exit_instructions gs timer i kp =
   match kp with 
   | '0' -> exit 0  
   | 'x' -> let pause_dur = Unix.gettimeofday () -. i in 
+    draw_initial_round_state gs.round_state gs.round_state.camel.coins;
     {gs with current_state = InPlay},
     {timer with totalpaused = timer.totalpaused +. pause_dur}
   | _ -> gs, timer
@@ -110,23 +111,7 @@ let rec run (gs : Game_state.game_state) (oldtimer : Timer.timer) =
   | Position.Out_of_bounds -> Graphics.draw_string "out of bounds";
   | Valid (col, row) -> 
     if extract_wall_type gs.round_state.maze col row = "exit" 
-    then begin transition_level gs timer 
-    (* let transition_gs = Game_state.new_level gs in 
-       Draw.draw_game_state transition_gs timer; 
-       (* wait until user presses [x] to go to next level *)
-       let rec go_to_nextlvl () = 
-       match Graphics.read_key () with 
-       | 'x' -> begin 
-          let levelup_gs = Game_state.new_level transition_gs in 
-          let timer = Timer.init_timer () in 
-          draw_initial_round_state levelup_gs.round_state 0;
-          Draw.draw_game_state levelup_gs timer; 
-          match Graphics.read_key () with 
-          | _ -> let timer = Timer.init_timer () in  run levelup_gs timer
-        end 
-       | _ -> go_to_nextlvl () in 
-       go_to_nextlvl () *)
-    end 
+    then transition_level gs timer 
     else run newgs timer 
 
 and transition_level gs timer = 

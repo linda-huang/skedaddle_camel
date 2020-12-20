@@ -24,12 +24,8 @@ let rec draw_words height (pos : Position.t) = function
     Graphics.draw_string h;
     draw_words height (Position.init_pos (pos.x, pos.y-height)) t
 
-(* set_font "-sony-fixed-medium-r-normal--24-170-100-100-c-120-iso8859-1"; *)
-(* set_font "-adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-1"; *)
-(* set_font "-adobe-helvetica-bold-r-normal--0-0-0-0-p-0-iso8859-1"; *)
-
-(* [initialize_lives]  draws [num_lives] number of hearts at (x,y) as top
-   left corner of the first heart. *)
+(** [initialize_lives]  draws [num_lives] number of hearts at (x,y) as top
+    left corner of the first heart. *)
 let initialize_lives (x, y) num_lives = 
   let counter = ref 0 in
   let full_heart = Graphics.make_image Img_heart.full_heart in
@@ -41,11 +37,11 @@ let initialize_lives (x, y) num_lives =
     incr counter 
   done 
 
-(* [reduce_hearts_img (x,y) loss num_lives] draws black heart for every life
-   that is lost.
-   [(x,y)] is the top left corner of the maze
-   [loss] is the number of hearts lost
-   [num_lives] is the current number of lives camel has.*)
+(** [reduce_hearts_img (x,y) loss num_lives] draws black heart for every life
+    that is lost.
+    [(x,y)] is the top left corner of the maze
+    [loss] is the number of hearts lost
+    [num_lives] is the current number of lives camel has.*)
 let reduce_hearts_img (x, y) num_lives = 
   let empty_heart = Graphics.make_image Img_heart.empty_heart in 
   Graphics.draw_image empty_heart 
@@ -64,6 +60,8 @@ let add_heart_img (x, y) num_lives =
                           (Constant.heart_size + (Constant.heart_size / 4)))
     (y + 10)
 
+(** [update_hearts (x,y) prev_h curr_health] updates the amount of 
+    hearts drawn appropriately *)
 let update_hearts (x, y) prev_h curr_health = 
   if curr_health < prev_h then 
     reduce_hearts_img (x,y) curr_health
@@ -72,10 +70,12 @@ let update_hearts (x, y) prev_h curr_health =
   else ();
   prev_health := curr_health
 
+(** [draw_background ()] draws the background over the entire window *)
 let draw_background ()= 
   let image = Graphics.make_image Background.background in 
   Graphics.draw_image image 0 0
 
+(** [update_coin_value st coin_val] draws the coin value appropriately *)
 let update_coin_value st coin_val = 
   let x,y = st.top_left_corner in 
   let posx, posy = (x + tile_width + heart_size/2,
@@ -84,8 +84,6 @@ let update_coin_value st coin_val =
   fill_rect posx posy heart_size heart_size;
   set_color 0xffe524;
   moveto posx posy;
-  set_font 
-    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
   let coin_string = string_of_int coin_val in
   let coin_str = 
     match String.length coin_string with 
@@ -97,6 +95,8 @@ let update_coin_value st coin_val =
   in
   draw_string coin_str
 
+(** [update_time_left st time_left] draws the [time_left] in [st] 
+    nicely on the screen *)
 let update_time_left st time_left= 
   let x, y = st.top_left_corner in 
   let posx, posy = (x + tile_width * 4 - heart_size / 4, 
@@ -105,8 +105,6 @@ let update_time_left st time_left=
   set_color 0x026144;
   fill_rect posx posy (tile_width * 5) heart_size;
   set_color 0xffe524;
-  set_font 
-    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
   if time_left >= 0 then 
     let sec = time_left mod 60 in
     let min = time_left / 60 in 
@@ -114,6 +112,7 @@ let update_time_left st time_left=
   else 
     draw_string "infinity"
 
+(** [update_time_lapsed st time] draws the elapsed time *)
 let update_time_lapsed st time = 
   let x, y = st.top_left_corner in 
   let posx, posy = (x + (st.cols / 2 * tile_width) + heart_size * 2, 
@@ -205,7 +204,6 @@ let draw_camel (camel : Camel.t) =
   draw_image camel_pic (x - camel_radius) (y - camel_radius)
 
 let draw_enemy (enemy : Enemy.t) = 
-  (* set_color Constant.enemy_color;  *)
   let enemy_pic = 
     match enemy.dir with 
     | 0 -> Graphics.make_image Img_enemy_camel.enemy_camel_pic_0
@@ -223,14 +221,14 @@ let draw_coin (coin : Coin.t) =
   let coin_img = make_image coin_pic in 
   draw_image coin_img (x - coin_radius) (y - coin_radius)
 
-(** [draw_potion potion] draws a solid potion pixel icon
+(** [draw_potion potion] draws a potion icon
     by the position defined by [potion] *)
 let draw_potion (potion : Potion.potion) = 
   let (x, y) = (potion.pos.x - 10, potion.pos.y - 10) in 
   let small_heart = make_image heart_small in 
   draw_image small_heart x y
 
-(** [draw_projectile proj] draws a solid projectile pixel icon
+(** [draw_projectile proj] draws a projectile icon
     by the position defined by [proj] *)
 let draw_projectile (proj : Projectile.t) =
   Graphics.set_color Constant.projectile_color;
@@ -240,7 +238,7 @@ let draw_projectile (proj : Projectile.t) =
               (x+projectile_radius, y-projectile_radius); 
               (x-projectile_radius, y-projectile_radius)|]
 
-(** [draw_genie genie] draws a solid genie pixel icon 
+(** [draw_genie genie] draws a genie icon 
     at the position defined by [genie] *)
 let draw_genie (genie : Genie.genie option) = 
   match genie with 
@@ -251,9 +249,9 @@ let draw_genie (genie : Genie.genie option) =
       draw_image genie x y
     end 
 
-(** [draw_hourglass hourglass] draws a solid hourglass pixel icon
+(** [draw_hourglass hourglass] draws a hourglass icon
     at the position defined by [hourglass] and differentiates the 
-    color based on [hourglass]'s power *)
+    image based on [hourglass]'s power *)
 let draw_hourglass (hourglass : Hourglass.hourglass option) = 
   match hourglass with 
   | None -> ()
@@ -275,13 +273,6 @@ let draw_hourglass_msg x y  =
   let y = y - 20  in Graphics.moveto (x - 5) y;
   Graphics.set_color Graphics.black; 
   draw_words 15 (Position.init_pos (x, y)) hourglass_txt
-(* Graphics.draw_string "There is an hourglass you can collect!";
-   let y = y - 15 in Graphics.moveto (x - 5) y;
-   Graphics.draw_string "It will be this color if it gives you 15 more seconds to complete the level.";
-   let y = y - 15 in Graphics.moveto (x - 5) y;
-   Graphics.draw_string "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
-   let y = y - 15 in Graphics.moveto (x - 5) y;
-   Graphics.draw_string "If it is this rare special hourglass, it will be white" *)
 
 let draw_round_state (st : Round_state.t) = 
   draw_maze st;
@@ -298,7 +289,6 @@ let draw_prewelcome () =
   Graphics.set_window_title "Skedaddle Camel";
   draw_background ();
   Graphics.set_text_size 300;
-  set_font "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
   let title = make_image title_pic_transp in 
   draw_image title 35 50;
   Graphics.moveto 350 100;
@@ -326,6 +316,7 @@ let helper_stats x y difficulty scr coins =
 
 (** [draw_finscore gs] draws the score corresponding to [gs] *)
 let draw_finscore (gs : Game_state.game_state) = 
+  Graphics.set_color Graphics.black; 
   let st = gs.round_state in 
   let scr = gs.score in 
   let coins = scr.coins in 
@@ -346,8 +337,8 @@ let draw_finscore (gs : Game_state.game_state) =
   Graphics.synchronize ()
 
 let helper_draw_transition_welcome x y t = 
-  Graphics.set_font 
-    "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1";
+  (* Graphics.set_font 
+     "-b&h-lucidatypewriter-bold-r-normal-sans-17-120-100-100--0-iso8859-1"; *)
   Graphics.moveto x y;
   Graphics.set_text_size 300; 
   Graphics.set_color Graphics.blue;
@@ -414,13 +405,11 @@ let draw_instructions (gs : Game_state.game_state) timer i : unit =
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
-        let y = y - 25 in Graphics.moveto x y;
-        Graphics.set_color Graphics.red; 
-        Graphics.draw_string "Hard features only:";
+        let y = y - 400 in Graphics.moveto x y;
         Graphics.set_color Graphics.black; 
-        let y = y - 25 in Graphics.moveto x y;
+        let y = y - 15 in Graphics.moveto x y;
         Graphics.draw_string "There are two types of hourglasses: usually, it only adds time";
-        let y = y - 25 in Graphics.moveto (x + 25) y;
+        let y = y - 15 in Graphics.moveto (x + 25) y;
         Graphics.draw_string "There is a rare hourglass that pauses enemy movement";
       end
   in 

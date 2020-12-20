@@ -635,7 +635,8 @@ let init cols rows numenemy difficulty portals =
       ((snd start_pos) - camel_radius) in
   let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
   let numpotions = if numenemy = 0 then 0 else 2 in 
-  let genie = if numenemy = 10 then init_genie mz start_pos else None in 
+  let genie = if numenemy = Constant.round3.enemies 
+    then init_genie mz start_pos else None in 
   let coinarr = init_coin_lst 20 mz start_pos in 
   let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
   let hourglass = if difficulty = 1 then None else 
