@@ -272,8 +272,7 @@ let draw_hourglass (hourglass : Hourglass.hourglass option) =
 (** [draw_hourglass_msg x y] is the message in the transition screen 
     printed at [x,y] to explain the hourglasses *)
 let draw_hourglass_msg x y  = 
-  draw_background ();
-  let y = y - 20  in Graphics.moveto (x - 5) y;
+  let y = y - 10  in Graphics.moveto (x - 5) y;
   Graphics.set_color Graphics.black; 
   draw_words 15 (Position.init_pos (x, y)) hourglass_txt
 
@@ -362,7 +361,10 @@ let helper_game_difficulty x y = function
 let helper_num_enemies x y = function
   | 0 -> Graphics.draw_string "This level has 0 enemies"
   | 1 -> Graphics.draw_string "This level has 2 enemies";
-    draw_words 30 (Position.init_pos (x, y)) genie_txt
+    let y = y - 15 in Graphics.moveto x (y - 15);
+    Graphics.draw_string "There are two potions you can collect to gain more health";
+  | 2 -> Graphics.draw_string "This level has 8 enemies";
+    draw_words 30 (Position.init_pos (x, (y - 15))) genie_txt
   | _ -> ()
 
 let helper_calc_score gs st = function
@@ -379,13 +381,13 @@ let draw_transition (t : int) (gs : Game_state.game_state) : unit =
   in 
   let y = y - 50 in Graphics.moveto (x + 25) y;
   Graphics.draw_string ("Score so far: " ^ string_of_int calculated_score);
-  let y = y - 25 in Graphics.moveto x y;
-  let _ = helper_num_enemies x (y-100) t in 
+  let y = y - 15 in Graphics.moveto x y;
+  let _ = helper_num_enemies x (y - 100) t in 
   Graphics.set_color Graphics.black; 
   let _ = match gs.game_difficulty with 
     | Easy -> ();
     | Hard -> begin
-        let y = y - 75 in Graphics.moveto x y;
+        let y = y - 35 in Graphics.moveto x y;
         helper_game_difficulty x y t
       end 
   in Graphics.synchronize () 

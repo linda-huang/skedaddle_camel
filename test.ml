@@ -260,6 +260,9 @@ let coin_tests = [
     [|(300, 322); (1000, 527); (200, 425)|] (1000, 527);
   find_coin_test "last coin" (1000, 525) 
     [|(300, 322); (200, 425); (1000, 527)|] (1000, 527);
+  find_coin_test "long coin list, middle" (1000, 525)
+    [|(300, 322); (400, 400); (1000, 527); (500, 400);
+      (400, 600); (700, 480); (200, 425)|] (1000, 527);
   find_coin_exn_test "no such coin" (1000, 525) 
     [|(300, 322); (200, 425)|] (Invalid_argument "No coin here");
 ]
@@ -521,13 +524,26 @@ let position_tests = [
   tile_to_pixel_test "origin" startpos (0, 0) (120, 440);
   tile_to_pixel_test "(1,1)" startpos (1, 1) (160, 400);
   tile_to_pixel_test "(0, 10)" startpos (0, 10) (120, 40);
+  tile_to_pixel_test "(15, 10)" startpos (15, 9) (720, 80);
   (* pixel_to_tile *)
   pixel_to_tile_test "out of bounds" startpos (25, 25) Out_of_bounds;
   pixel_to_tile_test "corner origin (0, 0)" startpos startpos (Valid (0, 0));
-  pixel_to_tile_test "edge origin (50, 0)" startpos 
+  pixel_to_tile_test "within origin" startpos (startposx + 10, startposy - 10)
+    (Valid (0, 0));
+  pixel_to_tile_test "top edge origin" startpos (startposx + 20, startposy)
+    (Valid (0, 0));
+  pixel_to_tile_test "left edge origin" startpos 
+    (startposx, startposy - Constant.tile_radius) (Valid (0, 0));
+  pixel_to_tile_test "bottom edge origin" startpos 
+    (startposx + Constant.tile_radius, startposy - Constant.tile_width + 1) 
+    (Valid (0, 0));
+  pixel_to_tile_test "right edge origin" startpos 
+    (startposx + Constant.tile_width - 1, startposy - Constant.tile_radius) 
+    (Valid (0, 0));
+  pixel_to_tile_test "edge (3, 2)" startpos 
     (startposx + 3 * Constant.tile_width, startposy - 2 * Constant.tile_width)
     (Valid (3, 2));
-  pixel_to_tile_test "corner origin" startpos 
+  pixel_to_tile_test "corner (1,1)" startpos 
     (startposx + Constant.tile_width, startposy - Constant.tile_width) 
     (Valid (1,1));
 ]
@@ -572,149 +588,6 @@ let projectile_tests = [
    end tests from Projectile.ml
  *********************************************************************)
 
-
-(*******************************************************************
-   tests from Round_State.ml
- *********************************************************************)
-(** [enemy_arr pos] is a Enemy.t array of enemies with positions in [pos] *)
-(* let enemy_arr pos = 
-   Array.map (fun (px, py) -> 
-      Enemy.init (90 * Random.int 4) (Position.init_pos (px, py))) pos *)
-
-(** [near_enemy_test name (cx, cy) (ex, ey) exp_val] constructs an OUnit
-    test named [name] that asserts the quality of 
-    [State.near_enemy] applied to a Camel at the position represented 
-    by [(cx, cy)] and a State with enemy at position indicated by [(ex, ey)] 
-    with [exp_val]. *)
-(* let near_enemy_test 
-    (name : string) 
-    ((cx, cy) : int * int)
-    (epos : (int * int) array)
-    (exp_val : bool) : test = 
-   name >:: (fun _ -> 
-      let camel = Camel.init cx cy in                 
-      let st = {camel = camel;
-                maze = Maze.populate 100 100 (0,0);
-                cols = 100; rows = 100;
-                enemies = enemy_arr epos;
-                coins = [||];
-                potions = [||];
-                projectiles = [];
-                genie = None;
-                hourglass = None;
-                top_left_corner = startpos;
-                portals = []} in 
-      assert_equal exp_val (near_enemy camel st)
-        ~printer:string_of_bool) *)
-
-(** [on_coin_test name (cx, cy) (x, y) exp_val] constructs an OUnit
-    test named [name] that asserts the quality of 
-    [Round_state.on_coin] applied to a Camel at the position represented 
-    by [(cx, cy)] and a Round_state with a coin at position indicated by [(x, y)] 
-    with [exp_val]. *)
-(* let on_coin_test 
-    (name : string) 
-    ((cx, cy) : int * int)
-    (pos : (int * int) array)
-    (exp_val : bool) : test = 
-   name >:: (fun _ -> 
-      let camel = Camel.init cx cy in 
-      let st = {camel = camel;
-                maze = Maze.populate 100 100 (0,0);
-                cols = 100; rows = 100;
-                enemies = [||];
-                coins = coin_arr pos;
-                potions = [||];
-                projectiles = [];
-                genie = None;
-                hourglass = None;
-                top_left_corner = startpos;
-                portals = []} in 
-      assert_equal exp_val (Round_state.on_coin st) 
-        ~printer:string_of_bool) *)
-
-(** [rem_coin_test name (cx, cy) pos exp_exn] constructs an OUnit test named [name] 
-    that asserts that [Round_state.find_coin] raises [exp_exn]. *)
-(* let rem_coin_exn_test
-    (name : string) 
-    ((cx, cy) : int * int)
-    (pos : (int * int) array)
-    (exp_exn : exn) : test = 
-   name >:: (fun _ -> 
-      let camel = Camel.init cx cy in 
-      let st = {camel = camel;
-                maze = Maze.populate 100 100 (0,0);
-                cols = 100; rows = 100;
-                enemies = [||];
-                coins = coin_arr pos;
-                projectiles = [];
-                potions = [||];
-                genie = None;
-                hourglass = None;
-                top_left_corner = startpos} in  
-      assert_raises exp_exn (fun _ -> 
-          ((Round_state.remove_coin 
-              (Coin.find_coin camel.pos (coin_arr pos)) st).coins ))) *)
-
-(** [remove_coin_test name getcoin pos exp_val] constructs an OUnit
-    test named [name] that asserts the quality of  
-    [Round_state.remove_coin] applied to a coin at the position represented 
-    by [getcoin] and a Round_state.t with coins at positions indicated by [pos] 
-    against [exp_val]. *)
-(* let remove_coin_test 
-    (name : string) 
-    (getcoin : (int * int))
-    (pos : (int * int) array)
-    (exp_val : (int * int) array) : test = 
-   name >:: (fun _ -> 
-      let st = {camel = Camel.init 0 0;
-                maze = Maze.populate 100 100 (0,0);
-                cols = 100; rows = 100;
-                enemies = [||];
-                coins = coin_arr pos;
-                potions = [||];
-                projectiles = [];
-                genie = None;
-                hourglass = None;
-                top_left_corner = startpos;
-                portals = []} in 
-      let exp_coin = coin_arr exp_val in  
-      assert_equal ~cmp:cmp_set_like_arrs exp_coin 
-        (Round_state.remove_coin 
-           (Coin.init (Position.init_pos getcoin) 1) st).coins 
-        ~printer:string_of_coinarr) *)
-
-let round_state_tests = [
-  (* todo *)
-
-  (* near_enemy *)
-  (* near_enemy_test "same position, single enemy (5,5)" 
-     (5, 5)[|(5, 5)|] true;
-     near_enemy_test "multiple close enemies (5,5)" 
-     (5, 5)[|(15, 15); (5, 5); (50, 50)|] true;
-     near_enemy_test "single far enemy (50,50)" 
-     (0, 0)[|(110, 110)|] false;
-     near_enemy_test "multiple far enemies" 
-     (0, 0)[|(150, 150); (250, 100); (90, 75)|] false;
-     near_enemy_test "multiple enemies, single close" 
-     (0, 0)[|(150, 150); (250, 100); (0, 4)|] true;
-     (* on_coin *)
-     on_coin_test "same position, single coin"
-     (5, 5)[|(5, 5)|] true;
-     on_coin_test "multiple coins, one close"
-     (5, 5)[|(250, 100); (50, 55); (7, 5)|] true;
-     on_coin_test "multiple coins, none on same tile"
-     (5, 5)[|(250, 100); (50, 55); (50, 5)|] false; *)
-  (* find_coin and rem_coin *)
-  (* rem_coin_test "on only coin in maze" 
-     (5, 5)[|(5, 5)|] [||];
-     rem_coin_test "on one coin of multiple in maze" 
-     (5, 5)[|(250, 100); (50, 55); (5, 5)|] 
-     [|(250, 100); (50, 55);|];
-     rem_coin_exn_test "not on any coins" 
-     (25, 52)[|(250, 100); (150, 550); (115, 325)|] 
-     (Invalid_argument "No coin here"); *)
-]
 (*******************************************************************
    end tests from Round_state.ml
  *********************************************************************)
@@ -728,7 +601,6 @@ let suite = "test suite" >::: List.flatten [
     potion_tests;
     position_tests;
     projectile_tests;
-    round_state_tests;
   ]
 
 let _ = run_test_tt_main suite  

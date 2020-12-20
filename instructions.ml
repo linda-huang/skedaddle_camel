@@ -32,13 +32,11 @@ let instructions_txt =
 
 let hourglass_txt = 
   ["There is an hourglass you can collect!";
-   "It will be this color if it gives you 15 more seconds to complete the level.";
+   "It gives you 15 more seconds to complete the level.";
    "But sometimes it is extra powerful and will pause all enemies for the rest of the level.";
    "If it is this rare special hourglass, it will be a little magic wand"]
 
 let genie_txt =  
   ["There are two potions you can collect to gain more health";
-   "This level has 10 enemies";
-   "There are two potions you can collect to gain more health";
    "There is a speedy genie in this maze! Catch it for extra points.";
    "The genie teleports sometimes :)"]

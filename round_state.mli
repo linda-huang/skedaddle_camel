@@ -28,17 +28,6 @@ val hit_wall : t -> Position.t -> int -> int -> bool
     so updates camel in response to power tile effect *)
 val hit_power_tile : t ->  Position.t -> Camel.t
 
-(** [near_enemy camel maze] detects if [camel]'s position is near 
-    an enemy camel *)
-val near_enemy : Camel.t -> t -> bool
-
-(** [on_coin st] detects if the position of [camel] in [st] 
-    is on a coin. *)
-val on_coin : t -> bool
-
-(** [rem_coin c st] is [st] with [c] removed *)
-val remove_coin : Coin.t -> t -> t
-
 (** [shoot camel] shoots a projectile in the direction of [camel]
     instantiates a new projectile in the state?? do we keep a list of all
     active projectiles as a field in the state *)

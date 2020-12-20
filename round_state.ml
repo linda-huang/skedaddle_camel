@@ -27,12 +27,16 @@ type t = {
 (* *********************************************************
    interactions between various fields of round_state
    ********************************************************** *)
+(** [on_coin st] detects if the position of [camel] in [st] 
+    is on a coin. *)
 let on_coin (st : t)  = 
   Array.fold_left (fun acc (coin : Coin.t) -> 
       (Position.dist st.camel.pos coin.pos < 
        (Constant.camel_radius + Constant.coin_radius)) || acc)
     false st.coins
 
+(** [on_potion st] detects if the position of [camel] in [st] 
+    is on a potion. *)
 let on_potion (st : t) = 
   Array.fold_left (fun acc (potion : Potion.potion) -> 
       (Position.dist st.camel.pos potion.pos < 
@@ -49,6 +53,7 @@ let on_hourglass (camel : Camel.t) (st : t) =
       then true else false 
     end 
 
+(** [at_exit st] is if the camel in [st] has reached the exit *)
 let at_exit (st : t) = 
   let camel = st.camel in 
   let coord_mapping = Position.pixel_to_tile camel.pos st.top_left_corner in
@@ -69,6 +74,8 @@ let hit_corner (st : t) (pos : Position.t) =
         | Wall x when x > 0 -> true
         | _ -> false)
 
+(** [find_four_corners pos dir radius] are the corners corresponding 
+    to a game element with radius [radius] centered at [pos] *)
 let find_four_corners (pos : Position.t) (dir : int) (radius : int) = 
   let tl = (pos.x - radius, pos.y + radius) in
   let tr = (pos.x + radius, pos.y + radius) in
@@ -76,6 +83,9 @@ let find_four_corners (pos : Position.t) (dir : int) (radius : int) =
   let br = (pos.x + radius, pos.y - radius) in
   (tl, tr, br, bl)
 
+(** [find_head pos dir radius] are the two corners corresponding 
+    to the front of the game element radius [radius] 
+    heading in direction [dir] *)
 let find_head (pos : Position.t) (dir : int) (radius : int) = 
   let (tl, tr, br, bl) = find_four_corners pos dir radius in
   match dir with 
@@ -83,8 +93,11 @@ let find_head (pos : Position.t) (dir : int) (radius : int) =
   | 90 -> (tl, tr)
   | 180 -> (tl, bl)
   | 270 -> (bl, br)
-  | _ -> failwith "impossible"
+  | _ -> (tr, br)
 
+(** [find_tail pos dir radius] are the two corners corresponding 
+    to the end of the game element radius [radius] 
+    heading in direction [dir] *)
 let find_tail (pos : Position.t) (dir : int) (radius : int) = 
   let (tl, tr, br, bl) = find_four_corners pos dir radius in
   match dir with 
@@ -92,39 +105,45 @@ let find_tail (pos : Position.t) (dir : int) (radius : int) =
   | 90 -> (bl, br)
   | 180 -> (tr, br)
   | 270 -> (tl, tr)
-  | _ -> failwith "impossible"
+  | _ -> (tl, bl)
 
+(** [hit_wall st pos dir radius] is if game element centered at [pos]
+    with radius [radius] heading in direction [dir] has hit a wall in [st] *)
 let hit_wall (st : t) (pos : Position.t) (dir : int) (radius : int) = 
   let two_corners = find_head pos dir radius in                   
   hit_corner st (Position.init_pos (fst two_corners)) || hit_corner st 
     (Position.init_pos (snd two_corners))
 
+(** [backwards_dir dir] is the direction 180 degrees of [dir] *)
 let backwards_dir = function
   | 90 -> 270
   | 180 -> 0
   | 270 -> 90
   | 0 -> 180
-  | _ -> failwith "impossible"
+  | _ -> 0
 
+(** [pick_direction st camel pos] is the tile and direction
+    that correspond to a next valid direction for [camel] to move in *)
 let pick_direction (st : t) (camel : Camel.t) = function
   | Valid (ccol, crow) -> 
     let four_tiles = 
-      [(ccol-1, crow, 180); (ccol+1, crow, 0); (ccol, crow-1, 90); 
-       (ccol, crow+1, 270)] in
-    let valid_tiles = List.filter (fun (c,r,d) -> 
-        (c >= 0 && c < st.cols) 
-        && (r >= 0 && r < st.rows)
-        && 
+      [(ccol - 1, crow, 180); (ccol + 1, crow, 0); 
+       (ccol, crow - 1, 90); (ccol, crow + 1, 270)] in
+    let valid_tiles = List.filter (fun (c, r, d) -> 
+        (c >= 0 && c < st.cols) && (r >= 0 && r < st.rows) && 
         (match (Maze.tile_type st.maze c r) with
          | Wall _ -> false
          | _ -> true)) 
         four_tiles in
     let final_valid_tiles = if List.length valid_tiles > 1 then 
-        List.filter (fun (c,r,d) -> d <> (backwards_dir camel.dir)) valid_tiles
+        List.filter (fun (c, r, d) -> 
+            d <> (backwards_dir camel.dir)) valid_tiles
       else valid_tiles in
     List.nth final_valid_tiles (Random.int (List.length final_valid_tiles))
   | Out_of_bounds -> failwith "current col and row are out of bounds"
 
+(** [match_ice_goal head_tile tail_tile new_camel] is [camel] moved 
+    towards the edge of an ice patch *)
 let match_ice_goal head_tile tail_tile new_camel = 
   match head_tile, tail_tile with 
   | Valid (hc, hr), Valid (tc, tr) -> 
@@ -135,13 +154,14 @@ let match_ice_goal head_tile tail_tile new_camel =
             {new_camel with ice_goal = None}
           else if new_camel.dir <> nd then 
             Camel.move (Camel.change_dir new_camel nd)
-          else 
-            Camel.move new_camel
+          else Camel.move new_camel
         | _ -> Camel.move new_camel
       end
     else Camel.move new_camel
   | _ -> Camel.move new_camel
 
+(** [move_camel_ice)helper head_tile tail_tile new_camel camel] is [camel] 
+    after moving over ice path *)
 let move_camel_ice_helper head_tile tail_tile new_camel camel = 
   match head_tile, tail_tile with 
   | Valid (hc, hr), Valid (tc, tr) -> 
@@ -152,13 +172,13 @@ let move_camel_ice_helper head_tile tail_tile new_camel camel =
             {new_camel with ice_goal = None}
           else if new_camel.dir <> nd then 
             Camel.move (Camel.change_dir new_camel nd)
-          else 
-            Camel.move new_camel
+          else Camel.move new_camel
         | _ -> Camel.move new_camel
       end
     else Camel.move new_camel
   | _ -> Camel.move camel
 
+(** [move_camel_ice st camel] is [camel] after moving over ice path *)
 let move_camel_ice (st : t) (camel : Camel.t) : Camel.t = 
   let (head, _) = find_head camel.pos st.camel.dir Constant.camel_radius in 
   let (tail, _) = find_tail camel.pos st.camel.dir Constant.camel_radius in
@@ -174,32 +194,41 @@ let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =
   | Some (ncol, nrow, ndir) -> 
     move_camel_ice_helper head_tile tail_tile new_camel camel
 
+(** [restore_speed_camel camel] is [camel] restored with original speed *)
 let restore_speed_camel camel = 
   if camel.speed <> Constant.camel_mud_speed then camel 
   else {camel with speed = Constant.camel_speed} 
 
+(** [restore_teleport_camel camel] is [camel] restored after teleportation *)
 let restore_teleport_camel camel = 
   if not camel.teleport then camel else {camel with teleport = false} 
 
+(** [restore_default_camel camel] is [camel] restored to original state *)
 let restore_default_camel (camel : Camel.t) = 
   let speedy_camel = restore_speed_camel camel in 
   restore_teleport_camel speedy_camel
 
+(** [handle_hit_ice st camel] is [camel] after reaching an ice tile *)
 let handle_hit_ice (st : t) (camel : Camel.t) = 
   if camel.last_tile = Maze.Power_Path Ice then move_camel_ice st camel
   else let new_camel = restore_default_camel camel in
     move_camel_ice st {new_camel with last_tile = Power_Path Ice} 
 
+(** [handle_hit_mud camel] is [camel] after reaching a mud tile *)
 let handle_hit_mud (camel : Camel.t) = 
   if camel.last_tile = Maze.Power_Path Mud then camel 
   else let teleport_camel = restore_teleport_camel camel in 
     {teleport_camel with speed = Constant.camel_mud_speed; 
                          last_tile = Power_Path Mud}
 
+(** [in_tile st camel (col, row)] is if [camel] 
+    is in tile [(col, row)] in [st] *)
 let in_tile (st : t) (camel : Camel.t) (col, row) = 
   let (cx, cy) = Position.tile_to_pixel (st.top_left_corner) (col, row) in 
   (Int.abs (camel.pos.x - cx) + Int.abs (camel.pos.y - cy)) <= 20
 
+(** [handle_hit_portal st camel (col, row)] is [camel] after
+    reaching a portal at [(col, row)] *)
 let handle_hit_portal (st : t) (camel : Camel.t) (col, row) = 
   if camel.last_tile <> Maze.Power_Path Portal then 
     let default_camel = restore_default_camel camel in 
@@ -209,12 +238,13 @@ let handle_hit_portal (st : t) (camel : Camel.t) (col, row) =
   else 
     let possible_portals = List.filter (fun ppos -> 
         (Position.pixel_to_tile ppos st.top_left_corner) <> 
-        Valid (col, row)) st.portals 
-    in
+        Valid (col, row)) st.portals in
     let new_pos = List.nth possible_portals 
         (Random.int (List.length possible_portals)) in  
     Camel.teleport {camel with teleport = true} new_pos
 
+(** [hit_power_tile st pos] is a camel in [st] reacted appropriately to any
+    power tile it may be on *)
 let hit_power_tile (st : t) (pos : Position.t) =
   let mid_tile = Position.pixel_to_tile (pos) st.top_left_corner in
   match mid_tile with
@@ -230,9 +260,9 @@ let hit_power_tile (st : t) (pos : Position.t) =
         if st.camel.ice_goal <> None then handle_hit_portal
             st {st.camel with ice_goal = None} (cc, rc)
         else handle_hit_portal st st.camel (cc, rc)
-      | _ -> 
-        {st.camel with speed = Constant.camel_speed;
-                       last_tile = Maze.Path; teleport = false; ice_goal = None}
+      | _ -> {st.camel with speed = Constant.camel_speed;
+                            last_tile = Maze.Path; teleport = false; 
+                            ice_goal = None}
     end
   | _ -> st.camel
 
@@ -304,19 +334,19 @@ let rec random_valid_tile_enemy mz =
 (** [random_valid_tile_enemy mz] is a random valid (non-wall and
     non-portal) tile in [mz] *)
 let rec random_valid_tile_portal mz = 
-  (* let (col, row) = (2,0)in 
-     if not (Maze.tile_type mz col row = Maze.Path) then 
-     (1,1) 
-     else (col, row)  *)
   let (col, row) = random_valid_tile mz in 
   if not (Maze.tile_type mz col row = Maze.Path) then 
     random_valid_tile_portal mz 
   else (col, row) 
 
+(** [near_enemy camel st] detects if [camel]'s position is near 
+    an enemy camel in [st] *)
 let near_enemy (camel : Camel.t) (st : t) = 
   let f (c : Enemy.t) = Position.dist c.pos camel.pos < camel_width in 
   Array.fold_left (fun acc x -> (f x) || acc) false st.enemies
 
+(** [near_genie camel st] detects if [camel]'s position is near 
+    a ganie in [st] *)
 let near_genie (camel : Camel.t) (st : t) = 
   match st.genie with 
   | None -> false
@@ -329,9 +359,9 @@ let shoot (camel : Camel.t) (st : t) =
   let p = Projectile.init camel.dir camel.pos 
   in {st with projectiles = p :: st.projectiles} 
 
-
-(** st.maze with the (col, row) tile reduced by 1 hp 
-    requires (col, row) is a valid position**)
+(** [reduce_wall_hp col row st] is [st] with the HP of the tile 
+    at column [col] and row [row] reduced by 1 HP 
+    Requires: (col, row) is a valid position *)
 let reduce_wall_hp col row st = 
   try begin
     if st.maze.(row).(col) = Wall 5 then st.maze.(row).(col) <- Wall 4
@@ -344,15 +374,15 @@ let reduce_wall_hp col row st =
   with 
   | x -> st
 
-(** returns st without projectiles that have hit walls, and with wall HP reduced
-    appropriately **)
+(** [proj_hit_wall st] is [st] without projectiles that have hit walls, 
+    and with wall HP reduced appropriately **)
 let proj_hit_wall (st : t) = 
   let rec proj_hit_wall_helper 
       (remproj : Projectile.t list) 
       (accproj : Projectile.t list) 
       (st : t) : t = 
     match remproj with
-    | h::t -> 
+    | h :: t -> 
       if hit_wall st h.pos h.dir Constant.projectile_radius 
       then begin
         let coord_mapping = Position.pixel_to_tile 
@@ -385,8 +415,7 @@ let hit_enemy (st : t) =
     | h :: t -> let remaining  = 
                   List.fold_left (fun acc (x : Enemy.t) -> 
                       if Position.dist x.pos h.pos < near + camel_width  
-                      then acc else x :: acc) 
-                    [] accenemy in 
+                      then acc else x :: acc) [] accenemy in 
       if List.length remaining = List.length accenemy  
       then check_proj t (h :: accproj, remaining) 
       else check_proj t (accproj, remaining)
@@ -400,8 +429,7 @@ let hit_enemy (st : t) =
 let rec teleport_genie (st : t) (genie : Genie.genie) start_pos =
   let teleportto = random_valid_tile st.maze 
                    |> Position.tile_to_pixel start_pos 
-                   |> Position.init_pos
-  in 
+                   |> Position.init_pos in 
   if Position.dist teleportto st.camel.pos < 6 * Constant.tile_width 
   then teleport_genie st genie start_pos else teleportto
 
@@ -495,14 +523,14 @@ let update_camel (st : t) : t =
     else camel, st in 
   (* update if on an hourglass *)
   let camel, st = if on_hourglass camel st 
-    then {camel with hourglasses = 
-                       match st.hourglass with 
-                       | Some hg -> Some hg.power
-                       | None -> None},
+    then {camel with hourglasses = match st.hourglass with 
+        | Some hg -> Some hg.power
+        | None -> None},
          {st with hourglass = None}
     else camel, st in 
   {st with camel = camel}  
 
+(** [remove_coin c st] is [st] with [c] removed *)
 let remove_coin (c : Coin.t) (st : t) = 
   let coinlst = Array.fold_left 
       (fun acc x -> if x = c then acc else x :: acc) [] st.coins in 
@@ -515,6 +543,7 @@ let get_coin (st : t) : t =
   let st' = remove_coin c st in 
   {st' with camel = {st'.camel with coins = st'.camel.coins + c.value}} 
 
+(** [remove_potion p st] is [st] with [p] removed *)
 let remove_potion (p : Potion.potion) (st : t) = 
   let potlst = Array.fold_left 
       (fun acc x -> if x = p then acc else x :: acc) [] st.potions in 

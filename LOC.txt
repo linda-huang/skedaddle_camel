@@ -1,4 +1,5 @@
-The image matrices in [constant.ml], [words.ml] and file names beginning [img] 
+The image matrices in [background.ml], [words.ml], [constant.ml], 
+[words.ml] and file names beginning [img] 
 result in the inflation of LOC. 
 
 Roughly subtract the counts from the aforementioned files
