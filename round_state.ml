@@ -433,6 +433,13 @@ let rec teleport_genie (st : t) (genie : Genie.genie) start_pos =
   if Position.dist teleportto st.camel.pos < 6 * Constant.tile_width 
   then teleport_genie st genie start_pos else teleportto
 
+let four_directions genie = 
+  let next_move_l = Genie.change_dir genie 180 in
+  let next_move_r = Genie.change_dir genie 0 in
+  let next_move_up = Genie.change_dir genie 90 in
+  let next_move_down = Genie.change_dir genie 270 in 
+  [next_move_l; next_move_r; next_move_up; next_move_down]
+
 (** [move_genie genie st] is [genie] with updated position or direction.
     if [genie] will hit a wall then it turns around, otherwise it
     keeps moving in the same direction. *)
@@ -442,19 +449,14 @@ let move_genie (st : t) (genie : Genie.genie) : Genie.genie =
   let genie = if (Unix.gettimeofday ()) -. genie.lastteleport 
                  > Constant.genie_teleport_time then 
       let teleportto = teleport_genie st genie start_pos in 
-      {genie with pos = teleportto;
-                  lastteleport = Unix.gettimeofday ()}
+      {genie with pos = teleportto; lastteleport = Unix.gettimeofday ()}
     else genie in 
   (* automate regular movement of genie *)
   let future_pos = (Genie.move genie).pos in 
   if not (hit_wall st future_pos genie.dir Constant.genie_radius) 
   then Genie.move genie
   else 
-    let next_move_l = Genie.change_dir genie 180 in
-    let next_move_r = Genie.change_dir genie 0 in
-    let next_move_up = Genie.change_dir genie 90 in
-    let next_move_down = Genie.change_dir genie 270 in 
-    let all_moves = [next_move_l; next_move_r; next_move_up; next_move_down] in
+    let all_moves = four_directions genie in
     let valid_moves = 
       List.filter (fun (next_move : Genie.genie) -> 
           not (hit_wall st (Genie.move next_move).pos next_move.dir 

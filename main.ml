@@ -55,32 +55,34 @@ let exit_instructions gs timer i kp =
     {timer with totalpaused = timer.totalpaused +. pause_dur}
   | _ -> gs, timer
 
+let helper_catchall_input (gs : Game_state.game_state) (timer : Timer.timer) 
+  : (Game_state.game_state * Timer.timer) = 
+  let gs = wait_kp gs timer in  
+  let timer = Timer.update_timer timer in
+  let st = gs.round_state in 
+  let camel = st.camel in 
+  let gs' = if camel.last_tile <> Maze.Power_Path Ice 
+    then respond_to_kp (Graphics.read_key ()) gs
+    else {gs with round_state 
+                  = {st with camel = Round_state.move_camel_ice st camel}} 
+  in match gs'.current_state with 
+  | Instructions i -> gs', timer
+  | _ -> begin 
+      let st' = gs'.round_state in 
+      let st'' = if Round_state.hit_wall st' st'.camel.pos 
+          st'.camel.dir Constant.camel_radius then st 
+        else {st' with camel = (Round_state.hit_power_tile st' st'.camel.pos)} 
+      in 
+      {gs' with round_state = (update_round_state st'')}, 
+      Timer.update_timer timer
+    end 
+
 (** [input gs timer] updates [gs] in response to user key presses *)
 let rec input (gs : Game_state.game_state) (timer : Timer.timer) 
   : (Game_state.game_state * Timer.timer) = 
   match gs.current_state with 
   | Instructions i -> exit_instructions gs timer i (Graphics.read_key ())
-  | _ -> begin 
-      let gs = wait_kp gs timer in  
-      let timer = Timer.update_timer timer in
-      let st = gs.round_state in 
-      let camel = st.camel in 
-      let gs' = if camel.last_tile <> Maze.Power_Path Ice 
-        then respond_to_kp (Graphics.read_key ()) gs
-        else {gs with round_state 
-                      = {st with camel = Round_state.move_camel_ice st camel}} 
-      in match gs'.current_state with 
-      | Instructions i -> gs', timer
-      | _ -> begin 
-          let st' = gs'.round_state in 
-          let st'' = if Round_state.hit_wall st' st'.camel.pos 
-              st'.camel.dir Constant.camel_radius then st 
-            else {st' with camel = (Round_state.hit_power_tile 
-                                      st' st'.camel.pos)} in 
-          {gs' with round_state = (update_round_state st'')}, 
-          Timer.update_timer timer
-        end 
-    end 
+  | _ -> helper_catchall_input gs timer 
 
 (** [flush_keypress ()] clears the queue of key presses 
     from [Graphics.read_key ()] *)

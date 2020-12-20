@@ -65,7 +65,6 @@ let score_health_bonus = 50
    Maze constants
  ***********************************************************)
 let tile_width = 40
-(* let draw_tile_width = tile_width + 1 *)
 let tile_radius = tile_width / 2
 let near = 15 
 let exit_color = Graphics.rgb 146 168 209

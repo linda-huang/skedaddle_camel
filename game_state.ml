@@ -26,39 +26,56 @@ let int_of_difficulty diff =
   | Easy -> 1
   | Hard -> 2
 
+let helper_handle_welcome (gs : game_state) : game_state = 
+  {gs with current_state = Transition 0; 
+           round_state = Round_state.init 
+               Constant.round1.dimx Constant.round1.dimy 
+               Constant.round1.enemies 
+               (int_of_difficulty gs.game_difficulty)
+               Constant.round1.portals } 
+
+let helper_handle_catchall (gs : game_state) : game_state =
+  let newscr = 
+    Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
+  if gs.score.mazes = Constant.totrounds - 1 then 
+    {gs with current_state = Won; score = newscr} 
+  else if Camel.is_dead gs.round_state.camel then 
+    {gs with current_state = GameOver Health; score = newscr} 
+  else 
+    let round, transition_num = 
+      if gs.score.mazes = 0 
+      then Constant.round2, 1 
+      else Constant.round3, 2 in  
+    let newstate = 
+      Round_state.init round.dimx round.dimy 
+        round.enemies (int_of_difficulty gs.game_difficulty)
+        round.portals in 
+    {gs with score = newscr; 
+             current_state = Transition transition_num;
+             round_state = newstate}
+
 let new_level (gs : game_state) : game_state = 
   match gs.current_state with 
   | PreWelcome -> {gs with current_state = Welcome}
-  | Welcome -> begin 
-      {gs with current_state = Transition 0; 
-               round_state = Round_state.init 
-                   Constant.round1.dimx Constant.round1.dimy 
-                   Constant.round1.enemies 
-                   (int_of_difficulty gs.game_difficulty)
-                   Constant.round1.portals } 
-    end 
+  | Welcome -> helper_handle_welcome gs
   | Transition t -> {gs with current_state = InPlay}
-  | _ -> begin 
-      let newscr = 
-        Scorer.update_score gs.score (Sys.time ()) gs.round_state.camel in
-      if gs.score.mazes = Constant.totrounds - 1 then 
-        {gs with current_state = Won; score = newscr} 
-      else if Camel.is_dead gs.round_state.camel then 
-        {gs with current_state = GameOver Health; score = newscr} 
-      else 
-        (* move to the next level *)
-        let round, transition_num = 
-          if gs.score.mazes = 0 
-          then Constant.round2, 1 
-          else Constant.round3, 2 in  
-        let newstate = 
-          Round_state.init round.dimx round.dimy 
-            round.enemies (int_of_difficulty gs.game_difficulty)
-            round.portals in 
-        {gs with score = newscr; 
-                 current_state = Transition transition_num;
-                 round_state = newstate}
-    end 
+  | _ ->  helper_handle_catchall gs
+
+let helper_handle_hard (gs : game_state) (st : Round_state.t) 
+    (timer : Timer.timer) (curr_round : Constant.round_info) : game_state =
+  if Camel.is_dead st.camel  
+  then {gs with current_state = GameOver Health; 
+                round_state = st} 
+  else if Timer.out_of_time curr_round gs.round_state timer  
+  then {gs with current_state = GameOver Time; 
+                round_state = st} 
+  else gs
+
+let helper_handle_easy (gs : game_state) (st : Round_state.t): game_state = 
+  if Camel.is_dead st.camel 
+  then {gs with current_state = GameOver Health; 
+                round_state = st} 
+  else gs
 
 let update_game_state (gs : game_state) (timer : Timer.timer): game_state = 
   let st = Round_state.update_round_state gs.round_state in 
@@ -72,21 +89,8 @@ let update_game_state (gs : game_state) (timer : Timer.timer): game_state =
                     score = {gs.score with 
                              hit = gs.score.hit + enemies_hit}} in
   match gs.game_difficulty with 
-  | Easy -> begin 
-      if Camel.is_dead st.camel 
-      then {gs with current_state = GameOver Health; 
-                    round_state = st} 
-      else gs
-    end 
-  | Hard -> begin 
-      if Camel.is_dead st.camel  
-      then {gs with current_state = GameOver Health; 
-                    round_state = st} 
-      else if Timer.out_of_time curr_round gs.round_state timer  
-      then {gs with current_state = GameOver Time; 
-                    round_state = st} 
-      else gs
-    end 
+  | Easy -> helper_handle_easy gs st
+  | Hard -> helper_handle_hard gs st timer curr_round 
 
 let update_difficulty gs diff = 
   {gs with game_difficulty = diff}
