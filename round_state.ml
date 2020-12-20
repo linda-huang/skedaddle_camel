@@ -142,6 +142,23 @@ let match_ice_goal head_tile tail_tile new_camel =
     else Camel.move new_camel
   | _ -> Camel.move new_camel
 
+let move_camel_ice_helper head_tile tail_tile new_camel camel = 
+  match head_tile, tail_tile with 
+  | Valid (hc, hr), Valid (tc, tr) -> 
+    if hc = tc && hr = tr then 
+      begin match new_camel.ice_goal with 
+        | Some (nc, nr, nd) ->
+          if hc = nc && hr = nr then 
+            {new_camel with ice_goal = None}
+          else if new_camel.dir <> nd then 
+            Camel.move (Camel.change_dir new_camel nd)
+          else 
+            Camel.move new_camel
+        | _ -> Camel.move new_camel
+      end
+    else Camel.move new_camel
+  | _ -> Camel.move camel
+
 let move_camel_ice (st : t) (camel : Camel.t) : Camel.t = 
   let (head, _) = find_head camel.pos st.camel.dir Constant.camel_radius in 
   let (tail, _) = find_tail camel.pos st.camel.dir Constant.camel_radius in
@@ -154,23 +171,8 @@ let move_camel_ice (st : t) (camel : Camel.t) : Camel.t =
     else camel in 
   match new_camel.ice_goal with 
   | None -> new_camel 
-  | Some (ncol, nrow, ndir) -> begin
-      match head_tile, tail_tile with 
-      | Valid (hc, hr), Valid (tc, tr) -> 
-        if hc = tc && hr = tr then 
-          begin match new_camel.ice_goal with 
-            | Some (nc, nr, nd) ->
-              if hc = nc && hr = nr then 
-                {new_camel with ice_goal = None}
-              else if new_camel.dir <> nd then 
-                Camel.move (Camel.change_dir new_camel nd)
-              else 
-                Camel.move new_camel
-            | _ -> Camel.move new_camel
-          end
-        else Camel.move new_camel
-      | _ -> Camel.move camel
-    end
+  | Some (ncol, nrow, ndir) -> 
+    move_camel_ice_helper head_tile tail_tile new_camel camel
 
 let restore_speed_camel camel = 
   if camel.speed <> Constant.camel_mud_speed then camel 
@@ -351,34 +353,21 @@ let proj_hit_wall (st : t) =
       (st : t) : t = 
     match remproj with
     | h::t -> 
-      (*if the projectile hits a wall/is out of bounds then remove it*)
       if hit_wall st h.pos h.dir Constant.projectile_radius 
-      then
+      then begin
         let coord_mapping = Position.pixel_to_tile 
             (Position.init_pos (fst (find_head h.pos h.dir 
                                        Constant.projectile_radius))) 
-            st.top_left_corner in  
-        (* Graphics.moveto (100) (60);
-           Graphics.set_color Graphics.black; 
-           Graphics.fill_rect (100) (60) 300 20; 
-           Graphics.set_color Graphics.white; *)
-        (* Graphics.draw_string (" wall " ^ 
-                              (string_of_bool (hit_wall st h.pos h.dir 
-                                                 Constant.projectile_radius))); *)
-        (* if the projectile hits a wall then make the wall lose hp or 
-           turn into a path *)
+            st.top_left_corner in    
         match coord_mapping with
         | Position.Valid (col, row) -> begin 
-            (* Graphics.draw_string (" coord " ^ (string_of_int col) 
-                                  ^ " " ^ string_of_int row);  *)
             let st' = reduce_wall_hp col row st in
             proj_hit_wall_helper t accproj st'
           end
         | Position.Out_of_bounds -> proj_hit_wall_helper t accproj st
-      else proj_hit_wall_helper t (h :: accproj) st
+      end else proj_hit_wall_helper t (h :: accproj) st
     | [] -> {st with projectiles = accproj}
-  in 
-  proj_hit_wall_helper st.projectiles [] st
+  in proj_hit_wall_helper st.projectiles [] st
 
 let move_proj (st : t) = 
   let st' = {st with projectiles = 
@@ -617,27 +606,9 @@ let init_hourglass mz start_pos coins potions =
      |> Position.tile_to_pixel start_pos 
      |> Position.init_pos)    
 
-let init cols rows numenemy difficulty portals = 
-  let mz = Maze.populate cols rows (0,0) in 
-  let maze_row = rows in
-  let maze_col = cols in
-  let window_height = maze_row * Constant.tile_width + 200 in 
-  let window_width = maze_col * Constant.tile_width + 200 in
-  let start_y = 
-    window_height - ((window_height- maze_row * Constant.tile_width) / 2) in
-  let start_x = ((window_width - maze_col * Constant.tile_width) / 2) in
-  let start_pos = (start_x, start_y) in
-  let camel = Camel.init ((fst start_pos) + camel_radius) 
-      ((snd start_pos) - camel_radius) in
-  let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
-  let numpotions = if numenemy = 0 then 0 else 2 in 
-  let genie = if numenemy = 10 then init_genie mz start_pos 
-    else None in 
-  let coinarr = init_coin_lst 20 mz start_pos in 
-  let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
-  let hourglass = if difficulty = 1 then None else 
-    if numenemy <> 0 then Some (init_hourglass mz start_pos coinarr potionarr)
-    else None in 
+let init_helper window_width window_height camel mz_w_portals cols rows 
+    numenemy mz start_pos coinarr potionarr genie hourglass start_pos 
+    portal_lst = 
   Graphics.resize_window window_width window_height;
   {camel = camel; 
    maze = mz_w_portals;
@@ -651,6 +622,28 @@ let init cols rows numenemy difficulty portals =
    hourglass = hourglass;
    top_left_corner = start_pos;
    portals = portal_lst}
+
+let init cols rows numenemy difficulty portals = 
+  let mz = Maze.populate cols rows (0,0) in 
+  let window_height = rows * Constant.tile_width + 200 in 
+  let window_width = cols * Constant.tile_width + 200 in
+  let start_y = 
+    window_height - ((window_height- rows * Constant.tile_width) / 2) in
+  let start_x = ((window_width - cols * Constant.tile_width) / 2) in
+  let start_pos = (start_x, start_y) in
+  let camel = Camel.init ((fst start_pos) + camel_radius) 
+      ((snd start_pos) - camel_radius) in
+  let (mz_w_portals, portal_lst) = init_portals start_pos portals mz [] in
+  let numpotions = if numenemy = 0 then 0 else 2 in 
+  let genie = if numenemy = 10 then init_genie mz start_pos else None in 
+  let coinarr = init_coin_lst 20 mz start_pos in 
+  let potionarr = init_potion_lst numpotions mz start_pos coinarr in 
+  let hourglass = if difficulty = 1 then None else 
+    if numenemy <> 0 then Some (init_hourglass mz start_pos coinarr potionarr)
+    else None in 
+  init_helper window_width window_height camel mz_w_portals cols rows 
+    numenemy mz start_pos coinarr potionarr genie hourglass start_pos 
+    portal_lst
 
 (**********************************************************
    pretty printing things
