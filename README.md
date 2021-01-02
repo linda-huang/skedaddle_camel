@@ -32,4 +32,4 @@ In this OCaml adaptation of the maze game, the player is a camel navigating a se
 ## Authors
 Created as a final project for Fall 2020 CS3110 at Cornell University :camel::genie_man::camel:
 
-Linda Huang (linda-huang), Doanh Tran (DoanhTran), Anna Effenberger (annaeffen), Tina Li
+Linda Huang (linda-huang), Doanh Tran (DoanhTran), Anna Effenberger (annaeffen), Tina Li (tl676)
