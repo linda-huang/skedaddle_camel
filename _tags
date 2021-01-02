@@ -1,0 +1,3 @@
+<{camel,coin,enemy,maze,position,projectile,round_state,scorer,game_state}.ml>: coverage
+<test.{byte,native}>: coverage
+true: package(ounit2),package(ANSITerminal),package(graphics),package(bisect_ppx)

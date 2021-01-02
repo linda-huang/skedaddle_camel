@@ -1,0 +1,7 @@
+The image matrices in [background.ml], [words.ml], [constant.ml], 
+[words.ml] and file names beginning [img] 
+result in the inflation of LOC. 
+
+Roughly subtract the counts from the aforementioned files
+from the result of [cloc --by-file --include-lang=OCaml .] 
+to yield the main substantive LOC count.  
